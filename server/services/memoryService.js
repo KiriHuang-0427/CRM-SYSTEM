@@ -206,6 +206,13 @@ function getStatsSummary() {
   const highRisk = db.prepare("SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0 AND memory_type = 'risk'").get().cnt;
   const highImportance = db.prepare('SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0 AND importance >= 4').get().cnt;
 
+  // Review status breakdown (V26.07.01)
+  const byReviewStatus = db.prepare(`
+    SELECT review_status, COUNT(*) as count
+    FROM ai_memories WHERE is_archived = 0
+    GROUP BY review_status ORDER BY count DESC
+  `).all();
+
   return {
     totalActive,
     totalArchived,
@@ -217,6 +224,7 @@ function getStatsSummary() {
     importJobCount,
     highRisk,
     highImportance,
+    byReviewStatus,
   };
 }
 
@@ -268,6 +276,9 @@ function formatMemory(row) {
     metadataJson: safeParseJSON(row.metadata_json),
     checksum: row.checksum || null,
     isArchived: !!row.is_archived,
+    reviewStatus: row.review_status || 'pending',
+    reviewNote: row.review_note || null,
+    reviewedAt: row.reviewed_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -287,4 +298,195 @@ module.exports = {
   archiveMemory,
   getStatsSummary,
   getCustomerMemories,
+  // V26.07.01 — Review functions
+  getUnlinkedMemories,
+  linkCustomer,
+  markUnlinkedReviewed,
+  archiveMemoryWithReason,
+  batchOperation,
 };
+
+// ─── V26.07.01 Review Functions ─────────────────────────────
+
+/**
+ * Get unlinked memories (customer_id IS NULL, not archived)
+ */
+function getUnlinkedMemories(params = {}) {
+  const {
+    keyword,
+    memoryType,
+    sourceFile,
+    sourceKind,
+    reviewStatus,
+    limit = 50,
+    offset = 0,
+  } = params;
+
+  let where = ['m.customer_id IS NULL', 'm.is_archived = 0'];
+  let bindParams = [];
+
+  if (keyword) {
+    where.push('(m.title LIKE ? OR m.content LIKE ? OR m.tags LIKE ?)');
+    const kw = `%${keyword}%`;
+    bindParams.push(kw, kw, kw);
+  }
+  if (memoryType) {
+    where.push('m.memory_type = ?');
+    bindParams.push(memoryType);
+  }
+  if (sourceFile) {
+    where.push('m.source_file LIKE ?');
+    bindParams.push(`%${sourceFile}%`);
+  }
+  if (sourceKind) {
+    where.push('m.source_kind = ?');
+    bindParams.push(sourceKind);
+  }
+  if (reviewStatus) {
+    where.push('m.review_status = ?');
+    bindParams.push(reviewStatus);
+  }
+
+  const whereClause = 'WHERE ' + where.join(' AND ');
+  const total = db.prepare(`SELECT COUNT(*) as total FROM ai_memories m ${whereClause}`).get(...bindParams).total;
+
+  const rows = db.prepare(`
+    SELECT m.*, c.name as customer_name
+    FROM ai_memories m
+    LEFT JOIN customers c ON c.id = m.customer_id
+    ${whereClause}
+    ORDER BY m.importance DESC, m.created_at DESC
+    LIMIT ? OFFSET ?
+  `).all(...bindParams, limit, offset);
+
+  return {
+    data: rows.map(formatMemory),
+    pagination: { limit, offset, total },
+  };
+}
+
+/**
+ * Link a memory to a customer
+ */
+function linkCustomer(id, customerId, reason) {
+  const existing = db.prepare('SELECT id FROM ai_memories WHERE id = ?').get(id);
+  if (!existing) return null;
+
+  const now = new Date().toISOString();
+  db.prepare(`
+    UPDATE ai_memories SET
+      customer_id = ?,
+      review_status = 'linked',
+      review_note = COALESCE(?, review_note),
+      reviewed_at = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(customerId, reason || null, now, id);
+
+  // Also record in ai_memory_links
+  db.prepare(`
+    INSERT OR IGNORE INTO ai_memory_links (memory_id, entity_type, entity_id, relation_type)
+    VALUES (?, 'customer', ?, 'manual_link')
+  `).run(id, customerId);
+
+  return getMemoryById(id);
+}
+
+/**
+ * Mark memory as reviewed but no customer link needed
+ */
+function markUnlinkedReviewed(id, reason) {
+  const existing = db.prepare('SELECT id FROM ai_memories WHERE id = ?').get(id);
+  if (!existing) return null;
+
+  const now = new Date().toISOString();
+  db.prepare(`
+    UPDATE ai_memories SET
+      review_status = 'no_customer',
+      review_note = COALESCE(?, review_note),
+      reviewed_at = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(reason || null, now, id);
+
+  return getMemoryById(id);
+}
+
+/**
+ * Archive memory with review reason
+ */
+function archiveMemoryWithReason(id, reason) {
+  const existing = db.prepare('SELECT id FROM ai_memories WHERE id = ?').get(id);
+  if (!existing) return null;
+
+  const now = new Date().toISOString();
+  db.prepare(`
+    UPDATE ai_memories SET
+      is_archived = 1,
+      review_status = 'archived',
+      review_note = COALESCE(?, review_note),
+      reviewed_at = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(reason || null, now, id);
+
+  return { success: true, message: 'Memory archived' };
+}
+
+/**
+ * Batch operation: link_customer / mark_unlinked_reviewed / archive
+ */
+function batchOperation(ids, action, customerId, reason) {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new Error('ids must be a non-empty array');
+  }
+
+  const results = { success: 0, failed: 0 };
+  const now = new Date().toISOString();
+
+  const transaction = db.transaction(() => {
+    for (const id of ids) {
+      try {
+        if (action === 'link_customer') {
+          if (!customerId) throw new Error('customerId required for link_customer');
+          db.prepare(`
+            UPDATE ai_memories SET
+              customer_id = ?, review_status = 'linked',
+              review_note = COALESCE(?, review_note), reviewed_at = ?,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).run(customerId, reason || null, now, id);
+          db.prepare(`
+            INSERT OR IGNORE INTO ai_memory_links (memory_id, entity_type, entity_id, relation_type)
+            VALUES (?, 'customer', ?, 'batch_link')
+          `).run(id, customerId);
+        } else if (action === 'mark_unlinked_reviewed') {
+          db.prepare(`
+            UPDATE ai_memories SET
+              review_status = 'no_customer',
+              review_note = COALESCE(?, review_note), reviewed_at = ?,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).run(reason || null, now, id);
+        } else if (action === 'archive') {
+          db.prepare(`
+            UPDATE ai_memories SET
+              is_archived = 1, review_status = 'archived',
+              review_note = COALESCE(?, review_note), reviewed_at = ?,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).run(reason || null, now, id);
+        } else {
+          throw new Error(`Unknown action: ${action}`);
+        }
+        results.success++;
+      } catch (err) {
+        console.error(`[batch] id=${id} failed:`, err.message);
+        results.failed++;
+      }
+    }
+  });
+
+  transaction();
+  return results;
+}

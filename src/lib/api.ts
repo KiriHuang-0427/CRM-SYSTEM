@@ -456,6 +456,9 @@ export interface Memory {
   metadataJson: Record<string, any> | string | null;
   checksum: string | null;
   isArchived: boolean;
+  reviewStatus: 'pending' | 'linked' | 'no_customer' | 'archived';
+  reviewNote: string | null;
+  reviewedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -471,6 +474,7 @@ export interface MemoryStats {
   importJobCount: number;
   highRisk: number;
   highImportance: number;
+  byReviewStatus: { review_status: string; count: number }[];
 }
 
 export async function getMemories(params?: {
@@ -501,6 +505,68 @@ export async function getMemoryStats() {
 export async function archiveMemory(id: number) {
   return fetchApi<{ success: boolean }>(`/memories/${id}`, {
     method: 'DELETE',
+  });
+}
+
+// ─── V26.07.01 Memory Review API ────────────────────────────
+
+export async function getUnlinkedMemories(params?: {
+  keyword?: string;
+  memoryType?: string;
+  sourceFile?: string;
+  sourceKind?: string;
+  reviewStatus?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const qs = new URLSearchParams();
+  if (params?.keyword) qs.set('keyword', params.keyword);
+  if (params?.memoryType) qs.set('memoryType', params.memoryType);
+  if (params?.sourceFile) qs.set('sourceFile', params.sourceFile);
+  if (params?.sourceKind) qs.set('sourceKind', params.sourceKind);
+  if (params?.reviewStatus) qs.set('reviewStatus', params.reviewStatus);
+  if (params?.limit) qs.set('limit', String(params.limit));
+  if (params?.offset) qs.set('offset', String(params.offset));
+  const query = qs.toString();
+  return fetchApi<{ data: Memory[]; pagination: { limit: number; offset: number; total: number } }>(
+    `/memories/unlinked${query ? `?${query}` : ''}`
+  );
+}
+
+export async function linkMemoryToCustomer(id: number, customerId: string, reason?: string) {
+  return fetchApi<{ data: Memory }>(`/memories/${id}/link-customer`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customerId, reason }),
+  });
+}
+
+export async function markMemoryUnlinkedReviewed(id: number, reason?: string) {
+  return fetchApi<{ data: Memory }>(`/memories/${id}/mark-unlinked-reviewed`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function archiveMemoryWithReason(id: number, reason?: string) {
+  return fetchApi<{ success: boolean }>(`/memories/${id}/archive`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function batchMemoryOperation(
+  ids: number[],
+  action: 'link_customer' | 'mark_unlinked_reviewed' | 'archive',
+  customerId?: string,
+  reason?: string
+) {
+  return fetchApi<{ data: { success: number; failed: number } }>('/memories/batch', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, action, customerId, reason }),
   });
 }
 

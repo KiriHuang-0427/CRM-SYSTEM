@@ -1,6 +1,6 @@
 # CRM 系统架构文档
 
-> 版本: V26.07.00 | 更新日期: 2026-06-14
+> 版本: V26.07.01 | 更新日期: 2026-06-14
 > 西门子OEM南京区域 · 个人销售CRM系统
 
 ---
@@ -224,6 +224,11 @@ graph LR
 | POST | `/api/memories` | 手动新增记忆 | Body: `{ memoryType, content, customerId?, title?, importance?, ... }` | `{ data: Memory }` |
 | PUT | `/api/memories/:id` | 修改记忆 | Body: `{ title?, memory_type?, importance?, tags?, summary? }` | `{ data: Memory }` |
 | DELETE | `/api/memories/:id` | 软删除(is_archived=1) | URL参数 id | `{ success: true }` |
+| GET | `/api/memories/unlinked` | 查询未关联记忆(V26.07.01) | `?keyword=&memoryType=&sourceFile=&sourceKind=&reviewStatus=&limit=&offset=` | `{ data: Memory[], pagination }` |
+| PUT | `/api/memories/:id/link-customer` | 关联客户(V26.07.01) | Body: `{ customerId, reason? }` | `{ data: Memory }` |
+| PUT | `/api/memories/:id/mark-unlinked-reviewed` | 标记无需关联(V26.07.01) | Body: `{ reason? }` | `{ data: Memory }` |
+| PUT | `/api/memories/:id/archive` | 带审核理由归档(V26.07.01) | Body: `{ reason? }` | `{ success: true }` |
+| PUT | `/api/memories/batch` | 批量操作(V26.07.01) | Body: `{ ids[], action, customerId?, reason? }` | `{ data: { success, failed } }` |
 
 ### 4.8 导入管理 `/api/imports`（V26.07.00新增）
 
@@ -393,6 +398,9 @@ graph LR
 | metadata_json | TEXT | 扩展信息JSON |
 | checksum | TEXT UNIQUE | 去重指纹(SHA256) |
 | is_archived | INTEGER | 是否归档(0/1) |
+| review_status | TEXT | 审核状态: pending/linked/no_customer/archived (V26.07.01) |
+| review_note | TEXT | 审核备注 (V26.07.01) |
+| reviewed_at | TEXT | 审核时间 (V26.07.01) |
 | created_at | TEXT | 创建时间 |
 | updated_at | TEXT | 更新时间 |
 

@@ -6,7 +6,7 @@ import {
   Target, AlertTriangle, Star, BarChart3,
   CheckSquare, Square, Megaphone, Shield, ArrowUpCircle,
   Clock, Calendar, Menu, Plus, Trash2, Loader2, RefreshCw, Edit3,
-  Brain, Database, Filter,
+  Brain, Database, Filter, ClipboardCheck, Link2, Archive, Copy,
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
@@ -17,7 +17,8 @@ import {
   COACH_SCENARIOS, INVESTMENT_ITEMS, INVESTMENT_DIMS,
 } from '@/lib/data'
 import * as api from '@/lib/api'
-import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary } from '@/lib/api'
+import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary, Memory, MemoryStats } from '@/lib/api'
+import { getUnlinkedMemories, linkMemoryToCustomer, markMemoryUnlinkedReviewed, archiveMemoryWithReason, batchMemoryOperation, getMemoryStats } from '@/lib/api'
 import { cn, fmtK, daysSince, colorHex, priorityLabel } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -99,7 +100,7 @@ function EmptyState({ icon, message, hint, ...qoderProps }: { icon?: React.React
   )
 }
 
-type TabId = 'dashboard' | 'customers' | 'pipeline' | 'competitive' | 'energy' | 'coach' | 'weekly'
+type TabId = 'dashboard' | 'customers' | 'pipeline' | 'competitive' | 'energy' | 'coach' | 'weekly' | 'review'
 
 const NAV_ITEMS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', label: '仪表盘', icon: <LayoutDashboard size={18}  data-qoder-id="qel-layoutdashboard-2eed58a0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-layoutdashboard-2eed58a0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;layoutdashboard&quot;,&quot;loc&quot;:{&quot;line&quot;:24,&quot;column&quot;:42}}"/> },
@@ -109,7 +110,332 @@ const NAV_ITEMS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'energy', label: '精力分配', icon: <Activity size={18}  data-qoder-id="qel-activity-1de6a06e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-activity-1de6a06e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;activity&quot;,&quot;loc&quot;:{&quot;line&quot;:28,&quot;column&quot;:40}}"/> },
   { id: 'coach', label: 'AI 教练', icon: <Bot size={18}  data-qoder-id="qel-bot-34694d61" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-bot-34694d61&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;bot&quot;,&quot;loc&quot;:{&quot;line&quot;:29,&quot;column&quot;:40}}"/> },
   { id: 'weekly', label: '周报', icon: <FileText size={18}  data-qoder-id="qel-filetext-b5c82248" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-filetext-b5c82248&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;filetext&quot;,&quot;loc&quot;:{&quot;line&quot;:30,&quot;column&quot;:38}}"/> },
+  { id: 'review', label: 'AI记忆审核', icon: <ClipboardCheck size={18} /> },
 ]
+
+/* ─────────────────────── MemoryReviewPage (V26.07.01) ──────── */
+const MEMORY_TYPES = ['archive_raw','project','customer_profile','meeting','strategy','relationship','competitor','weekly','risk','decision','todo_context','sales_data'];
+const REVIEW_STATUSES = ['pending','linked','no_customer','archived'];
+
+function MemoryReviewPage({ customers }: { customers: Customer[] }) {
+  const [stats, setStats] = useState<any>(null);
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [keyword, setKeyword] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterStatus, setFilterStatus] = useState('pending');
+  const [filterSource, setFilterSource] = useState('');
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [linkModal, setLinkModal] = useState<Memory | null>(null);
+  const [noteModal, setNoteModal] = useState<{ id: number; action: 'mark' | 'archive' } | null>(null);
+  const [noteText, setNoteText] = useState('');
+  const [linkCustomer, setLinkCustomer] = useState('');
+  const [linkNote, setLinkNote] = useState('');
+  const [offset, setOffset] = useState(0);
+  const [toast, setToast] = useState('');
+  const LIMIT = 30;
+
+  const loadData = useCallback(async (reset = false) => {
+    setLoading(true);
+    try {
+      const newOffset = reset ? 0 : offset;
+      if (reset) setOffset(0);
+      const [memRes, statsRes] = await Promise.all([
+        getUnlinkedMemories({
+          keyword: keyword || undefined,
+          memoryType: filterType || undefined,
+          sourceFile: filterSource || undefined,
+          reviewStatus: filterStatus || undefined,
+          limit: LIMIT,
+          offset: newOffset,
+        }),
+        getMemoryStats(),
+      ]);
+      setMemories(memRes.data);
+      setTotal(memRes.pagination.total);
+      setStats(statsRes.data);
+    } catch (e) {
+      console.error('Load error:', e);
+    }
+    setLoading(false);
+  }, [keyword, filterType, filterStatus, filterSource, offset]);
+
+  useEffect(() => { loadData(true); }, [keyword, filterType, filterStatus, filterSource]);
+  useEffect(() => { if (toast) { const t = setTimeout(() => setToast(''), 2500); return () => clearTimeout(t); } }, [toast]);
+
+  const toggleSelect = (id: number) => {
+    setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  };
+  const selectAll = () => {
+    if (selected.size === memories.length) setSelected(new Set());
+    else setSelected(new Set(memories.map(m => m.id)));
+  };
+
+  const doLink = async () => {
+    if (!linkModal || !linkCustomer) return;
+    await linkMemoryToCustomer(linkModal.id, linkCustomer, linkNote || undefined);
+    setToast(`已关联到客户`);
+    setLinkModal(null); setLinkCustomer(''); setLinkNote('');
+    loadData(true);
+  };
+
+  const doNote = async () => {
+    if (!noteModal) return;
+    if (noteModal.action === 'mark') {
+      await markMemoryUnlinkedReviewed(noteModal.id, noteText || undefined);
+      setToast('已标记无需关联');
+    } else {
+      await archiveMemoryWithReason(noteModal.id, noteText || undefined);
+      setToast('已归档');
+    }
+    setNoteModal(null); setNoteText('');
+    loadData(true);
+  };
+
+  const doBatch = async (action: 'link_customer' | 'mark_unlinked_reviewed' | 'archive') => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    if (action === 'link_customer') {
+      // Use first selected to open link modal for batch
+      setLinkModal(memories.find(m => m.id === ids[0]) || null);
+      return;
+    }
+    await batchMemoryOperation(ids, action, undefined, '批量操作');
+    setToast(`批量${action === 'archive' ? '归档' : '标记'}: ${ids.length} 条`);
+    setSelected(new Set());
+    loadData(true);
+  };
+
+  const doBatchLink = async () => {
+    if (!linkCustomer) return;
+    const ids = Array.from(selected);
+    await batchMemoryOperation(ids, 'link_customer', linkCustomer, linkNote || undefined);
+    setToast(`批量关联: ${ids.length} 条`);
+    setLinkModal(null); setLinkCustomer(''); setLinkNote(''); setSelected(new Set());
+    loadData(true);
+  };
+
+  const loadMore = () => { setOffset(prev => prev + LIMIT); setTimeout(() => loadData(), 0); };
+
+  const reviewCounts = useMemo(() => {
+    if (!stats?.byReviewStatus) return { pending: 0, linked: 0, no_customer: 0, archived: 0 };
+    const map: Record<string, number> = {};
+    stats.byReviewStatus.forEach((r: any) => { map[r.review_status] = r.count; });
+    return { pending: map.pending || 0, linked: map.linked || 0, no_customer: map.no_customer || 0, archived: map.archived || 0 };
+  }, [stats]);
+
+  const copyContent = (text: string) => { navigator.clipboard.writeText(text); setToast('已复制'); };
+
+  return (
+    <div className="page-container" style={{ maxWidth: 960 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>AI 记忆审核</h1>
+          <p style={{ fontSize: 13, color: 'var(--fg-tertiary)', margin: '4px 0 0' }}>
+            审核未关联客户的历史资料记忆，关联到正确客户或归档
+          </p>
+        </div>
+        <button className="btn btn-secondary" onClick={() => loadData(true)} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <RefreshCw size={14} /> 刷新
+        </button>
+      </div>
+
+      {/* Stats Bar */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 16 }}>
+        {[
+          { label: '总记忆', value: stats?.totalActive ?? '-', color: 'var(--accent)' },
+          { label: '已关联', value: reviewCounts.linked, color: 'var(--success)' },
+          { label: '待审核', value: reviewCounts.pending, color: 'var(--warning)' },
+          { label: '无需关联', value: reviewCounts.no_customer, color: 'var(--fg-tertiary)' },
+          { label: '已归档', value: reviewCounts.archived, color: 'var(--fg-tertiary)' },
+        ].map(s => (
+          <div key={s.label} className="card" style={{ padding: '12px 14px', borderLeft: `3px solid ${s.color}` }}>
+            <div style={{ fontSize: 20, fontWeight: 700 }}>{s.value}</div>
+            <div style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter Bar */}
+      <div className="card" style={{ padding: '10px 14px', marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
+          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--fg-tertiary)' }} />
+          <input
+            type="text" placeholder="搜索关键词..."
+            value={keyword} onChange={e => setKeyword(e.target.value)}
+            style={{ width: '100%', padding: '6px 10px 6px 30px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 13 }}
+          />
+        </div>
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, minWidth: 120 }}>
+          <option value="">全部类型</option>
+          {MEMORY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, minWidth: 110 }}>
+          <option value="">全部状态</option>
+          {REVIEW_STATUSES.map(s => <option key={s} value={s}>{s === 'pending' ? '待审核' : s === 'linked' ? '已关联' : s === 'no_customer' ? '无需关联' : '已归档'}</option>)}
+        </select>
+        <select value={filterSource} onChange={e => setFilterSource(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, minWidth: 110 }}>
+          <option value="">全部来源</option>
+          <option value="markdown">Markdown</option>
+          <option value="xlsx">Excel</option>
+          <option value="database">数据库种子</option>
+        </select>
+        <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', whiteSpace: 'nowrap' }}>共 {total} 条</span>
+      </div>
+
+      {/* Batch Actions */}
+      {selected.size > 0 && (
+        <div className="card" style={{ padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent-bg, rgba(0,153,153,0.06))' }}>
+          <span style={{ fontSize: 13, fontWeight: 600 }}>已选 {selected.size} 条</span>
+          <button className="btn btn-primary" onClick={() => doBatch('link_customer')} style={{ fontSize: 12, padding: '4px 10px' }}>
+            <Link2 size={13} /> 批量关联
+          </button>
+          <button className="btn btn-secondary" onClick={() => doBatch('mark_unlinked_reviewed')} style={{ fontSize: 12, padding: '4px 10px' }}>
+            <CheckSquare size={13} /> 批量标记无需关联
+          </button>
+          <button className="btn btn-secondary" onClick={() => doBatch('archive')} style={{ fontSize: 12, padding: '4px 10px', color: 'var(--danger)' }}>
+            <Archive size={13} /> 批量归档
+          </button>
+          <button className="btn btn-secondary" onClick={() => setSelected(new Set())} style={{ fontSize: 12, padding: '4px 10px' }}>
+            取消选择
+          </button>
+        </div>
+      )}
+
+      {/* Memory List */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 40, color: 'var(--fg-tertiary)' }}><Loader2 size={24} className="spin" /> 加载中...</div>
+      ) : memories.length === 0 ? (
+        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+          <CheckSquare size={32} style={{ color: 'var(--success)', marginBottom: 8 }} />
+          <div style={{ fontSize: 15, fontWeight: 600 }}>暂无待审核记忆</div>
+          <div style={{ fontSize: 13, color: 'var(--fg-tertiary)', marginTop: 4 }}>所有记忆已审核完毕</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* Select all */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--fg-tertiary)', padding: '0 4px' }}>
+            <input type="checkbox" checked={selected.size === memories.length && memories.length > 0} onChange={selectAll} />
+            <span>全选当前页</span>
+          </div>
+
+          {memories.map(mem => (
+            <div key={mem.id} className="card" style={{ padding: '12px 14px', borderLeft: `3px solid ${selected.has(mem.id) ? 'var(--accent)' : 'var(--border)'}` }}>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <input
+                  type="checkbox"
+                  checked={selected.has(mem.id)}
+                  onChange={() => toggleSelect(mem.id)}
+                  style={{ marginTop: 4, cursor: 'pointer' }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* Header */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>{mem.title}</span>
+                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'var(--bg-secondary)', color: 'var(--fg-secondary)', whiteSpace: 'nowrap' }}>{mem.memoryType}</span>
+                    <span style={{ fontSize: 10, color: 'var(--fg-tertiary)' }}>★{mem.importance}</span>
+                    {mem.customerName && (
+                      <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'var(--success-bg, rgba(39,174,96,0.1))', color: 'var(--success)' }}>{mem.customerName}</span>
+                    )}
+                  </div>
+                  {/* Content preview */}
+                  <div style={{ fontSize: 12, color: 'var(--fg-secondary)', lineHeight: 1.5, maxHeight: 60, overflow: 'hidden', marginBottom: 6 }}>
+                    {mem.content.length > 200 ? mem.content.slice(0, 200) + '...' : mem.content}
+                  </div>
+                  {/* Meta */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: 'var(--fg-tertiary)', flexWrap: 'wrap' }}>
+                    {mem.sourceFile && <span>来源: {mem.sourceFile.length > 30 ? '...' + mem.sourceFile.slice(-30) : mem.sourceFile}</span>}
+                    <span>{mem.createdAt?.slice(0, 10)}</span>
+                    {mem.reviewNote && <span style={{ fontStyle: 'italic' }}>备注: {mem.reviewNote}</span>}
+                  </div>
+                </div>
+                {/* Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                  <button className="btn btn-primary" onClick={() => { setLinkModal(mem); setLinkCustomer(''); setLinkNote(''); }} style={{ fontSize: 11, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 3 }} title="关联客户">
+                    <Link2 size={12} /> 关联
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => { setNoteModal({ id: mem.id, action: 'mark' }); setNoteText(''); }} style={{ fontSize: 11, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 3 }} title="标记无需关联">
+                    <CheckSquare size={12} /> 标记
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => { setNoteModal({ id: mem.id, action: 'archive' }); setNoteText(''); }} style={{ fontSize: 11, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 3, color: 'var(--danger)' }} title="归档">
+                    <Archive size={12} /> 归档
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => copyContent(mem.content)} style={{ fontSize: 11, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 3 }} title="复制内容">
+                    <Copy size={12} /> 复制
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Load more */}
+          {offset + LIMIT < total && (
+            <button className="btn btn-secondary" onClick={loadMore} style={{ margin: '8px auto', fontSize: 13 }}>
+              加载更多 ({total - offset - LIMIT} 条剩余)
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 20px', fontSize: 13, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 9999 }}>
+          {toast}
+        </div>
+      )}
+
+      {/* Link Customer Modal */}
+      {linkModal && (
+        <div className="modal-overlay" onClick={() => setLinkModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>
+          <div className="card" onClick={e => e.stopPropagation()} style={{ width: 420, padding: 20 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, marginTop: 0, marginBottom: 12 }}>
+              {selected.size > 1 ? `批量关联客户 (${selected.size} 条)` : '关联客户'}
+            </h3>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>选择客户</label>
+              <select value={linkCustomer} onChange={e => setLinkCustomer(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 13 }}>
+                <option value="">-- 请选择 --</option>
+                {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>审核备注（可选）</label>
+              <textarea value={linkNote} onChange={e => setLinkNote(e.target.value)} placeholder="说明关联原因..." style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 13, minHeight: 60, resize: 'vertical', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setLinkModal(null)}>取消</button>
+              <button className="btn btn-primary" onClick={selected.size > 1 ? doBatchLink : doLink} disabled={!linkCustomer}>
+                {selected.size > 1 ? '批量关联' : '关联'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Note Modal */}
+      {noteModal && (
+        <div className="modal-overlay" onClick={() => setNoteModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>
+          <div className="card" onClick={e => e.stopPropagation()} style={{ width: 400, padding: 20 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, marginTop: 0, marginBottom: 12 }}>
+              {noteModal.action === 'mark' ? '标记无需关联' : '归档记忆'}
+            </h3>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>审核备注（可选）</label>
+              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder={noteModal.action === 'mark' ? '说明无需关联的原因...' : '说明归档原因...'} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 13, minHeight: 60, resize: 'vertical', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setNoteModal(null)}>取消</button>
+              <button className="btn btn-primary" onClick={doNote} style={noteModal.action === 'archive' ? { color: 'var(--danger)' } : {}}>
+                {noteModal.action === 'mark' ? '确认标记' : '确认归档'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ────────────────────────── APP SHELL ────────────────────────── */
 export default function App(qoderProps: Record<string, any>) {
@@ -195,6 +521,7 @@ export default function App(qoderProps: Record<string, any>) {
             {tab === 'energy' && <EnergyPage customers={custData.customers} custLoading={custData.loading} custError={custData.error} onRetry={custData.reload} data-qoder-id="qel-energypage-92084237" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-energypage-92084237&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;energypage&quot;,&quot;loc&quot;:{&quot;line&quot;:211,&quot;column&quot;:34}}"/>}
             {tab === 'coach' && <CoachPage customers={custData.customers} data-qoder-id="qel-coachpage-77587252" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-coachpage-77587252&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;coachpage&quot;,&quot;loc&quot;:{&quot;line&quot;:212,&quot;column&quot;:33}}"/>}
             {tab === 'weekly' && <WeeklyPage data-qoder-id="qel-weeklypage-802c936f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-weeklypage-802c936f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;weeklypage&quot;,&quot;loc&quot;:{&quot;line&quot;:213,&quot;column&quot;:34}}"/>}
+            {tab === 'review' && <MemoryReviewPage customers={custData.customers} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -215,7 +542,7 @@ export default function App(qoderProps: Record<string, any>) {
           </button>
         ))}
         <button
-          className={cn('bottom-tab-item', ['competitive', 'energy', 'coach', 'weekly'].includes(tab) && 'active')}
+          className={cn('bottom-tab-item', ['competitive', 'energy', 'coach', 'weekly', 'review'].includes(tab) && 'active')}
           onClick={() => setMobileNav(true)}
          data-qoder-id="qel-button-554e864c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-554e864c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:145,&quot;column&quot;:9}}">
           <Menu size={18}  data-qoder-id="qel-menu-398f9e57" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-menu-398f9e57&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;menu&quot;,&quot;loc&quot;:{&quot;line&quot;:149,&quot;column&quot;:11}}"/>
@@ -923,7 +1250,7 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
         )}
 
         {/* AI Memory Foundation Panel (V26.07.00) */}
-        <MemoryPanel customerId={c.id} />
+        <MemoryPanel customerId={c.id}  data-qoder-id="qel-memorypanel-566a2e6b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-memorypanel-566a2e6b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;memorypanel&quot;,&quot;loc&quot;:{&quot;line&quot;:926,&quot;column&quot;:9}}"/>
       </div>
     </div>
   )
@@ -1001,9 +1328,9 @@ function MemoryPanel({ customerId }: { customerId: string }) {
 
   if (loading) {
     return (
-      <Section title="历史记忆 / AI地基">
-        <div style={{ padding: '12px 16px', color: 'var(--fg-tertiary)', fontSize: 12 }}>
-          <Loader2 size={14} className="spin" /> 加载中...
+      <Section title="历史记忆 / AI地基" data-qoder-id="qel-section-6a1d265f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-6a1d265f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:1004,&quot;column&quot;:7}}">
+        <div style={{ padding: '12px 16px', color: 'var(--fg-tertiary)', fontSize: 12 }} data-qoder-id="qel-div-a2887d64" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a2887d64&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1005,&quot;column&quot;:9}}">
+          <Loader2 size={14} className="spin"  data-qoder-id="qel-spin-f04626b4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-spin-f04626b4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;spin&quot;,&quot;loc&quot;:{&quot;line&quot;:1006,&quot;column&quot;:11}}"/> 加载中...
         </div>
       </Section>
     )
@@ -1011,9 +1338,9 @@ function MemoryPanel({ customerId }: { customerId: string }) {
 
   if (total === 0) {
     return (
-      <Section title="历史记忆 / AI地基">
-        <div style={{ padding: '12px 16px', color: 'var(--fg-tertiary)', fontSize: 12 }}>
-          <Database size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+      <Section title="历史记忆 / AI地基" data-qoder-id="qel-section-6f1d2e3e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-6f1d2e3e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:1014,&quot;column&quot;:7}}">
+        <div style={{ padding: '12px 16px', color: 'var(--fg-tertiary)', fontSize: 12 }} data-qoder-id="qel-div-0a09f90b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-0a09f90b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1015,&quot;column&quot;:9}}">
+          <Database size={14} style={{ marginRight: 4, verticalAlign: 'middle' }}  data-qoder-id="qel-database-6b4aaf1a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-database-6b4aaf1a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;database&quot;,&quot;loc&quot;:{&quot;line&quot;:1016,&quot;column&quot;:11}}"/>
           该客户暂无记忆数据
         </div>
       </Section>
@@ -1021,10 +1348,10 @@ function MemoryPanel({ customerId }: { customerId: string }) {
   }
 
   return (
-    <Section title="历史记忆 / AI地基">
+    <Section title="历史记忆 / AI地基" data-qoder-id="qel-section-52c67c89" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-52c67c89&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:1024,&quot;column&quot;:5}}">
       {/* Summary bar */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10, padding: '0 2px' }}>
-        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'var(--accent-bg)', color: 'var(--accent)', fontWeight: 600 }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10, padding: '0 2px' }} data-qoder-id="qel-div-0b09fa9e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-0b09fa9e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1026,&quot;column&quot;:7}}">
+        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'var(--accent-bg)', color: 'var(--accent)', fontWeight: 600 }} data-qoder-id="qel-span-d4560403" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-d4560403&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1027,&quot;column&quot;:9}}">
           共 {total} 条记忆
         </span>
         {Object.entries(typeCounts).slice(0, 5).map(([type, count]) => (
@@ -1033,7 +1360,7 @@ function MemoryPanel({ customerId }: { customerId: string }) {
             background: `${MEMORY_TYPE_COLORS[type] || 'var(--fg-tertiary)'}15`,
             color: MEMORY_TYPE_COLORS[type] || 'var(--fg-tertiary)',
             fontWeight: 500,
-          }}>
+          }} data-qoder-id="qel-span-d3560270" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-d3560270&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1031,&quot;column&quot;:11}}">
             {MEMORY_TYPE_LABELS[type] || type} {count}
           </span>
         ))}
@@ -1045,17 +1372,17 @@ function MemoryPanel({ customerId }: { customerId: string }) {
           padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
           marginBottom: 4, borderLeft: `3px solid ${MEMORY_TYPE_COLORS[m.memoryType] || 'var(--border)'}`,
           fontSize: 12, lineHeight: 1.5,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-            <span style={{ fontSize: 10, fontWeight: 600, color: MEMORY_TYPE_COLORS[m.memoryType] || 'var(--fg-tertiary)', textTransform: 'uppercase' }}>
+        }} data-qoder-id="qel-div-100a027d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-100a027d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1044,&quot;column&quot;:9}}">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }} data-qoder-id="qel-div-0f0a00ea" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-0f0a00ea&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1049,&quot;column&quot;:11}}">
+            <span style={{ fontSize: 10, fontWeight: 600, color: MEMORY_TYPE_COLORS[m.memoryType] || 'var(--fg-tertiary)', textTransform: 'uppercase' }} data-qoder-id="qel-span-e05616e7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-e05616e7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1050,&quot;column&quot;:13}}">
               {MEMORY_TYPE_LABELS[m.memoryType] || m.memoryType}
             </span>
-            {m.importance >= 4 && <span style={{ fontSize: 9, color: '#e74c3c' }}>●高重要</span>}
-            {m.sourceFile && <span style={{ fontSize: 10, color: 'var(--fg-tertiary)', marginLeft: 'auto' }}>{m.sourceFile}</span>}
+            {m.importance >= 4 && <span style={{ fontSize: 9, color: '#e74c3c' }} data-qoder-id="qel-span-df561554" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-df561554&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1053,&quot;column&quot;:35}}">●高重要</span>}
+            {m.sourceFile && <span style={{ fontSize: 10, color: 'var(--fg-tertiary)', marginLeft: 'auto' }} data-qoder-id="qel-span-d253c246" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-d253c246&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1054,&quot;column&quot;:30}}">{m.sourceFile}</span>}
           </div>
-          <div style={{ color: 'var(--fg-primary)', fontWeight: 500 }}>{m.title}</div>
+          <div style={{ color: 'var(--fg-primary)', fontWeight: 500 }} data-qoder-id="qel-div-0507b295" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-0507b295&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1056,&quot;column&quot;:11}}">{m.title}</div>
           {m.content && m.content.length > 120 && (
-            <div style={{ color: 'var(--fg-tertiary)', fontSize: 11, marginTop: 2 }}>
+            <div style={{ color: 'var(--fg-tertiary)', fontSize: 11, marginTop: 2 }} data-qoder-id="qel-div-0207addc" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-0207addc&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1058,&quot;column&quot;:13}}">
               {m.content.slice(0, 120)}...
             </div>
           )}
@@ -1068,44 +1395,44 @@ function MemoryPanel({ customerId }: { customerId: string }) {
           width: '100%', padding: '8px', marginTop: 6, border: '1px solid var(--border)',
           borderRadius: 'var(--radius-sm)', background: 'transparent', color: 'var(--accent)',
           cursor: 'pointer', fontSize: 12, fontWeight: 500,
-        }}>
+        }} data-qoder-id="qel-button-48f1c503" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-48f1c503&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1067,&quot;column&quot;:9}}">
           {showAll ? '收起' : `查看全部 ${total} 条记忆`}
         </button>
       )}
 
       {/* Expanded view with filter */}
       {showAll && (
-        <div style={{ marginTop: 8 }}>
-          <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
+        <div style={{ marginTop: 8 }} data-qoder-id="qel-div-0007aab6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-0007aab6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1078,&quot;column&quot;:9}}">
+          <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }} data-qoder-id="qel-div-0107ac49" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-0107ac49&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1079,&quot;column&quot;:11}}">
             <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{
               fontSize: 11, padding: '3px 6px', borderRadius: 'var(--radius-sm)',
               border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--fg-primary)',
-            }}>
-              <option value="">全部类型</option>
+            }} data-qoder-id="qel-select-f98a612c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-select-f98a612c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;select&quot;,&quot;loc&quot;:{&quot;line&quot;:1080,&quot;column&quot;:13}}">
+              <option value="" data-qoder-id="qel-option-ee7f234d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-ee7f234d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1084,&quot;column&quot;:15}}">全部类型</option>
               {Object.entries(MEMORY_TYPE_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key} data-qoder-id="qel-option-df7f0bb0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-df7f0bb0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1086,&quot;column&quot;:17}}">{label}</option>
               ))}
             </select>
-            <span style={{ fontSize: 11, color: 'var(--fg-tertiary)', alignSelf: 'center' }}>
+            <span style={{ fontSize: 11, color: 'var(--fg-tertiary)', alignSelf: 'center' }} data-qoder-id="qel-span-db53d071" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-db53d071&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1089,&quot;column&quot;:13}}">
               {allTotal} 条
             </span>
           </div>
-          <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+          <div style={{ maxHeight: 300, overflowY: 'auto' }} data-qoder-id="qel-div-7e049f79" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-7e049f79&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1093,&quot;column&quot;:11}}">
             {allMemories.map(m => (
               <div key={m.id} style={{
                 padding: '6px 10px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
                 marginBottom: 3, borderLeft: `3px solid ${MEMORY_TYPE_COLORS[m.memoryType] || 'var(--border)'}`,
                 fontSize: 11, lineHeight: 1.5,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: MEMORY_TYPE_COLORS[m.memoryType] || 'var(--fg-tertiary)' }}>
+              }} data-qoder-id="qel-div-7d049de6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-7d049de6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1095,&quot;column&quot;:15}}">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }} data-qoder-id="qel-div-7c049c53" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-7c049c53&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1100,&quot;column&quot;:17}}">
+                  <span style={{ fontSize: 10, fontWeight: 600, color: MEMORY_TYPE_COLORS[m.memoryType] || 'var(--fg-tertiary)' }} data-qoder-id="qel-span-6950de64" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-6950de64&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1101,&quot;column&quot;:19}}">
                     {MEMORY_TYPE_LABELS[m.memoryType] || m.memoryType}
                   </span>
-                  <span style={{ fontSize: 10, color: 'var(--fg-tertiary)', marginLeft: 'auto' }}>
+                  <span style={{ fontSize: 10, color: 'var(--fg-tertiary)', marginLeft: 'auto' }} data-qoder-id="qel-span-6850dcd1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-6850dcd1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1104,&quot;column&quot;:19}}">
                     {m.sourceKind === 'markdown' ? '📄' : m.sourceKind === 'xlsx' ? '📊' : m.sourceKind === 'database' ? '💾' : ''} {m.sourceFile || ''}
                   </span>
                 </div>
-                <div style={{ color: 'var(--fg-primary)', fontWeight: 500, marginTop: 1 }}>{m.title}</div>
+                <div style={{ color: 'var(--fg-primary)', fontWeight: 500, marginTop: 1 }} data-qoder-id="qel-div-8104a432" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-8104a432&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;MemoryPanel&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1108,&quot;column&quot;:17}}">{m.title}</div>
               </div>
             ))}
           </div>
@@ -1324,13 +1651,13 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
                         handleStageChange(item, e.target.value)
                       }}
                       onClick={e => e.stopPropagation()}
-                    >
+                     data-qoder-id="qel-pipeline-stage-select-c0e46198" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-pipeline-stage-select-c0e46198&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;pipeline-stage-select&quot;,&quot;loc&quot;:{&quot;line&quot;:1319,&quot;column&quot;:21}}">
                       {PIPE_STAGES.map(s => (
-                        <option key={s.num} value={s.num}>{s.name}</option>
+                        <option key={s.num} value={s.num} data-qoder-id="qel-option-903b85f5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-903b85f5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1329,&quot;column&quot;:25}}">{s.name}</option>
                       ))}
-                      <option disabled>─────────</option>
-                      <option value="win">Win - 赢得商机</option>
-                      <option value="lost">Lost - 丢失商机</option>
+                      <option disabled data-qoder-id="qel-option-8d3b813c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-8d3b813c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1331,&quot;column&quot;:23}}">─────────</option>
+                      <option value="win" data-qoder-id="qel-option-8e3b82cf" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-8e3b82cf&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1332,&quot;column&quot;:23}}">Win - 赢得商机</option>
+                      <option value="lost" data-qoder-id="qel-option-8b3b7e16" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-8b3b7e16&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1333,&quot;column&quot;:23}}">Lost - 丢失商机</option>
                     </select>
                   </div>
                 ))}
@@ -1698,19 +2025,19 @@ function CoachPage({ customers }: { customers: Customer[] }) {
             <Target size={16} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-target-8a4a6024" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-target-8a4a6024&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;target&quot;,&quot;loc&quot;:{&quot;line&quot;:682,&quot;column&quot;:13}}"/>
             <span style={{ fontSize: 15, fontWeight: 600 }} data-qoder-id="qel-span-a090956f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-a090956f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:683,&quot;column&quot;:13}}">投资评分矩阵</span>
           </div>
-          <div className="invest-matrix">
-            <div className="invest-matrix-header">
-              <div className="invest-col-name">项目</div>
-              <div className="invest-col-cust">客户</div>
-              {INVESTMENT_DIMS.map(d => <div key={d} className="invest-col-dim">{d}</div>)}
+          <div className="invest-matrix" data-qoder-id="qel-invest-matrix-282dd965" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-matrix-282dd965&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-matrix&quot;,&quot;loc&quot;:{&quot;line&quot;:1701,&quot;column&quot;:11}}">
+            <div className="invest-matrix-header" data-qoder-id="qel-invest-matrix-header-b703b536" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-matrix-header-b703b536&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-matrix-header&quot;,&quot;loc&quot;:{&quot;line&quot;:1702,&quot;column&quot;:13}}">
+              <div className="invest-col-name" data-qoder-id="qel-invest-col-name-638a501c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-name-638a501c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-name&quot;,&quot;loc&quot;:{&quot;line&quot;:1703,&quot;column&quot;:15}}">项目</div>
+              <div className="invest-col-cust" data-qoder-id="qel-invest-col-cust-22f4132d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-cust-22f4132d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-cust&quot;,&quot;loc&quot;:{&quot;line&quot;:1704,&quot;column&quot;:15}}">客户</div>
+              {INVESTMENT_DIMS.map(d => <div key={d} className="invest-col-dim" data-qoder-id="qel-invest-col-dim-09879b7f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-dim-09879b7f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-dim&quot;,&quot;loc&quot;:{&quot;line&quot;:1705,&quot;column&quot;:41}}">{d}</div>)}
             </div>
             {investItems.map(item => {
               const itemScores = scores[item.key] || {}
               const totalScore = Object.values(itemScores).reduce((s, v) => s + v, 0)
               const scoredDims = Object.keys(itemScores).length
               return (
-              <div key={item.key} className="invest-matrix-row">
-                <div className="invest-col-name" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div key={item.key} className="invest-matrix-row" data-qoder-id="qel-invest-matrix-row-77032d6e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-matrix-row-77032d6e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-matrix-row&quot;,&quot;loc&quot;:{&quot;line&quot;:1712,&quot;column&quot;:15}}">
+                <div className="invest-col-name" style={{ display: 'flex', alignItems: 'center', gap: 4 }} data-qoder-id="qel-invest-col-name-dd873e93" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-name-dd873e93&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-name&quot;,&quot;loc&quot;:{&quot;line&quot;:1713,&quot;column&quot;:17}}">
                   {editingInvestKey === item.key ? (
                     <input
                       className="search-input"
@@ -1720,32 +2047,32 @@ function CoachPage({ customers }: { customers: Customer[] }) {
                       onBlur={() => handleSaveInvestName(item.key)}
                       onKeyDown={e => { if (e.key === 'Enter') handleSaveInvestName(item.key); if (e.key === 'Escape') setEditingInvestKey(null) }}
                       autoFocus
-                    />
+                     data-qoder-id="qel-search-input-19b1d542" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-19b1d542&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1715,&quot;column&quot;:21}}"/>
                   ) : (
                     <span
                       style={{ cursor: 'pointer', fontWeight: 500, fontSize: 13 }}
                       onDoubleClick={() => { setEditingInvestKey(item.key); setEditingInvestName(item.name) }}
-                    >
-                      {item.name}{scoredDims > 0 && <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--accent)' }}>({totalScore})</span>}
+                     data-qoder-id="qel-span-83bb2d20" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-83bb2d20&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1725,&quot;column&quot;:21}}">
+                      {item.name}{scoredDims > 0 && <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--accent)' }} data-qoder-id="qel-span-8abb3825" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-8abb3825&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1729,&quot;column&quot;:53}}">({totalScore})</span>}
                     </span>
                   )}
-                  <button onClick={() => handleDeleteItem(item.key)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, flexShrink: 0 }} title="删除项目">
-                    <Trash2 size={11} />
+                  <button onClick={() => handleDeleteItem(item.key)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, flexShrink: 0 }} title="删除项目" data-qoder-id="qel-button-40ed2aa2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-40ed2aa2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1732,&quot;column&quot;:19}}">
+                    <Trash2 size={11}  data-qoder-id="qel-trash2-4a4952ff" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-trash2-4a4952ff&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;trash2&quot;,&quot;loc&quot;:{&quot;line&quot;:1733,&quot;column&quot;:21}}"/>
                   </button>
                 </div>
-                <div className="invest-col-cust">
+                <div className="invest-col-cust" data-qoder-id="qel-invest-col-cust-93f0f379" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-cust-93f0f379&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-cust&quot;,&quot;loc&quot;:{&quot;line&quot;:1736,&quot;column&quot;:17}}">
                   <select
                     className="search-input"
                     style={{ padding: '3px 6px', fontSize: 12, width: '100%' }}
                     value={item.customerId || ''}
                     onChange={e => handleUpdateInvestCust(item.key, e.target.value)}
-                  >
-                    <option value="">未关联</option>
-                    {customers.filter(c => !c.isGroup).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                   data-qoder-id="qel-search-input-8282aa20" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-8282aa20&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1737,&quot;column&quot;:19}}">
+                    <option value="" data-qoder-id="qel-option-8d04ade4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-8d04ade4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1743,&quot;column&quot;:21}}">未关联</option>
+                    {customers.filter(c => !c.isGroup).map(c => <option key={c.id} value={c.id} data-qoder-id="qel-option-6f9b7ba9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-6f9b7ba9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1744,&quot;column&quot;:65}}">{c.name}</option>)}
                   </select>
                 </div>
                 {INVESTMENT_DIMS.map((_, di) => (
-                  <div key={di} className="invest-col-dim" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 3 }}>
+                  <div key={di} className="invest-col-dim" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 3 }} data-qoder-id="qel-invest-col-dim-7e3279a4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-dim-7e3279a4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-dim&quot;,&quot;loc&quot;:{&quot;line&quot;:1748,&quot;column&quot;:19}}">
                     {[1, 2, 3, 4, 5].map(v => {
                       const selected = itemScores[di] === v
                       const filled = itemScores[di] != null && v <= itemScores[di]!
@@ -1762,7 +2089,7 @@ function CoachPage({ customers }: { customers: Customer[] }) {
                           color: selected ? '#fff' : filled ? 'var(--accent)' : 'var(--fg-muted)',
                           transition: 'all 0.15s ease',
                         }}
-                      >
+                       data-qoder-id="qel-div-dbf34085" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-dbf34085&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1753,&quot;column&quot;:23}}">
                         {v}
                       </div>
                       )

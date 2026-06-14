@@ -17,6 +17,39 @@ router.get('/stats/summary', (req, res) => {
   }
 });
 
+// ─── GET /api/memories/unlinked ─────────────────────────────────
+// Get unlinked memories for review (V26.07.01)
+router.get('/unlinked', (req, res) => {
+  try {
+    const { keyword, memoryType, sourceFile, sourceKind, reviewStatus, limit = '50', offset = '0' } = req.query;
+    const result = memoryService.getUnlinkedMemories({
+      keyword, memoryType, sourceFile, sourceKind, reviewStatus,
+      limit: parseInt(limit, 10),
+      offset: parseInt(offset, 10),
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('[memories] GET /unlinked error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/memories/batch ────────────────────────────────────
+// Batch operation on memories (V26.07.01)
+router.put('/batch', (req, res) => {
+  try {
+    const { ids, action, customerId, reason } = req.body;
+    if (!ids || !action) {
+      return res.status(400).json({ error: 'ids and action are required' });
+    }
+    const results = memoryService.batchOperation(ids, action, customerId, reason);
+    res.json({ data: results });
+  } catch (err) {
+    console.error('[memories] PUT /batch error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── GET /api/memories ─────────────────────────────────────────
 // Query memories with filters
 router.get('/', (req, res) => {
@@ -59,6 +92,57 @@ router.get('/:id', (req, res) => {
     res.json({ data: memory });
   } catch (err) {
     console.error('[memories] GET :id error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/memories/:id/link-customer ────────────────────────
+// Link memory to a customer (V26.07.01)
+router.put('/:id/link-customer', (req, res) => {
+  try {
+    const { customerId, reason } = req.body;
+    if (!customerId) {
+      return res.status(400).json({ error: 'customerId is required' });
+    }
+    const memory = memoryService.linkCustomer(parseInt(req.params.id, 10), customerId, reason);
+    if (!memory) {
+      return res.status(404).json({ error: 'Memory not found' });
+    }
+    res.json({ data: memory });
+  } catch (err) {
+    console.error('[memories] link-customer error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/memories/:id/mark-unlinked-reviewed ───────────────
+// Mark as reviewed but no customer link (V26.07.01)
+router.put('/:id/mark-unlinked-reviewed', (req, res) => {
+  try {
+    const { reason } = req.body;
+    const memory = memoryService.markUnlinkedReviewed(parseInt(req.params.id, 10), reason);
+    if (!memory) {
+      return res.status(404).json({ error: 'Memory not found' });
+    }
+    res.json({ data: memory });
+  } catch (err) {
+    console.error('[memories] mark-unlinked-reviewed error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/memories/:id/archive ──────────────────────────────
+// Soft archive with review reason (V26.07.01)
+router.put('/:id/archive', (req, res) => {
+  try {
+    const { reason } = req.body;
+    const result = memoryService.archiveMemoryWithReason(parseInt(req.params.id, 10), reason);
+    if (!result) {
+      return res.status(404).json({ error: 'Memory not found' });
+    }
+    res.json(result);
+  } catch (err) {
+    console.error('[memories] archive error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
