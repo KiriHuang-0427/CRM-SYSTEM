@@ -1,6 +1,6 @@
 # CRM 系统架构文档
 
-> 版本: V26.06.04 | 更新日期: 2026-06-14
+> 版本: V26.06.05 | 更新日期: 2026-06-14
 > 西门子OEM南京区域 · 个人销售CRM系统
 
 ---
@@ -151,12 +151,14 @@ graph LR
 |------|------|------|----------|------|
 | GET | `/api/pipeline` | Pipeline汇总统计 | `?includeLost=true` | `{ data: StageSummary[] }` |
 | GET | `/api/pipeline/lost` | 已丢失商机列表 | 无 | `{ data: PipelineItem[] }` |
+| GET | `/api/pipeline/won` | 已赢得商机列表 | 无 | `{ data: PipelineItem[] }` |
 | GET | `/api/pipeline/:customerId` | 客户商机列表 | URL参数 customerId | `{ data: PipelineItem[] }` |
 | POST | `/api/pipeline` | 新增商机 | Body: `{ customerId, name, stage?, amount?, pipeStage?, expectedCloseDate?, statusDescription? }` | `{ data: PipelineItem }` |
 | PUT | `/api/pipeline/:id` | 更新商机字段 | Body: `{ name?, stage?, amount?, pipeStage?, note?, expectedCloseDate?, statusDescription?, lostReason? }` | `{ data: PipelineItem }` |
 | PUT | `/api/pipeline/:id/stage` | 切换阶段 | Body: `{ stage: number }` | `{ data: PipelineItem }` |
 | PUT | `/api/pipeline/:id/lost` | 标记丢失 | Body: `{ reason? }` | `{ data: PipelineItem }` |
-| PUT | `/api/pipeline/:id/restore` | 恢复丢失商机 | 无 | `{ data: PipelineItem }` |
+| PUT | `/api/pipeline/:id/win` | 标记赢得 | 无 | `{ data: PipelineItem }` |
+| PUT | `/api/pipeline/:id/restore` | 恢复丢失/赢得商机 | 无 | `{ data: PipelineItem }` |
 | DELETE | `/api/pipeline/:id` | 永久删除商机 | URL参数 id | `{ success: true }` |
 
 ### 4.3 待办事项 `/api/todos`
@@ -172,7 +174,7 @@ graph LR
 
 | 方法 | 路径 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| GET | `/api/notes` | 获取笔记列表 | `?customerId=` | `{ data: Note[] }` |
+| GET | `/api/notes` | 获取笔记列表(含customerName) | `?customerId=` | `{ data: Note[] }` |
 | POST | `/api/notes` | 新增笔记 | Body: `{ customerId, content }` | `{ data: Note }` |
 | DELETE | `/api/notes/:id` | 删除笔记 | URL参数 id | `{ success: true }` |
 
@@ -180,8 +182,9 @@ graph LR
 
 | 方法 | 路径 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
-| GET | `/api/invest-items` | 获取评分项列表 | 无 | `{ data: InvestItem[] }` |
-| POST | `/api/invest-items` | 新增评分项 | Body: `{ name, key? }` | `{ data: InvestItem }` |
+| GET | `/api/invest-items` | 获取评分项列表(含customerName) | 无 | `{ data: InvestItem[] }` |
+| POST | `/api/invest-items` | 新增评分项 | Body: `{ name, key?, customerId? }` | `{ data: InvestItem }` |
+| PUT | `/api/invest-items/:key` | 更新评分项 | Body: `{ name?, customerId? }` | `{ data: InvestItem }` |
 | DELETE | `/api/invest-items/:key` | 删除评分项 | URL参数 key | `{ success: true }` |
 
 ### 4.6 周报管理 `/api/weekly`
@@ -251,6 +254,8 @@ graph LR
 | lost | INTEGER | 是否丢失(0/1) |
 | lost_reason | TEXT | 丢失原因 |
 | lost_at | TEXT | 丢失时间 |
+| won | INTEGER | 是否赢得(0/1) |
+| won_at | TEXT | 赢得时间 |
 | expected_close_date | TEXT | 预计成交日期 |
 | status_description | TEXT | 状态描述 |
 | created_at | TEXT | 创建时间 |
@@ -285,6 +290,7 @@ graph LR
 | id | INTEGER PRIMARY KEY | 自增ID |
 | key | TEXT UNIQUE NOT NULL | 评分项唯一键 |
 | name | TEXT NOT NULL | 评分项名称 |
+| customer_id | TEXT FK | 关联客户(可选) |
 | created_at | TEXT | 创建时间 |
 
 ### weekly_reports（周报表）

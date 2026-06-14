@@ -158,7 +158,7 @@ app.get('/api/health', (req, res) => {
   const pipeCount = db.prepare('SELECT COUNT(*) as cnt FROM pipeline_stages').get();
   res.json({
     status: 'ok',
-    version: 'V26.06.04',
+    version: 'V26.06.05',
     customers: custCount.cnt,
     todos: todoCount.cnt,
     pipeline: pipeCount.cnt,
@@ -181,7 +181,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[CRM API] Server running on http://0.0.0.0:${PORT}`);
-  console.log(`[CRM API] Version: V26.06.04`);
+  console.log(`[CRM API] Version: V26.06.05`);
   console.log(`[CRM API] Database: ${path.join(__dirname, '..', 'data', 'crm.db')}`);
   // Auto-create current week report if missing
   const { ensureCurrentWeek } = require('./routes/weekly');
