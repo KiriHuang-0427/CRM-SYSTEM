@@ -1,0 +1,389 @@
+# CRM 系统架构文档
+
+> 版本: V26.06.04 | 更新日期: 2026-06-14
+> 西门子OEM南京区域 · 个人销售CRM系统
+
+---
+
+## 1. 系统架构总览
+
+```mermaid
+graph TB
+    subgraph 客户端
+        A[手机/电脑浏览器] --> B[React SPA 前端]
+    end
+    
+    subgraph 阿里云服务器 39.96.40.142
+        C[Nginx 反向代理<br/>端口 80]
+        D[Node.js Express API<br/>端口 3001]
+        E[(SQLite 数据库<br/>crm.db)]
+        F[静态文件<br/>dist/]
+    end
+    
+    B -->|HTTP 请求| C
+    C -->|/api/*| D
+    C -->|其他路径| F
+    D -->|读写数据| E
+    
+    style A fill:#e8f8f5,stroke:#009999,stroke-width:2px
+    style B fill:#d5f5e3,stroke:#27ae60
+    style C fill:#fdebd0,stroke:#f39c12,stroke-width:2px
+    style D fill:#d6eaf8,stroke:#2980b9,stroke-width:2px
+    style E fill:#fadbd8,stroke:#e74c3c,stroke-width:2px
+    style F fill:#eafaf1,stroke:#27ae60
+```
+
+**架构说明：**
+- **前端**：React 18 + TypeScript + TailwindCSS v4 构建的SPA应用
+- **Nginx**：负责静态文件服务和API请求的反向代理转发
+- **Express API**：Node.js后端，提供RESTful接口
+- **SQLite**：轻量级嵌入式数据库，better-sqlite3同步驱动
+
+---
+
+## 2. 数据流图
+
+```mermaid
+sequenceDiagram
+    participant U as 用户（手机/电脑）
+    participant FE as React 前端
+    participant NG as Nginx
+    participant API as Express API
+    participant DB as SQLite
+
+    U->>FE: 打开CRM页面
+    FE->>NG: GET /api/customers
+    NG->>API: 转发请求
+    API->>DB: SELECT * FROM customers
+    DB-->>API: 客户数据
+    API-->>NG: JSON响应
+    NG-->>FE: 返回数据
+    FE-->>U: 渲染客户列表
+
+    U->>FE: 修改Pipeline阶段
+    FE->>NG: PUT /api/pipeline/:id/stage
+    NG->>API: 转发请求
+    API->>DB: UPDATE pipeline_stages
+    DB-->>API: 更新成功
+    API-->>NG: JSON响应
+    NG-->>FE: 返回更新结果
+    FE-->>U: 页面实时更新
+```
+
+---
+
+## 3. 模块关系图
+
+```mermaid
+graph LR
+    subgraph 前端页面模块
+        P1[仪表盘]
+        P2[客户管理]
+        P3[商机管道]
+        P4[竞品分析]
+        P5[精力分配]
+        P6[AI教练]
+        P7[周报]
+    end
+    
+    subgraph API层
+        A1[/api/customers]
+        A2[/api/pipeline]
+        A3[/api/todos]
+        A4[/api/notes]
+        A5[/api/invest-items]
+        A6[/api/weekly]
+    end
+    
+    subgraph 数据库表
+        T1[(customers)]
+        T2[(pipeline_stages)]
+        T3[(todos)]
+        T4[(notes)]
+        T5[(contacts)]
+        T6[(invest_items)]
+        T7[(weekly_reports)]
+        T8[(weekly_focuses)]
+        T9[(weekly_actions)]
+        T10[(weekly_daily_notes)]
+    end
+    
+    P1 --> A1
+    P1 --> A3
+    P2 --> A1
+    P3 --> A2
+    P4 --> A1
+    P6 --> A5
+    P7 --> A6
+    
+    A1 --> T1
+    A1 --> T5
+    A2 --> T2
+    A3 --> T3
+    A4 --> T4
+    A5 --> T6
+    A6 --> T7
+    A6 --> T8
+    A6 --> T9
+    A6 --> T10
+```
+
+---
+
+## 4. API接口清单
+
+### 4.1 客户管理 `/api/customers`
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/customers` | 获取客户列表 | `?search=&sort=priority` | `{ data: Customer[] }` |
+| GET | `/api/customers/:id` | 获取客户详情 | URL参数 id | `{ data: Customer }` |
+| POST | `/api/customers` | 新增客户 | Body: CustomerForm | `{ data: Customer }` |
+| PUT | `/api/customers/:id` | 修改客户 | Body: CustomerForm | `{ data: Customer }` |
+| DELETE | `/api/customers/:id` | 删除客户 | URL参数 id | `{ success: true }` |
+| POST | `/api/customers/:id/contacts` | 新增联系人 | Body: `{ name, role?, phone?, email?, stars?, tag? }` | `{ data: KeyPerson }` |
+| PUT | `/api/customers/:id/contacts/:contactId` | 修改联系人 | Body: `{ name?, role?, phone?, email?, stars?, tag? }` | `{ data: KeyPerson }` |
+| DELETE | `/api/customers/:id/contacts/:contactId` | 删除联系人 | URL参数 contactId | `{ success: true }` |
+
+### 4.2 商机管道 `/api/pipeline`
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/pipeline` | Pipeline汇总统计 | `?includeLost=true` | `{ data: StageSummary[] }` |
+| GET | `/api/pipeline/lost` | 已丢失商机列表 | 无 | `{ data: PipelineItem[] }` |
+| GET | `/api/pipeline/:customerId` | 客户商机列表 | URL参数 customerId | `{ data: PipelineItem[] }` |
+| POST | `/api/pipeline` | 新增商机 | Body: `{ customerId, name, stage?, amount?, pipeStage?, expectedCloseDate?, statusDescription? }` | `{ data: PipelineItem }` |
+| PUT | `/api/pipeline/:id` | 更新商机字段 | Body: `{ name?, stage?, amount?, pipeStage?, note?, expectedCloseDate?, statusDescription?, lostReason? }` | `{ data: PipelineItem }` |
+| PUT | `/api/pipeline/:id/stage` | 切换阶段 | Body: `{ stage: number }` | `{ data: PipelineItem }` |
+| PUT | `/api/pipeline/:id/lost` | 标记丢失 | Body: `{ reason? }` | `{ data: PipelineItem }` |
+| PUT | `/api/pipeline/:id/restore` | 恢复丢失商机 | 无 | `{ data: PipelineItem }` |
+| DELETE | `/api/pipeline/:id` | 永久删除商机 | URL参数 id | `{ success: true }` |
+
+### 4.3 待办事项 `/api/todos`
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/todos` | 获取待办列表 | `?status=pending\|completed\|all` | `{ data: Todo[] }` |
+| POST | `/api/todos` | 新增待办 | Body: `{ text, customerId?, deadline? }` | `{ data: Todo }` |
+| PUT | `/api/todos/:id` | 更新待办 | Body: `{ completed?, text?, deadline?, customerId? }` | `{ data: Todo }` |
+| DELETE | `/api/todos/:id` | 删除待办 | URL参数 id | `{ success: true }` |
+
+### 4.4 速记笔记 `/api/notes`
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/notes` | 获取笔记列表 | `?customerId=` | `{ data: Note[] }` |
+| POST | `/api/notes` | 新增笔记 | Body: `{ customerId, content }` | `{ data: Note }` |
+| DELETE | `/api/notes/:id` | 删除笔记 | URL参数 id | `{ success: true }` |
+
+### 4.5 投资评分项 `/api/invest-items`
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/invest-items` | 获取评分项列表 | 无 | `{ data: InvestItem[] }` |
+| POST | `/api/invest-items` | 新增评分项 | Body: `{ name, key? }` | `{ data: InvestItem }` |
+| DELETE | `/api/invest-items/:key` | 删除评分项 | URL参数 key | `{ success: true }` |
+
+### 4.6 周报管理 `/api/weekly`
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/weekly` | 获取所有周报 | 无 | `{ data: WeeklyReport[] }` |
+| POST | `/api/weekly` | 新建周报 | Body: `{ weekId, label? }` | `{ data: WeeklyReport }` |
+| PUT | `/api/weekly/:weekId/focuses` | 更新重点 | Body: `{ focuses: string[] }` | `{ data: WeeklyFocus[] }` |
+| PUT | `/api/weekly/:weekId/daily-notes` | 更新每日记录 | Body: `{ dayKey, content }` | `{ data: WeeklyDailyNote }` |
+| POST | `/api/weekly/:weekId/actions` | 新增行动项 | Body: `{ text }` | `{ data: WeeklyAction }` |
+| PUT | `/api/weekly/:weekId/actions/:id` | 更新行动项 | Body: `{ completed?, text? }` | `{ data: WeeklyAction }` |
+| DELETE | `/api/weekly/:weekId/actions/:id` | 删除行动项 | URL参数 id | `{ success: true }` |
+| PUT | `/api/weekly/:weekId/label` | 更新周报标签 | Body: `{ label }` | `{ data: WeeklyReport }` |
+
+---
+
+## 5. 数据库表结构
+
+### customers（客户主表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | TEXT PRIMARY KEY | 客户唯一标识 |
+| name | TEXT NOT NULL | 客户全称 |
+| color | TEXT | 优先级: red/orange/green/gray |
+| industry | TEXT | 行业分类 |
+| revenue | TEXT | 营收规模 |
+| next_year | TEXT | 明年预期 |
+| comp | TEXT | 竞争对手 |
+| last_visit | TEXT | 上次拜访日期 YYYY-MM-DD |
+| sales_py | REAL | 去年全年销售额 |
+| sales_py_ytd | REAL | 去年同期YTD |
+| sales_cy_ytd | REAL | 今年YTD |
+| sales_cy_p8 | REAL | P8预测 |
+| ai_coach | TEXT | AI教练建议 |
+| risk | TEXT | 风险提醒 |
+| talk_strategy | TEXT | 话术策略 |
+| is_group | INTEGER | 是否分组(0/1) |
+| created_at | TEXT | 创建时间 |
+| updated_at | TEXT | 更新时间 |
+
+### contacts（联系人表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| customer_id | TEXT FK | 关联客户 |
+| name | TEXT | 联系人姓名 |
+| role | TEXT | 职位/角色 |
+| tag | TEXT | 标签 |
+| stars | INTEGER | 关系评分(1-5) |
+| phone | TEXT | 电话号码 |
+| email | TEXT | 邮箱地址 |
+
+### pipeline_stages（商机表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| customer_id | TEXT FK | 关联客户 |
+| name | TEXT | 商机名称 |
+| stage | TEXT | 阶段描述 |
+| amount | TEXT | 预估金额 |
+| pipe_stage | INTEGER | 管道阶段(1-6) |
+| note | TEXT | 备注 |
+| lost | INTEGER | 是否丢失(0/1) |
+| lost_reason | TEXT | 丢失原因 |
+| lost_at | TEXT | 丢失时间 |
+| expected_close_date | TEXT | 预计成交日期 |
+| status_description | TEXT | 状态描述 |
+| created_at | TEXT | 创建时间 |
+| updated_at | TEXT | 更新时间 |
+
+### todos（待办事项表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| text | TEXT NOT NULL | 待办内容 |
+| customer_id | TEXT FK | 关联客户(可选) |
+| deadline | TEXT | 截止日期 |
+| completed | INTEGER | 完成状态(0/1) |
+| completed_at | TEXT | 完成时间 |
+| sort_order | INTEGER | 排序权重 |
+| created_at | TEXT | 创建时间 |
+
+### notes（笔记表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| customer_id | TEXT FK | 关联客户 |
+| content | TEXT | 笔记内容 |
+| created_at | TEXT | 创建时间 |
+
+### invest_items（投资评分项表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| key | TEXT UNIQUE NOT NULL | 评分项唯一键 |
+| name | TEXT NOT NULL | 评分项名称 |
+| created_at | TEXT | 创建时间 |
+
+### weekly_reports（周报表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| week_id | TEXT UNIQUE NOT NULL | ISO周标识(如2026-W24) |
+| label | TEXT NOT NULL | 显示标签 |
+| is_current | INTEGER | 是否当前周(0/1) |
+| created_at | TEXT | 创建时间 |
+
+### weekly_focuses（周报重点表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| week_id | TEXT FK | 关联周报 |
+| text | TEXT NOT NULL | 重点内容 |
+| sort_order | INTEGER | 排序权重 |
+
+### weekly_actions（周报行动项表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| week_id | TEXT FK | 关联周报 |
+| text | TEXT NOT NULL | 行动项内容 |
+| completed | INTEGER | 完成状态(0/1) |
+| sort_order | INTEGER | 排序权重 |
+
+### weekly_daily_notes（每日记录表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| week_id | TEXT FK | 关联周报 |
+| day_key | TEXT NOT NULL | 星期标识(mon/tue/wed/thu/fri) |
+| content | TEXT | 记录内容 |
+
+---
+
+## 6. 部署架构
+
+```mermaid
+graph TB
+    A[开发者电脑] -->|deploy_server.py<br/>paramiko SSH| B[阿里云服务器]
+    
+    subgraph 服务器 Ubuntu 24.04
+        C[Nginx :80]
+        D[Node.js :3001]
+        E[(crm.db)]
+        F[/opt/crm/dist/]
+        G[systemd crm-server]
+    end
+    
+    C -->|/api/*| D
+    C -->|/*| F
+    D --> E
+    G --> D
+    
+    H[手机浏览器] -->|http://39.96.40.142| C
+    I[电脑浏览器] -->|http://39.96.40.142| C
+```
+
+**部署流程：**
+1. `deploy_server.py` 通过SSH连接服务器
+2. 上传前端构建产物到 `/opt/crm/dist/`
+3. 上传 `server/` 目录到 `/opt/crm/server/`
+4. 执行 `npm install --production` 安装后端依赖
+5. `npm rebuild better-sqlite3` 编译Linux native模块
+6. 通过systemd重启 `crm-server` 服务
+7. Nginx自动加载新静态文件
+
+---
+
+## 7. 版本命名规范
+
+格式: `V{年}.{月}.{序号}`
+
+- `V26.06.01` — 2026年6月第1个版本
+- `V26.06.02` — 2026年6月第2个版本
+- `V26.07.01` — 2026年7月第1个版本
+
+---
+
+## 8. 技术栈清单
+
+| 层级 | 技术 | 版本 |
+|------|------|------|
+| 前端框架 | React | 18+ |
+| 构建工具 | Vite | 8+ |
+| 类型系统 | TypeScript | 6+ |
+| 样式方案 | TailwindCSS v4 | 4.3+ |
+| 动画库 | Framer Motion | 12+ |
+| 图表库 | Recharts | 3.8+ |
+| UI组件 | shadcn/ui Button | - |
+| 后端框架 | Express | 4.x |
+| 数据库驱动 | better-sqlite3 | 11+ |
+| 进程管理 | systemd | - |
+| Web服务器 | Nginx | 1.18+ |
+| 部署工具 | Python paramiko | - |

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM V7 架构可视化 · V26.06.01</title>
+<style>
+  :root {
+    --pri-teal: #009999;
+    --pri-navy: #1A2744;
+    --bg: #f8fafa;
+    --fg: #1a1a2e;
+    --fg2: #555;
+    --card-bg: #fff;
+    --border: #e0e6e6;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    padding: 24px;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 32px 20px;
+    background: linear-gradient(135deg, var(--pri-navy) 0%, #2a3f5f 100%);
+    color: white;
+    border-radius: var(--radius);
+  }
+  .header h1 { font-size: 28px; margin-bottom: 8px; }
+  .header p { color: rgba(255,255,255,0.7); font-size: 14px; }
+  .header .version {
+    display: inline-block;
+    background: var(--pri-teal);
+    color: white;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 12px;
+  }
+  .section {
+    margin-bottom: 40px;
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--pri-navy);
+    margin-bottom: 16px;
+    padding-left: 12px;
+    border-left: 4px solid var(--pri-teal);
+  }
+  .diagram-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .diagram-card .label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fg2);
+    margin-bottom: 12px;
+  }
+  .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+  .api-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .api-table th {
+    background: var(--pri-navy);
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .api-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .api-table tr:hover td {
+    background: #f0fafa;
+  }
+  .method {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+  }
+  .method-get { background: #27ae60; }
+  .method-post { background: #2980b9; }
+  .method-put { background: #f39c12; }
+  .method-delete { background: #e74c3c; }
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .tech-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .tech-item .name {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--pri-navy);
+  }
+  .tech-item .role {
+    font-size: 12px;
+    color: var(--fg2);
+    margin-top: 4px;
+  }
+  .footer {
+    text-align: center;
+    color: var(--fg2);
+    font-size: 12px;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .header h1 { font-size: 22px; }
+    .tech-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>CRM V7 系统架构</h1>
+  <p>西门子OEM南京区域 · 个人销售CRM系统 · 架构可视化视图</p>
+  <span class="version">V26.06.01 · 2026-06-13</span>
+</div>
+
+<!-- 系统架构总览 -->
+<div class="section">
+  <div class="section-title">系统架构总览</div>
+  <div class="diagram-card">
+    <div class="label">前端 → Nginx → Express API → SQLite 全链路</div>
+    <div class="mermaid">
+graph TB
+    subgraph 客户端
+        A[📱 手机浏览器] --> B[💻 电脑浏览器]
+        B --> C[React SPA]
+    end
+    subgraph 阿里云服务器
+        D[Nginx :80]
+        E[Express API :3001]
+        F[(SQLite crm.db)]
+        G[静态文件 dist/]
+    end
+    C -->|HTTP| D
+    D -->|/api/*| E
+    D -->|/*| G
+    E --> F
+    </div>
+  </div>
+</div>
+
+<!-- 数据流 -->
+<div class="section">
+  <div class="section-title">数据流交互图</div>
+  <div class="diagram-card">
+    <div class="label">用户操作 → API请求 → 数据库 → 响应渲染</div>
+    <div class="mermaid">
+sequenceDiagram
+    participant U as 用户
+    participant FE as React前端
+    participant NG as Nginx
+    participant API as Express
+    participant DB as SQLite
+    U->>FE: 打开CRM
+    FE->>NG: GET /api/customers
+    NG->>API: 转发
+    API->>DB: SELECT
+    DB-->>API: 数据
+    API-->>FE: JSON
+    FE-->>U: 渲染列表
+    U->>FE: 修改Pipeline
+    FE->>NG: PUT /api/pipeline
+    NG->>API: 转发
+    API->>DB: UPDATE
+    DB-->>API: OK
+    API-->>FE: JSON
+    FE-->>U: 更新视图
+    </div>
+  </div>
+</div>
+
+<!-- 模块关系 -->
+<div class="section">
+  <div class="section-title">页面模块与API关系</div>
+  <div class="diagram-card">
+    <div class="label">7个页面模块如何与后端交互</div>
+    <div class="mermaid">
+graph LR
+    subgraph 页面模块
+        P1[仪表盘]
+        P2[客户管理]
+        P3[商机管道]
+        P4[竞品分析]
+        P5[精力分配]
+        P6[AI教练]
+        P7[周报]
+    end
+    subgraph API接口
+        A1[/api/customers]
+        A2[/api/pipeline]
+        A3[/api/todos]
+        A4[/api/notes]
+    end
+    subgraph 数据库表
+        T1[(customers)]
+        T2[(pipeline)]
+        T3[(todos)]
+        T4[(notes)]
+    end
+    P1 --> A1
+    P1 --> A3
+    P2 --> A1
+    P3 --> A2
+    P4 --> A1
+    P7 --> A4
+    A1 --> T1
+    A2 --> T2
+    A3 --> T3
+    A4 --> T4
+    </div>
+  </div>
+</div>
+
+<!-- API 接口表 -->
+<div class="section">
+  <div class="section-title">API 接口清单</div>
+  <div class="diagram-card" style="padding: 0; overflow: auto;">
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>方法</th>
+          <th>路径</th>
+          <th>说明</th>
+          <th>请求参数</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td>/api/customers</td>
+          <td>获取客户列表</td>
+          <td>?search=&sort=priority</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td>/api/customers/:id</td>
+          <td>获取客户详情</td>
+          <td>URL参数 id</td>
+        </tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td>/api/customers</td>
+          <td>新增客户</td>
+          <td>Body: CustomerForm</td>
+        </tr>
+        <tr>
+          <td><span class="method method-put">PUT</span></td>
+          <td>/api/customers/:id</td>
+          <td>修改客户</td>
+          <td>Body: CustomerForm</td>
+        </tr>
+        <tr>
+          <td><span class="method method-delete">DELETE</span></td>
+          <td>/api/customers/:id</td>
+          <td>删除客户</td>
+          <td>URL参数 id</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td>/api/pipeline</td>
+          <td>Pipeline汇总统计</td>
+          <td>无</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td>/api/pipeline/:customerId</td>
+          <td>客户商机列表</td>
+          <td>URL参数 customerId</td>
+        </tr>
+        <tr>
+          <td><span class="method method-put">PUT</span></td>
+          <td>/api/pipeline/:id/stage</td>
+          <td>切换Pipeline阶段</td>
+          <td>Body: { stage: number }</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td>/api/todos</td>
+          <td>获取待办列表</td>
+          <td>?status=pending</td>
+        </tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td>/api/todos</td>
+          <td>新增待办</td>
+          <td>Body: { text, customerId?, deadline? }</td>
+        </tr>
+        <tr>
+          <td><span class="method method-put">PUT</span></td>
+          <td>/api/todos/:id</td>
+          <td>更新待办状态</td>
+          <td>Body: { completed: boolean }</td>
+        </tr>
+        <tr>
+          <td><span class="method method-delete">DELETE</span></td>
+          <td>/api/todos/:id</td>
+          <td>删除待办</td>
+          <td>URL参数 id</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td>/api/notes</td>
+          <td>获取笔记列表</td>
+          <td>?customerId=</td>
+        </tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td>/api/notes</td>
+          <td>新增笔记</td>
+          <td>Body: { customerId, content }</td>
+        </tr>
+        <tr>
+          <td><span class="method method-delete">DELETE</span></td>
+          <td>/api/notes/:id</td>
+          <td>删除笔记</td>
+          <td>URL参数 id</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 技术栈 -->
+<div class="section">
+  <div class="section-title">技术栈</div>
+  <div class="tech-grid">
+    <div class="tech-item"><div class="name">React 18</div><div class="role">前端框架</div></div>
+    <div class="tech-item"><div class="name">TypeScript</div><div class="role">类型系统</div></div>
+    <div class="tech-item"><div class="name">TailwindCSS v4</div><div class="role">样式方案</div></div>
+    <div class="tech-item"><div class="name">Vite 8</div><div class="role">构建工具</div></div>
+    <div class="tech-item"><div class="name">Framer Motion</div><div class="role">动画库</div></div>
+    <div class="tech-item"><div class="name">Recharts</div><div class="role">图表库</div></div>
+    <div class="tech-item"><div class="name">Express</div><div class="role">后端框架</div></div>
+    <div class="tech-item"><div class="name">better-sqlite3</div><div class="role">数据库驱动</div></div>
+    <div class="tech-item"><div class="name">Nginx</div><div class="role">Web服务器</div></div>
+    <div class="tech-item"><div class="name">systemd</div><div class="role">进程管理</div></div>
+  </div>
+</div>
+
+<div class="footer">
+  CRM V7 · V26.06.01 · 西门子OEM南京区域 · 生成于 2026-06-13
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#d5f5e3',
+      primaryTextColor: '#1a1a2e',
+      primaryBorderColor: '#009999',
+      lineColor: '#009999',
+      secondaryColor: '#d6eaf8',
+      tertiaryColor: '#fdebd0',
+      fontSize: '14px'
+    },
+    flowchart: { curve: 'basis' },
+    sequence: { mirrorActors: false, messageMargin: 40 }
+  });
+</script>
+</body>
+</html>
