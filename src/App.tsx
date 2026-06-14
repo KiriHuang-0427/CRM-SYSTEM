@@ -350,11 +350,11 @@ function DashboardPage({ customers, custLoading, custError, onRetry, todos, todo
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }} data-qoder-id="qel-div-3ef4836e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-3ef4836e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:332,&quot;column&quot;:13}}">
               <CheckSquare size={16} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-checksquare-018732da" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-checksquare-018732da&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;checksquare&quot;,&quot;loc&quot;:{&quot;line&quot;:333,&quot;column&quot;:15}}"/>
               <span style={{ fontSize: 15, fontWeight: 600 }} data-qoder-id="qel-span-e6b3768d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-e6b3768d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:334,&quot;column&quot;:15}}">待办事项</span>
-              <div style={{ display: 'flex', gap: 4, marginLeft: 4 }}>
+              <div style={{ display: 'flex', gap: 4, marginLeft: 4 }} data-qoder-id="qel-div-3ef4836e-2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-3ef4836e-2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:353,&quot;column&quot;:15}}">
                 <Button variant={todoFilter === 'pending' ? 'default' : 'ghost'} size="sm"
-                  onClick={() => setTodoFilter('pending')} style={{ fontSize: 12, padding: '2px 10px' }}>当前</Button>
+                  onClick={() => setTodoFilter('pending')} style={{ fontSize: 12, padding: '2px 10px' }} data-qoder-id="qel-button-40990bba" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-40990bba&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:354,&quot;column&quot;:17}}">当前</Button>
                 <Button variant={todoFilter === 'completed' ? 'default' : 'ghost'} size="sm"
-                  onClick={() => setTodoFilter('completed')} style={{ fontSize: 12, padding: '2px 10px' }}>已完成</Button>
+                  onClick={() => setTodoFilter('completed')} style={{ fontSize: 12, padding: '2px 10px' }} data-qoder-id="qel-button-41990d4d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-41990d4d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:356,&quot;column&quot;:17}}">已完成</Button>
               </div>
               <span className="badge badge-teal" style={{ marginLeft: 'auto' }} data-qoder-id="qel-badge-a08bce3d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-badge-a08bce3d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;badge&quot;,&quot;loc&quot;:{&quot;line&quot;:335,&quot;column&quot;:15}}">{pendingTodos.length}/{todos.length}</span>
             </div>
@@ -376,10 +376,10 @@ function DashboardPage({ customers, custLoading, custError, onRetry, todos, todo
               return (
               <>
             {filteredTodos.length === 0 && !todoData.loading && (
-              <EmptyState icon={<CheckSquare size={20} />} message={todoFilter === 'pending' ? '暂无待办事项' : '暂无已完成事项'} hint={todoFilter === 'pending' ? '在上方输入框添加待办' : '完成待办后将在此显示'} />
+              <EmptyState icon={<CheckSquare size={20} />} message={todoFilter === 'pending' ? '暂无待办事项' : '暂无已完成事项'} hint={todoFilter === 'pending' ? '在上方输入框添加待办' : '完成待办后将在此显示'}  data-qoder-id="qel-emptystate-2097824d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-emptystate-2097824d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;emptystate&quot;,&quot;loc&quot;:{&quot;line&quot;:379,&quot;column&quot;:15}}"/>
             )}
             {/* Scrollable todo list */}
-            <div style={{ maxHeight: 320, overflowY: 'auto', paddingRight: 4 }}>
+            <div style={{ maxHeight: 320, overflowY: 'auto', paddingRight: 4 }} data-qoder-id="qel-div-4814e544" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-4814e544&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:382,&quot;column&quot;:13}}">
               {filteredTodos.map(t => (
                 <div key={t.id} className="action-row" style={{ gap: 8 }} data-qoder-id="qel-action-row-1391186e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-1391186e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;action-row&quot;,&quot;loc&quot;:{&quot;line&quot;:352,&quot;column&quot;:15}}">
                   <button
@@ -397,7 +397,7 @@ function DashboardPage({ customers, custLoading, custError, onRetry, todos, todo
                       onBlur={() => handleEditTodo(t)}
                       onKeyDown={e => { if (e.key === 'Enter') handleEditTodo(t); if (e.key === 'Escape') { setEditingTodoId(null); setEditTodoText('') } }}
                       autoFocus
-                    />
+                     data-qoder-id="qel-search-input-57ebd460" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-57ebd460&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:392,&quot;column&quot;:21}}"/>
                   ) : (
                     <span
                       className="action-row-label"
@@ -407,7 +407,7 @@ function DashboardPage({ customers, custLoading, custError, onRetry, todos, todo
                     >{t.text}</span>
                   )}
                   {t.deadline && <span className={t.deadline === '已过期' ? 'action-row-urgent' : 'action-row-meta'} data-qoder-id="qel-span-4bb65423" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-4bb65423&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:360,&quot;column&quot;:32}}">{t.deadline}</span>}
-                  {t.createdAt && <span className="action-row-meta" style={{ fontSize: 11 }}>{t.createdAt.slice(0, 10)}</span>}
+                  {t.createdAt && <span className="action-row-meta" style={{ fontSize: 11 }} data-qoder-id="qel-action-row-meta-fbc8455f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-meta-fbc8455f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;action-row-meta&quot;,&quot;loc&quot;:{&quot;line&quot;:410,&quot;column&quot;:35}}">{t.createdAt.slice(0, 10)}</span>}
                   <button onClick={() => handleDeleteTodo(t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, flexShrink: 0 }} data-qoder-id="qel-button-147437b0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-147437b0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:361,&quot;column&quot;:17}}">
                     <Trash2 size={12}  data-qoder-id="qel-trash2-bd321cc9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-trash2-bd321cc9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;trash2&quot;,&quot;loc&quot;:{&quot;line&quot;:362,&quot;column&quot;:19}}"/>
                   </button>
@@ -423,7 +423,7 @@ function DashboardPage({ customers, custLoading, custError, onRetry, todos, todo
               <BarChart3 size={16} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-barchart3-120405fc" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-barchart3-120405fc&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;barchart3&quot;,&quot;loc&quot;:{&quot;line&quot;:371,&quot;column&quot;:15}}"/>
               <span style={{ fontSize: 15, fontWeight: 600 }} data-qoder-id="qel-span-51b65d95" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-51b65d95&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:372,&quot;column&quot;:15}}">客户营收对比</span>
             </div>
-            <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+            <div style={{ maxHeight: 500, overflowY: 'auto' }} data-qoder-id="qel-div-8890c29d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-8890c29d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:426,&quot;column&quot;:13}}">
             <div style={{ width: '100%', height: Math.max(200, chartData.length * 32) }} data-qoder-id="qel-div-4917256e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-4917256e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:374,&quot;column&quot;:13}}">
               <ResponsiveContainer width="100%" height="100%" data-qoder-id="qel-responsivecontainer-cf2e17ab" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-responsivecontainer-cf2e17ab&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;responsivecontainer&quot;,&quot;loc&quot;:{&quot;line&quot;:375,&quot;column&quot;:15}}">
                 <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }} data-qoder-id="qel-barchart-e711f76e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-barchart-e711f76e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;barchart&quot;,&quot;loc&quot;:{&quot;line&quot;:376,&quot;column&quot;:17}}">
@@ -505,7 +505,7 @@ function DashboardPage({ customers, custLoading, custError, onRetry, todos, todo
 }
 
 /* ════════════════════ CREATE CUSTOMER MODAL ════════════════════ */
-function CreateCustomerModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+function CreateCustomerModal({ onClose, onCreated, ...qoderProps }: { onClose: () => void; onCreated: () => void } & Record<string, any>) {
   const [name, setName] = useState('')
   const [industry, setIndustry] = useState('')
   const [color, setColor] = useState<'red' | 'orange' | 'green' | 'gray'>('gray')
@@ -531,39 +531,39 @@ function CreateCustomerModal({ onClose, onCreated }: { onClose: () => void; onCr
   }
 
   return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-panel" style={{ maxWidth: 480 }}>
-        <div className="modal-header">
-          <h2 className="modal-title">新增客户</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}><X size={18} /></Button>
+    <div className={["modal-overlay", (qoderProps as any)?.className].filter(Boolean).join(" ")} onClick={e => { if (e.target === e.currentTarget) onClose() }} style={(qoderProps as any)?.style} data-qoder-id={(qoderProps as any)?.["data-qoder-id"]} data-qoder-source={(qoderProps as any)?.["data-qoder-source"]}>
+      <div className="modal-panel" style={{ maxWidth: 480 }} data-qoder-id="qel-modal-panel-72711d5f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-modal-panel-72711d5f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;modal-panel&quot;,&quot;loc&quot;:{&quot;line&quot;:535,&quot;column&quot;:7}}">
+        <div className="modal-header" data-qoder-id="qel-modal-header-3beb2e9d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-modal-header-3beb2e9d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;modal-header&quot;,&quot;loc&quot;:{&quot;line&quot;:536,&quot;column&quot;:9}}">
+          <h2 className="modal-title" data-qoder-id="qel-modal-title-7e2c2544" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-modal-title-7e2c2544&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;modal-title&quot;,&quot;loc&quot;:{&quot;line&quot;:537,&quot;column&quot;:11}}">新增客户</h2>
+          <Button variant="ghost" size="icon" onClick={onClose} data-qoder-id="qel-button-3ee0ea63" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-3ee0ea63&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:538,&quot;column&quot;:11}}"><X size={18}  data-qoder-id="qel-x-a941c5c7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-x-a941c5c7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;x&quot;,&quot;loc&quot;:{&quot;line&quot;:538,&quot;column&quot;:65}}"/></Button>
         </div>
-        {error && <div style={{ padding: '8px 12px', margin: '0 0 12px', background: 'var(--danger-bg, #fef2f2)', color: 'var(--status-danger)', borderRadius: 'var(--radius-sm)', fontSize: 13 }}>{error}</div>}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }}>客户名称 *</label>
-            <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="输入客户名称" />
+        {error && <div style={{ padding: '8px 12px', margin: '0 0 12px', background: 'var(--danger-bg, #fef2f2)', color: 'var(--status-danger)', borderRadius: 'var(--radius-sm)', fontSize: 13 }} data-qoder-id="qel-div-841672e0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-841672e0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:540,&quot;column&quot;:19}}">{error}</div>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }} data-qoder-id="qel-div-87167799" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-87167799&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:541,&quot;column&quot;:9}}">
+          <div data-qoder-id="qel-div-86167606" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-86167606&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:542,&quot;column&quot;:11}}">
+            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }} data-qoder-id="qel-label-46920c9b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-label-46920c9b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;label&quot;,&quot;loc&quot;:{&quot;line&quot;:543,&quot;column&quot;:13}}">客户名称 *</label>
+            <input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="输入客户名称"  data-qoder-id="qel-input-f87e3a98" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-f87e3a98&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:544,&quot;column&quot;:13}}"/>
           </div>
-          <div>
-            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }}>行业</label>
-            <input style={inputStyle} value={industry} onChange={e => setIndustry(e.target.value)} placeholder="输入行业" />
+          <div data-qoder-id="qel-div-8b167de5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-8b167de5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:546,&quot;column&quot;:11}}">
+            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }} data-qoder-id="qel-label-47920e2e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-label-47920e2e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;label&quot;,&quot;loc&quot;:{&quot;line&quot;:547,&quot;column&quot;:13}}">行业</label>
+            <input style={inputStyle} value={industry} onChange={e => setIndustry(e.target.value)} placeholder="输入行业"  data-qoder-id="qel-input-f57e35df" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-f57e35df&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:548,&quot;column&quot;:13}}"/>
           </div>
-          <div>
-            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }}>优先级</label>
-            <select style={inputStyle} value={color} onChange={e => setColor(e.target.value as any)}>
-              <option value="red">A类 · 重点攻坚</option>
-              <option value="orange">B类 · 稳步推进</option>
-              <option value="green">C类 · 培育拓展</option>
-              <option value="gray">D类 · 观察维护</option>
+          <div data-qoder-id="qel-div-8c167f78" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-8c167f78&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:550,&quot;column&quot;:11}}">
+            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }} data-qoder-id="qel-label-448fcade" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-label-448fcade&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;label&quot;,&quot;loc&quot;:{&quot;line&quot;:551,&quot;column&quot;:13}}">优先级</label>
+            <select style={inputStyle} value={color} onChange={e => setColor(e.target.value as any)} data-qoder-id="qel-select-3d254e59" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-select-3d254e59&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;select&quot;,&quot;loc&quot;:{&quot;line&quot;:552,&quot;column&quot;:13}}">
+              <option value="red" data-qoder-id="qel-option-5606e06a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-5606e06a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:553,&quot;column&quot;:15}}">A类 · 重点攻坚</option>
+              <option value="orange" data-qoder-id="qel-option-5706e1fd" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-5706e1fd&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:554,&quot;column&quot;:15}}">B类 · 稳步推进</option>
+              <option value="green" data-qoder-id="qel-option-5006d6f8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-5006d6f8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:555,&quot;column&quot;:15}}">C类 · 培育拓展</option>
+              <option value="gray" data-qoder-id="qel-option-5106d88b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-5106d88b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:556,&quot;column&quot;:15}}">D类 · 观察维护</option>
             </select>
           </div>
-          <div>
-            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }}>竞品</label>
-            <input style={inputStyle} value={comp} onChange={e => setComp(e.target.value)} placeholder="输入竞品名称" />
+          <div data-qoder-id="qel-div-19138bd8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-19138bd8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:559,&quot;column&quot;:11}}">
+            <label style={{ fontSize: 13, fontWeight: 500, marginBottom: 4, display: 'block' }} data-qoder-id="qel-label-478fcf97" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-label-478fcf97&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;label&quot;,&quot;loc&quot;:{&quot;line&quot;:560,&quot;column&quot;:13}}">竞品</label>
+            <input style={inputStyle} value={comp} onChange={e => setComp(e.target.value)} placeholder="输入竞品名称"  data-qoder-id="qel-input-ef7bedd6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-ef7bedd6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:561,&quot;column&quot;:13}}"/>
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
-          <Button variant="outline" onClick={onClose}>取消</Button>
-          <Button variant="default" onClick={handleSubmit} disabled={saving || !name.trim()}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }} data-qoder-id="qel-div-18138a45" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-18138a45&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:564,&quot;column&quot;:9}}">
+          <Button variant="outline" onClick={onClose} data-qoder-id="qel-button-c3ecf4b5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-c3ecf4b5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:565,&quot;column&quot;:11}}">取消</Button>
+          <Button variant="default" onClick={handleSubmit} disabled={saving || !name.trim()} data-qoder-id="qel-button-c2ecf322" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-c2ecf322&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CreateCustomerModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:566,&quot;column&quot;:11}}">
             {saving ? '创建中...' : '创建'}
           </Button>
         </div>
@@ -616,7 +616,7 @@ function CustomersPage({ customers, custLoading, custError, onRetry, onCustClick
             <input className="search-input" placeholder="搜索客户..." value={search} onChange={e => setSearch(e.target.value)}  data-qoder-id="qel-search-input-e10f1eb3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-e10f1eb3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomersPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:310,&quot;column&quot;:13}}"/>
           </div>
           {search && <Button variant="ghost" size="sm" onClick={() => setSearch('')} data-qoder-id="qel-button-7695e267" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-7695e267&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomersPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:312,&quot;column&quot;:22}}">清除</Button>}
-          <Button variant="outline" size="sm" onClick={() => setShowCreate(true)}><Plus size={14} /></Button>
+          <Button variant="outline" size="sm" onClick={() => setShowCreate(true)} data-qoder-id="qel-button-7da7368d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-7da7368d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomersPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:619,&quot;column&quot;:11}}"><Plus size={14}  data-qoder-id="qel-plus-ac480452" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-plus-ac480452&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomersPage&quot;,&quot;elementRole&quot;:&quot;plus&quot;,&quot;loc&quot;:{&quot;line&quot;:619,&quot;column&quot;:83}}"/></Button>
           <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }} data-qoder-id="qel-div-b2b89e22" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-b2b89e22&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomersPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:313,&quot;column&quot;:11}}">
             {(['priority', 'industry', 'lastVisit', 'revenue'] as const).map(s => (
               <Button key={s} variant={sort === s ? 'default' : 'ghost'} size="sm"
@@ -664,7 +664,7 @@ function CustomersPage({ customers, custLoading, custError, onRetry, onCustClick
         </div>
       </div>
       </DataState>
-      {showCreate && <CreateCustomerModal onClose={() => setShowCreate(false)} onCreated={() => { onReload(); setShowCreate(false) }} />}
+      {showCreate && <CreateCustomerModal onClose={() => setShowCreate(false)} onCreated={() => { onReload(); setShowCreate(false) }}  data-qoder-id="qel-createcustomermodal-bfcd09eb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-createcustomermodal-bfcd09eb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomersPage&quot;,&quot;elementRole&quot;:&quot;createcustomermodal&quot;,&quot;loc&quot;:{&quot;line&quot;:667,&quot;column&quot;:22}}"/>}
     </>
   )
 }
@@ -744,99 +744,99 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
   }
 
   return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-panel">
-        <div className="modal-header">
-          <div>
-            <h2 className="modal-title">{c.name}</h2>
-            <div style={{ fontSize: 13, color: 'var(--fg-secondary)', marginTop: 4 }}>
+    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }} data-qoder-id="qel-modal-overlay-761208de" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-modal-overlay-761208de&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;modal-overlay&quot;,&quot;loc&quot;:{&quot;line&quot;:747,&quot;column&quot;:5}}">
+      <div className="modal-panel" data-qoder-id="qel-modal-panel-bccbc0d7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-modal-panel-bccbc0d7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;modal-panel&quot;,&quot;loc&quot;:{&quot;line&quot;:748,&quot;column&quot;:7}}">
+        <div className="modal-header" data-qoder-id="qel-modal-header-f028ef7d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-modal-header-f028ef7d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;modal-header&quot;,&quot;loc&quot;:{&quot;line&quot;:749,&quot;column&quot;:9}}">
+          <div data-qoder-id="qel-div-e77e5cc8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-e77e5cc8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:750,&quot;column&quot;:11}}">
+            <h2 className="modal-title" data-qoder-id="qel-modal-title-1c8891ff" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-modal-title-1c8891ff&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;modal-title&quot;,&quot;loc&quot;:{&quot;line&quot;:751,&quot;column&quot;:13}}">{c.name}</h2>
+            <div style={{ fontSize: 13, color: 'var(--fg-secondary)', marginTop: 4 }} data-qoder-id="qel-div-ed7e663a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-ed7e663a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:752,&quot;column&quot;:13}}">
               {c.industry}{c.comp ? ` · 竞品: ${c.comp}` : ''}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <Button variant="ghost" size="icon" onClick={() => editing ? handleSave() : startEdit()}>
-              {editing ? <CheckSquare size={18} /> : <Edit3 size={18} />}
+          <div style={{ display: 'flex', gap: 4 }} data-qoder-id="qel-div-ec7e64a7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-ec7e64a7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:756,&quot;column&quot;:11}}">
+            <Button variant="ghost" size="icon" onClick={() => editing ? handleSave() : startEdit()} data-qoder-id="qel-button-855353dc" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-855353dc&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:757,&quot;column&quot;:13}}">
+              {editing ? <CheckSquare size={18}  data-qoder-id="qel-checksquare-db22a98d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-checksquare-db22a98d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;checksquare&quot;,&quot;loc&quot;:{&quot;line&quot;:758,&quot;column&quot;:26}}"/> : <Edit3 size={18}  data-qoder-id="qel-edit3-c670af72" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-edit3-c670af72&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;edit3&quot;,&quot;loc&quot;:{&quot;line&quot;:758,&quot;column&quot;:54}}"/>}
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleDelete}><Trash2 size={18} /></Button>
-            <Button variant="ghost" size="icon" onClick={onClose}><X size={18} /></Button>
+            <Button variant="ghost" size="icon" onClick={handleDelete} data-qoder-id="qel-button-4b18c509" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-4b18c509&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:760,&quot;column&quot;:13}}"><Trash2 size={18}  data-qoder-id="qel-trash2-b2e9ffae" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-trash2-b2e9ffae&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;trash2&quot;,&quot;loc&quot;:{&quot;line&quot;:760,&quot;column&quot;:72}}"/></Button>
+            <Button variant="ghost" size="icon" onClick={onClose} data-qoder-id="qel-button-4918c1e3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-4918c1e3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:761,&quot;column&quot;:13}}"><X size={18}  data-qoder-id="qel-x-6e5388dc" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-x-6e5388dc&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;x&quot;,&quot;loc&quot;:{&quot;line&quot;:761,&quot;column&quot;:67}}"/></Button>
           </div>
         </div>
 
         {/* Basic Info */}
-        <Section title="基本信息">
-          <div className="detail-grid">
-            <div><div className="detail-label">优先级</div><span className={cn('badge', `badge-${c.color}`)}>{priorityLabel(c.color)}</span></div>
+        <Section title="基本信息" data-qoder-id="qel-section-d8aa3bd5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-d8aa3bd5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:766,&quot;column&quot;:9}}">
+          <div className="detail-grid" data-qoder-id="qel-detail-grid-dd852b61" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-grid-dd852b61&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-grid&quot;,&quot;loc&quot;:{&quot;line&quot;:767,&quot;column&quot;:11}}">
+            <div data-qoder-id="qel-div-336bb057" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-336bb057&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:768,&quot;column&quot;:13}}"><div className="detail-label" data-qoder-id="qel-detail-label-a5bb3151" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-a5bb3151&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:768,&quot;column&quot;:18}}">优先级</div><span className={cn('badge', `badge-${c.color}`)} data-qoder-id="qel-span-3679ffb5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-3679ffb5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:768,&quot;column&quot;:57}}">{priorityLabel(c.color)}</span></div>
             {editing ? (
               <>
-                <div>
-                  <div className="detail-label">名称</div>
-                  <input style={inlineInputStyle} value={editName} onChange={e => setEditName(e.target.value)} />
+                <div data-qoder-id="qel-div-286b9f06" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-286b9f06&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:771,&quot;column&quot;:17}}">
+                  <div className="detail-label" data-qoder-id="qel-detail-label-2cbe446d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-2cbe446d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:772,&quot;column&quot;:19}}">名称</div>
+                  <input style={inlineInputStyle} value={editName} onChange={e => setEditName(e.target.value)}  data-qoder-id="qel-input-be5c9d7f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-be5c9d7f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:773,&quot;column&quot;:19}}"/>
                 </div>
-                <div>
-                  <div className="detail-label">行业</div>
-                  <input style={inlineInputStyle} value={editIndustry} onChange={e => setEditIndustry(e.target.value)} />
+                <div data-qoder-id="qel-div-2d69684e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-2d69684e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:775,&quot;column&quot;:17}}">
+                  <div className="detail-label" data-qoder-id="qel-detail-label-29be3fb4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-29be3fb4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:776,&quot;column&quot;:19}}">行业</div>
+                  <input style={inlineInputStyle} value={editIndustry} onChange={e => setEditIndustry(e.target.value)}  data-qoder-id="qel-input-b95c95a0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-b95c95a0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:777,&quot;column&quot;:19}}"/>
                 </div>
               </>
             ) : (
-              <div><div className="detail-label">行业</div><div className="detail-value">{c.industry}</div></div>
+              <div data-qoder-id="qel-div-30696d07" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-30696d07&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:781,&quot;column&quot;:15}}"><div className="detail-label" data-qoder-id="qel-detail-label-26be3afb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-26be3afb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:781,&quot;column&quot;:20}}">行业</div><div className="detail-value" data-qoder-id="qel-detail-value-37637abf" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-value-37637abf&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-value&quot;,&quot;loc&quot;:{&quot;line&quot;:781,&quot;column&quot;:58}}">{c.industry}</div></div>
             )}
-            <div><div className="detail-label">上次拜访</div><div className="detail-value">{c.lastVisit ? `${c.lastVisit} (${daysSince(c.lastVisit)}天前)` : '未拜访'}</div></div>
-            {c.nextYear && <div><div className="detail-label">明年预期</div><div className="detail-value">{c.nextYear}</div></div>}
+            <div data-qoder-id="qel-div-23695890" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-23695890&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:783,&quot;column&quot;:13}}"><div className="detail-label" data-qoder-id="qel-detail-label-23be3642" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-23be3642&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:783,&quot;column&quot;:18}}">上次拜访</div><div className="detail-value" data-qoder-id="qel-detail-value-ce6096dd" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-value-ce6096dd&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-value&quot;,&quot;loc&quot;:{&quot;line&quot;:783,&quot;column&quot;:58}}">{c.lastVisit ? `${c.lastVisit} (${daysSince(c.lastVisit)}天前)` : '未拜访'}</div></div>
+            {c.nextYear && <div data-qoder-id="qel-div-9c70d2d0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9c70d2d0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:784,&quot;column&quot;:28}}"><div className="detail-label" data-qoder-id="qel-detail-label-10c056f0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-10c056f0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:784,&quot;column&quot;:33}}">明年预期</div><div className="detail-value" data-qoder-id="qel-detail-value-cb609224" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-value-cb609224&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-value&quot;,&quot;loc&quot;:{&quot;line&quot;:784,&quot;column&quot;:73}}">{c.nextYear}</div></div>}
           </div>
           {editing && (
-            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-              <Button variant="default" size="sm" onClick={handleSave}>保存</Button>
-              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>取消</Button>
+            <div style={{ marginTop: 12, display: 'flex', gap: 8 }} data-qoder-id="qel-div-a170daaf" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a170daaf&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:787,&quot;column&quot;:13}}">
+              <Button variant="default" size="sm" onClick={handleSave} data-qoder-id="qel-button-5a1d59d4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-5a1d59d4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:788,&quot;column&quot;:15}}">保存</Button>
+              <Button variant="outline" size="sm" onClick={() => setEditing(false)} data-qoder-id="qel-button-5d1d5e8d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-5d1d5e8d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:789,&quot;column&quot;:15}}">取消</Button>
             </div>
           )}
         </Section>
 
         {/* Sales Data */}
-        <Section title="销售数据">
-          <div className="detail-grid">
-            <div><div className="detail-label">CY YTD</div><div className="detail-value" style={{ fontSize: 20, fontWeight: 700 }}>{fmtK(cy)}</div></div>
-            <div><div className="detail-label">PY YTD</div><div className="detail-value">{fmtK(py)}</div></div>
-            <div><div className="detail-label">同比增长</div><div className="detail-value" style={{ color: growth >= 0 ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 600 }}>{gStr}</div></div>
-            {sd.CY_P8 ? <div><div className="detail-label">P8 预测</div><div className="detail-value" style={{ color: 'var(--accent)', fontWeight: 600 }}>{fmtK(sd.CY_P8)}</div></div> : null}
+        <Section title="销售数据" data-qoder-id="qel-section-e5aecd7a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-e5aecd7a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:795,&quot;column&quot;:9}}">
+          <div className="detail-grid" data-qoder-id="qel-detail-grid-4c7fc9f0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-grid-4c7fc9f0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-grid&quot;,&quot;loc&quot;:{&quot;line&quot;:796,&quot;column&quot;:11}}">
+            <div data-qoder-id="qel-div-a470df68" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a470df68&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:797,&quot;column&quot;:13}}"><div className="detail-label" data-qoder-id="qel-detail-label-18c2a21f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-18c2a21f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:797,&quot;column&quot;:18}}">CY YTD</div><div className="detail-value" style={{ fontSize: 20, fontWeight: 700 }} data-qoder-id="qel-detail-value-c95e5067" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-value-c95e5067&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-value&quot;,&quot;loc&quot;:{&quot;line&quot;:797,&quot;column&quot;:60}}">{fmtK(cy)}</div></div>
+            <div data-qoder-id="qel-div-356df214" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-356df214&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:798,&quot;column&quot;:13}}"><div className="detail-label" data-qoder-id="qel-detail-label-19c2a3b2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-19c2a3b2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:798,&quot;column&quot;:18}}">PY YTD</div><div className="detail-value" data-qoder-id="qel-detail-value-c45e4888" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-value-c45e4888&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-value&quot;,&quot;loc&quot;:{&quot;line&quot;:798,&quot;column&quot;:60}}">{fmtK(py)}</div></div>
+            <div data-qoder-id="qel-div-346df081" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-346df081&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:799,&quot;column&quot;:13}}"><div className="detail-label" data-qoder-id="qel-detail-label-16c29ef9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-16c29ef9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:799,&quot;column&quot;:18}}">同比增长</div><div className="detail-value" style={{ color: growth >= 0 ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 600 }} data-qoder-id="qel-detail-value-c75e4d41" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-value-c75e4d41&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-value&quot;,&quot;loc&quot;:{&quot;line&quot;:799,&quot;column&quot;:58}}">{gStr}</div></div>
+            {sd.CY_P8 ? <div data-qoder-id="qel-div-2f6de8a2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-2f6de8a2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:800,&quot;column&quot;:25}}"><div className="detail-label" data-qoder-id="qel-detail-label-1fc2ad24" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-label-1fc2ad24&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-label&quot;,&quot;loc&quot;:{&quot;line&quot;:800,&quot;column&quot;:30}}">P8 预测</div><div className="detail-value" style={{ color: 'var(--accent)', fontWeight: 600 }} data-qoder-id="qel-detail-value-c25c06cb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-value-c25c06cb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;detail-value&quot;,&quot;loc&quot;:{&quot;line&quot;:800,&quot;column&quot;:71}}">{fmtK(sd.CY_P8)}</div></div> : null}
           </div>
         </Section>
 
         {/* Key Persons with CRUD */}
-        <Section title="关键联系人">
+        <Section title="关键联系人" data-qoder-id="qel-section-6bb41d9a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-6bb41d9a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:805,&quot;column&quot;:9}}">
           {(c.keyPersons || []).map((p, i) => (
-            <div key={p.id ?? i} style={{ marginBottom: 6 }}>
+            <div key={p.id ?? i} style={{ marginBottom: 6 }} data-qoder-id="qel-div-a775614f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a775614f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:807,&quot;column&quot;:13}}">
               {editingContactId === p.id ? (
-                <div style={{ padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <input style={inlineInputStyle} value={editCName} onChange={e => setEditCName(e.target.value)} placeholder="姓名" />
-                    <input style={inlineInputStyle} value={editCRole} onChange={e => setEditCRole(e.target.value)} placeholder="职位" />
+                <div style={{ padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', display: 'flex', flexDirection: 'column', gap: 6 }} data-qoder-id="qel-div-a6755fbc" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a6755fbc&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:809,&quot;column&quot;:17}}">
+                  <div style={{ display: 'flex', gap: 6 }} data-qoder-id="qel-div-a5755e29" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a5755e29&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:810,&quot;column&quot;:19}}">
+                    <input style={inlineInputStyle} value={editCName} onChange={e => setEditCName(e.target.value)} placeholder="姓名"  data-qoder-id="qel-input-4e55316a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-4e55316a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:811,&quot;column&quot;:21}}"/>
+                    <input style={inlineInputStyle} value={editCRole} onChange={e => setEditCRole(e.target.value)} placeholder="职位"  data-qoder-id="qel-input-4d552fd7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-4d552fd7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:812,&quot;column&quot;:21}}"/>
                   </div>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <input style={inlineInputStyle} value={editCPhone} onChange={e => setEditCPhone(e.target.value)} placeholder="电话" />
-                    <input style={inlineInputStyle} value={editCEmail} onChange={e => setEditCEmail(e.target.value)} placeholder="邮箱" />
+                  <div style={{ display: 'flex', gap: 6 }} data-qoder-id="qel-div-a2755970" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a2755970&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:814,&quot;column&quot;:19}}">
+                    <input style={inlineInputStyle} value={editCPhone} onChange={e => setEditCPhone(e.target.value)} placeholder="电话"  data-qoder-id="qel-input-43552019" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-43552019&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:815,&quot;column&quot;:21}}"/>
+                    <input style={inlineInputStyle} value={editCEmail} onChange={e => setEditCEmail(e.target.value)} placeholder="邮箱"  data-qoder-id="qel-input-42551e86" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-42551e86&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:816,&quot;column&quot;:21}}"/>
                   </div>
-                  <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                    <Button variant="default" size="sm" onClick={() => handleUpdateContact(p.id!)}>保存</Button>
-                    <Button variant="outline" size="sm" onClick={() => setEditingContactId(null)}>取消</Button>
+                  <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }} data-qoder-id="qel-div-a3731c6c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a3731c6c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:818,&quot;column&quot;:19}}">
+                    <Button variant="default" size="sm" onClick={() => handleUpdateContact(p.id!)} data-qoder-id="qel-button-5e1f9eb7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-5e1f9eb7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:819,&quot;column&quot;:21}}">保存</Button>
+                    <Button variant="outline" size="sm" onClick={() => setEditingContactId(null)} data-qoder-id="qel-button-5f1fa04a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-5f1fa04a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:820,&quot;column&quot;:21}}">取消</Button>
                   </div>
                 </div>
               ) : (
-                <div className="person-row">
-                  <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: 'var(--accent-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>
+                <div className="person-row" data-qoder-id="qel-person-row-891a8f92" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-person-row-891a8f92&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;person-row&quot;,&quot;loc&quot;:{&quot;line&quot;:824,&quot;column&quot;:17}}">
+                  <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: 'var(--accent-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, color: 'var(--accent)' }} data-qoder-id="qel-div-9f731620" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9f731620&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:825,&quot;column&quot;:19}}">
                     {p.name.slice(0, 1)}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 550 }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>{p.role}{p.phone ? ` · ${p.phone}` : ''}{p.email ? ` · ${p.email}` : ''}</div>
+                  <div style={{ flex: 1 }} data-qoder-id="qel-div-a07317b3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a07317b3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:828,&quot;column&quot;:19}}">
+                    <div style={{ fontSize: 13, fontWeight: 550 }} data-qoder-id="qel-div-a1731946" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a1731946&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:829,&quot;column&quot;:21}}">{p.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--fg-tertiary)' }} data-qoder-id="qel-div-a2731ad9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a2731ad9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:830,&quot;column&quot;:21}}">{p.role}{p.phone ? ` · ${p.phone}` : ''}{p.email ? ` · ${p.email}` : ''}</div>
                   </div>
-                  <div style={{ display: 'flex', gap: 2 }}>
+                  <div style={{ display: 'flex', gap: 2 }} data-qoder-id="qel-div-ab732904" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-ab732904&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:832,&quot;column&quot;:19}}">
                     {Array.from({ length: 5 }).map((_, s) => (
-                      <Star key={s} size={12} style={{ color: s < p.stars ? 'var(--status-warning)' : 'var(--border)', fill: s < p.stars ? 'var(--status-warning)' : 'transparent' }} />
+                      <Star key={s} size={12} style={{ color: s < p.stars ? 'var(--status-warning)' : 'var(--border)', fill: s < p.stars ? 'var(--status-warning)' : 'transparent' }}  data-qoder-id="qel-star-165b90a3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-star-165b90a3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;star&quot;,&quot;loc&quot;:{&quot;line&quot;:834,&quot;column&quot;:23}}"/>
                     ))}
                   </div>
-                  <div style={{ display: 'flex', gap: 2 }}>
-                    <Button variant="ghost" size="icon" onClick={() => startEditContact(p)}><Edit3 size={14} /></Button>
-                    {p.id != null && <Button variant="ghost" size="icon" onClick={() => handleDeleteContact(p.id!)}><Trash2 size={14} /></Button>}
+                  <div style={{ display: 'flex', gap: 2 }} data-qoder-id="qel-div-357abe07" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-357abe07&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:837,&quot;column&quot;:19}}">
+                    <Button variant="ghost" size="icon" onClick={() => startEditContact(p)} data-qoder-id="qel-button-ce270acc" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-ce270acc&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:838,&quot;column&quot;:21}}"><Edit3 size={14}  data-qoder-id="qel-edit3-8c31a371" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-edit3-8c31a371&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;edit3&quot;,&quot;loc&quot;:{&quot;line&quot;:838,&quot;column&quot;:93}}"/></Button>
+                    {p.id != null && <Button variant="ghost" size="icon" onClick={() => handleDeleteContact(p.id!)} data-qoder-id="qel-button-d0270df2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-d0270df2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:839,&quot;column&quot;:38}}"><Trash2 size={14}  data-qoder-id="qel-trash2-b3f90bcb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-trash2-b3f90bcb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;trash2&quot;,&quot;loc&quot;:{&quot;line&quot;:839,&quot;column&quot;:117}}"/></Button>}
                   </div>
                 </div>
               )}
@@ -844,37 +844,37 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
           ))}
           {/* Add contact form */}
           {addingContact ? (
-            <div style={{ padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <input style={inlineInputStyle} value={newCName} onChange={e => setNewCName(e.target.value)} placeholder="姓名" />
-                <input style={inlineInputStyle} value={newCRole} onChange={e => setNewCRole(e.target.value)} placeholder="职位" />
+            <div style={{ padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }} data-qoder-id="qel-div-307ab628" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-307ab628&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:847,&quot;column&quot;:13}}">
+              <div style={{ display: 'flex', gap: 6 }} data-qoder-id="qel-div-337abae1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-337abae1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:848,&quot;column&quot;:15}}">
+                <input style={inlineInputStyle} value={newCName} onChange={e => setNewCName(e.target.value)} placeholder="姓名"  data-qoder-id="qel-input-bc5a5bc2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-bc5a5bc2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:849,&quot;column&quot;:17}}"/>
+                <input style={inlineInputStyle} value={newCRole} onChange={e => setNewCRole(e.target.value)} placeholder="职位"  data-qoder-id="qel-input-bf5a607b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-bf5a607b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:850,&quot;column&quot;:17}}"/>
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <input style={inlineInputStyle} value={newCPhone} onChange={e => setNewCPhone(e.target.value)} placeholder="电话" />
-                <input style={inlineInputStyle} value={newCEmail} onChange={e => setNewCEmail(e.target.value)} placeholder="邮箱" />
+              <div style={{ display: 'flex', gap: 6 }} data-qoder-id="qel-div-2c7aafdc" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-2c7aafdc&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:852,&quot;column&quot;:15}}">
+                <input style={inlineInputStyle} value={newCPhone} onChange={e => setNewCPhone(e.target.value)} placeholder="电话"  data-qoder-id="qel-input-515774ba" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-515774ba&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:853,&quot;column&quot;:17}}"/>
+                <input style={inlineInputStyle} value={newCEmail} onChange={e => setNewCEmail(e.target.value)} placeholder="邮箱"  data-qoder-id="qel-input-5257764d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-5257764d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:854,&quot;column&quot;:17}}"/>
               </div>
-              <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                <Button variant="default" size="sm" onClick={handleAddContact}>添加</Button>
-                <Button variant="outline" size="sm" onClick={() => setAddingContact(false)}>取消</Button>
+              <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }} data-qoder-id="qel-div-ad77a958" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-ad77a958&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:856,&quot;column&quot;:15}}">
+                <Button variant="default" size="sm" onClick={handleAddContact} data-qoder-id="qel-button-c824c2c3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-c824c2c3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:857,&quot;column&quot;:17}}">添加</Button>
+                <Button variant="outline" size="sm" onClick={() => setAddingContact(false)} data-qoder-id="qel-button-cd24caa2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-cd24caa2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:858,&quot;column&quot;:17}}">取消</Button>
               </div>
             </div>
           ) : (
-            <Button variant="outline" size="sm" onClick={() => setAddingContact(true)} style={{ marginTop: 8, width: '100%' }}>
-              <Plus size={14} /> 添加联系人
+            <Button variant="outline" size="sm" onClick={() => setAddingContact(true)} style={{ marginTop: 8, width: '100%' }} data-qoder-id="qel-button-ce24cc35" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-ce24cc35&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:862,&quot;column&quot;:13}}">
+              <Plus size={14}  data-qoder-id="qel-plus-fbafaa94" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-plus-fbafaa94&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;plus&quot;,&quot;loc&quot;:{&quot;line&quot;:863,&quot;column&quot;:15}}"/> 添加联系人
             </Button>
           )}
         </Section>
 
         {/* Pipeline */}
         {c.pipeline?.length > 0 && (
-          <Section title="商机">
+          <Section title="商机" data-qoder-id="qel-section-55b6398f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-55b6398f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:870,&quot;column&quot;:11}}">
             {c.pipeline.map((p, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', marginBottom: 6, borderLeft: `3px solid ${PIPE_STAGES.find(s => s.num === p.pipeStage)?.color || 'var(--accent)'}` }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 550 }}>{p.name}</div>
-                  {p.stage && <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 2 }}>{p.stage}</div>}
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', marginBottom: 6, borderLeft: `3px solid ${PIPE_STAGES.find(s => s.num === p.pipeStage)?.color || 'var(--accent)'}` }} data-qoder-id="qel-div-a7779fe6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a7779fe6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:872,&quot;column&quot;:15}}">
+                <div style={{ flex: 1 }} data-qoder-id="qel-div-a877a179" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a877a179&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:873,&quot;column&quot;:17}}">
+                  <div style={{ fontSize: 13, fontWeight: 550 }} data-qoder-id="qel-div-21580c49" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-21580c49&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:874,&quot;column&quot;:19}}">{p.name}</div>
+                  {p.stage && <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 2 }} data-qoder-id="qel-div-20580ab6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-20580ab6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:875,&quot;column&quot;:31}}">{p.stage}</div>}
                 </div>
-                {p.amount && <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{p.amount}</span>}
+                {p.amount && <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }} data-qoder-id="qel-span-ac8e412f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-ac8e412f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:877,&quot;column&quot;:30}}">{p.amount}</span>}
               </div>
             ))}
           </Section>
@@ -882,12 +882,12 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
 
         {/* Next Actions */}
         {c.nextActions?.length > 0 && (
-          <Section title="下一步行动">
+          <Section title="下一步行动" data-qoder-id="qel-section-e1bdd1b8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-e1bdd1b8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:885,&quot;column&quot;:11}}">
             {c.nextActions.map((a, i) => (
-              <div key={i} className="action-row">
-                <Calendar size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                <span className="action-row-label">{a.action}</span>
-                <span className={a.deadline === '已过期' ? 'action-row-urgent' : 'action-row-meta'}>{a.deadline}</span>
+              <div key={i} className="action-row" data-qoder-id="qel-action-row-1a92fa9d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-1a92fa9d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;action-row&quot;,&quot;loc&quot;:{&quot;line&quot;:887,&quot;column&quot;:15}}">
+                <Calendar size={14} style={{ color: 'var(--accent)', flexShrink: 0 }}  data-qoder-id="qel-calendar-d64f04f6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-calendar-d64f04f6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;calendar&quot;,&quot;loc&quot;:{&quot;line&quot;:888,&quot;column&quot;:17}}"/>
+                <span className="action-row-label" data-qoder-id="qel-action-row-label-5d577143" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-label-5d577143&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;action-row-label&quot;,&quot;loc&quot;:{&quot;line&quot;:889,&quot;column&quot;:17}}">{a.action}</span>
+                <span className={a.deadline === '已过期' ? 'action-row-urgent' : 'action-row-meta'} data-qoder-id="qel-span-a78e3950" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-a78e3950&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:890,&quot;column&quot;:17}}">{a.deadline}</span>
               </div>
             ))}
           </Section>
@@ -895,15 +895,15 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
 
         {/* Risk */}
         {c.risk && (
-          <Section title="风险">
-            <div className="risk-box">{c.risk}</div>
+          <Section title="风险" data-qoder-id="qel-section-dcbdc9d9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-dcbdc9d9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:898,&quot;column&quot;:11}}">
+            <div className="risk-box" data-qoder-id="qel-risk-box-556c305a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-risk-box-556c305a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;risk-box&quot;,&quot;loc&quot;:{&quot;line&quot;:899,&quot;column&quot;:13}}">{c.risk}</div>
           </Section>
         )}
 
         {/* AI Coach */}
         {c.talkStrategy && (
-          <Section title="AI 策略建议">
-            <div style={{ padding: '16px 20px', background: 'var(--accent-bg)', borderRadius: 'var(--radius-sm)', fontSize: 13, lineHeight: 1.7, color: 'var(--fg-secondary)', borderLeft: '3px solid var(--accent)' }}>
+          <Section title="AI 策略建议" data-qoder-id="qel-section-debb8e68" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-debb8e68&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:905,&quot;column&quot;:11}}">
+            <div style={{ padding: '16px 20px', background: 'var(--accent-bg)', borderRadius: 'var(--radius-sm)', fontSize: 13, lineHeight: 1.7, color: 'var(--fg-secondary)', borderLeft: '3px solid var(--accent)' }} data-qoder-id="qel-div-9c54fc53" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9c54fc53&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:906,&quot;column&quot;:13}}">
               {c.talkStrategy}
             </div>
           </Section>
@@ -911,10 +911,10 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
 
         {/* Talk Points */}
         {c.talkPoints?.length > 0 && (
-          <Section title="话术参考">
+          <Section title="话术参考" data-qoder-id="qel-section-e0bb918e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-e0bb918e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:914,&quot;column&quot;:11}}">
             {c.talkPoints.map((tp, i) => (
-              <div key={i} className="talk-point" style={{ '--tp-color': tp.color } as React.CSSProperties}>
-                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{tp.title}</div>
+              <div key={i} className="talk-point" style={{ '--tp-color': tp.color } as React.CSSProperties} data-qoder-id="qel-talk-point-87c7ccab" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-talk-point-87c7ccab&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;talk-point&quot;,&quot;loc&quot;:{&quot;line&quot;:916,&quot;column&quot;:15}}">
+                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }} data-qoder-id="qel-div-9f55010c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9f55010c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:917,&quot;column&quot;:17}}">{tp.title}</div>
                 {tp.text}
               </div>
             ))}
@@ -1028,6 +1028,25 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
     } catch (err) { console.error('Failed to delete pipeline:', err) }
   }
 
+  const handleStageChange = async (item: api.PipelineItem, value: string) => {
+    if (!item.id) return
+    try {
+      if (value === 'win') {
+        if (confirm(`确定将「${item.name}」标记为赢得吗？`)) {
+          await api.markPipelineWin(item.id)
+          pipeData.reload()
+        }
+      } else if (value === 'lost') {
+        if (confirm(`确定将「${item.name}」标记为丢失吗？`)) {
+          await handleMarkLost(item.id, '')
+        }
+      } else {
+        await api.updatePipelineStage(item.id, Number(value))
+        pipeData.reload()
+      }
+    } catch (err) { console.error('Failed to change stage:', err) }
+  }
+
   const stageDescriptions = [
     '初次接触，了解需求',
     '确认需求和技术方案',
@@ -1039,53 +1058,53 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
 
   return (
     <>
-      <div className="page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <h1 className="page-title">Pipeline 汇总</h1>
-          <p className="page-subtitle">{activeCusts.reduce((s, c) => s + (c.pipeline?.length || 0), 0)} 个活跃商机</p>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }} data-qoder-id="qel-page-header-4b200788" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-header-4b200788&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;page-header&quot;,&quot;loc&quot;:{&quot;line&quot;:1042,&quot;column&quot;:7}}">
+        <div data-qoder-id="qel-div-36e1cf55" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-36e1cf55&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1043,&quot;column&quot;:9}}">
+          <h1 className="page-title" data-qoder-id="qel-page-title-d265330b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-title-d265330b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;page-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1044,&quot;column&quot;:11}}">Pipeline 汇总</h1>
+          <p className="page-subtitle" data-qoder-id="qel-page-subtitle-d9d02de1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-subtitle-d9d02de1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;page-subtitle&quot;,&quot;loc&quot;:{&quot;line&quot;:1045,&quot;column&quot;:11}}">{activeCusts.reduce((s, c) => s + (c.pipeline?.length || 0), 0)} 个活跃商机</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setShowAddForm(!showAddForm)} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          {showAddForm ? <X size={14} /> : <Plus size={14} />}
+        <Button variant="outline" size="sm" onClick={() => setShowAddForm(!showAddForm)} style={{ display: 'flex', alignItems: 'center', gap: 4 }} data-qoder-id="qel-button-3c29abb8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-3c29abb8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1047,&quot;column&quot;:9}}">
+          {showAddForm ? <X size={14}  data-qoder-id="qel-x-c8c665f1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-x-c8c665f1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;x&quot;,&quot;loc&quot;:{&quot;line&quot;:1048,&quot;column&quot;:26}}"/> : <Plus size={14}  data-qoder-id="qel-plus-7efcde66" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-plus-7efcde66&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;plus&quot;,&quot;loc&quot;:{&quot;line&quot;:1048,&quot;column&quot;:44}}"/>}
           {showAddForm ? '取消' : '添加商机'}
         </Button>
       </div>
       {showAddForm && (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 10, alignItems: 'end' }}>
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>客户 *</label>
-              <select className="search-input" value={newPipeCustId} onChange={e => setNewPipeCustId(e.target.value)} style={{ padding: '6px 10px' }}>
-                <option value="">选择客户...</option>
-                {activeCusts.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        <div className="card" style={{ marginBottom: 16 }} data-qoder-id="qel-card-aee5851c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-card-aee5851c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;card&quot;,&quot;loc&quot;:{&quot;line&quot;:1053,&quot;column&quot;:9}}">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 10, alignItems: 'end' }} data-qoder-id="qel-div-a28a60b8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a28a60b8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1054,&quot;column&quot;:11}}">
+            <div data-qoder-id="qel-div-a58a6571" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a58a6571&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1055,&quot;column&quot;:13}}">
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }} data-qoder-id="qel-label-0507adfa" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-label-0507adfa&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;label&quot;,&quot;loc&quot;:{&quot;line&quot;:1056,&quot;column&quot;:15}}">客户 *</label>
+              <select className="search-input" value={newPipeCustId} onChange={e => setNewPipeCustId(e.target.value)} style={{ padding: '6px 10px' }} data-qoder-id="qel-search-input-4ec939ca" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-4ec939ca&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1057,&quot;column&quot;:15}}">
+                <option value="" data-qoder-id="qel-option-184317d2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-184317d2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1058,&quot;column&quot;:17}}">选择客户...</option>
+                {activeCusts.map(c => <option key={c.id} value={c.id} data-qoder-id="qel-option-1b40ddf4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-1b40ddf4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1059,&quot;column&quot;:39}}">{c.name}</option>)}
               </select>
             </div>
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>项目名称 *</label>
-              <input className="search-input" placeholder="如：900系列穿梭车" value={newPipeName} onChange={e => setNewPipeName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAddPipeline() }} />
+            <div data-qoder-id="qel-div-a2882221" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a2882221&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1062,&quot;column&quot;:13}}">
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }} data-qoder-id="qel-label-f8055aec" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-label-f8055aec&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;label&quot;,&quot;loc&quot;:{&quot;line&quot;:1063,&quot;column&quot;:15}}">项目名称 *</label>
+              <input className="search-input" placeholder="如：900系列穿梭车" value={newPipeName} onChange={e => setNewPipeName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAddPipeline() }}  data-qoder-id="qel-search-input-7e5a466a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-7e5a466a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1064,&quot;column&quot;:15}}"/>
             </div>
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>阶段描述</label>
-              <input className="search-input" placeholder="如：样机窗口期" value={newPipeStage} onChange={e => setNewPipeStage(e.target.value)} />
+            <div data-qoder-id="qel-div-a58826da" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a58826da&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1066,&quot;column&quot;:13}}">
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }} data-qoder-id="qel-label-f7055959" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-label-f7055959&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;label&quot;,&quot;loc&quot;:{&quot;line&quot;:1067,&quot;column&quot;:15}}">阶段描述</label>
+              <input className="search-input" placeholder="如：样机窗口期" value={newPipeStage} onChange={e => setNewPipeStage(e.target.value)}  data-qoder-id="qel-search-input-7b5a41b1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-7b5a41b1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1068,&quot;column&quot;:15}}"/>
             </div>
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>金额</label>
-              <input className="search-input" placeholder="如：~2M" value={newPipeAmount} onChange={e => setNewPipeAmount(e.target.value)} />
+            <div data-qoder-id="qel-div-a4882547" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a4882547&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1070,&quot;column&quot;:13}}">
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }} data-qoder-id="qel-label-02056aaa" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-label-02056aaa&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;label&quot;,&quot;loc&quot;:{&quot;line&quot;:1071,&quot;column&quot;:15}}">金额</label>
+              <input className="search-input" placeholder="如：~2M" value={newPipeAmount} onChange={e => setNewPipeAmount(e.target.value)}  data-qoder-id="qel-search-input-745a36ac" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-745a36ac&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1072,&quot;column&quot;:15}}"/>
             </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select className="search-input" value={newPipeStageNum} onChange={e => setNewPipeStageNum(Number(e.target.value))} style={{ width: 100, padding: '6px 6px' }}>
-                {PIPE_STAGES.map(s => <option key={s.num} value={s.num}>{s.name}</option>)}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }} data-qoder-id="qel-div-1b850f05" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1b850f05&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1074,&quot;column&quot;:13}}">
+              <select className="search-input" value={newPipeStageNum} onChange={e => setNewPipeStageNum(Number(e.target.value))} style={{ width: 100, padding: '6px 6px' }} data-qoder-id="qel-search-input-3bc49eb3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-3bc49eb3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1075,&quot;column&quot;:15}}">
+                {PIPE_STAGES.map(s => <option key={s.num} value={s.num} data-qoder-id="qel-option-8f485055" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-8f485055&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1076,&quot;column&quot;:39}}">{s.name}</option>)}
               </select>
-              <Button onClick={handleAddPipeline} disabled={!newPipeCustId || !newPipeName.trim()}>添加</Button>
+              <Button onClick={handleAddPipeline} disabled={!newPipeCustId || !newPipeName.trim()} data-qoder-id="qel-button-ae244f00" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-ae244f00&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1078,&quot;column&quot;:15}}">添加</Button>
             </div>
           </div>
         </div>
       )}
-      <DataState loading={custLoading} error={custError} onRetry={onRetry}>
+      <DataState loading={custLoading} error={custError} onRetry={onRetry} data-qoder-id="qel-datastate-6e79d51d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-datastate-6e79d51d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;datastate&quot;,&quot;loc&quot;:{&quot;line&quot;:1083,&quot;column&quot;:7}}">
       {totalPipeItems === 0 && !showLost ? (
-        <EmptyState icon={<GitBranch size={20} />} message="暂无商机数据" hint="客户档案中添加 Pipeline 项目后将在此显示" />
+        <EmptyState icon={<GitBranch size={20} />} message="暂无商机数据" hint="客户档案中添加 Pipeline 项目后将在此显示"  data-qoder-id="qel-emptystate-b87f89f6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-emptystate-b87f89f6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;emptystate&quot;,&quot;loc&quot;:{&quot;line&quot;:1085,&quot;column&quot;:9}}"/>
       ) : (
-      <div className="page-body">
-        <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 16 }}>
+      <div className="page-body" data-qoder-id="qel-page-body-288077f6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-body-288077f6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;page-body&quot;,&quot;loc&quot;:{&quot;line&quot;:1087,&quot;column&quot;:7}}">
+        <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 16 }} data-qoder-id="qel-div-14850400" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-14850400&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1088,&quot;column&quot;:9}}">
           {PIPE_STAGES.map(stage => {
             const stageData = pipeData.stages.find(s => s.num === stage.num)
             const items = stageData?.items || []
@@ -1097,7 +1116,7 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
                   <span className="pipe-col-count" data-qoder-id="qel-pipe-col-count-0d7f358a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-pipe-col-count-0d7f358a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;pipe-col-count&quot;,&quot;loc&quot;:{&quot;line&quot;:705,&quot;column&quot;:19}}">{items.length}</span>
                 </div>
                 {/* Stage description */}
-                <div style={{ fontSize: 11, color: 'var(--fg-muted)', padding: '0 12px 8px', lineHeight: 1.4 }}>
+                <div style={{ fontSize: 11, color: 'var(--fg-muted)', padding: '0 12px 8px', lineHeight: 1.4 }} data-qoder-id="qel-div-1882cbb5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1882cbb5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1100,&quot;column&quot;:17}}">
                   {stageDescriptions[stage.num - 1]}
                 </div>
                 {items.map((item, i) => (
@@ -1106,65 +1125,23 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
                     <div className="pipe-card-cust" data-qoder-id="qel-pipe-card-cust-49393779" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-pipe-card-cust-49393779&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;pipe-card-cust&quot;,&quot;loc&quot;:{&quot;line&quot;:710,&quot;column&quot;:21}}">{item.customerName || ''}</div>
                     {item.stage && <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 4 }} data-qoder-id="qel-div-b9faa274" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-b9faa274&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:711,&quot;column&quot;:36}}">{item.stage}</div>}
                     {item.amount && <div className="pipe-card-amount" data-qoder-id="qel-pipe-card-amount-22094ff4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-pipe-card-amount-22094ff4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;pipe-card-amount&quot;,&quot;loc&quot;:{&quot;line&quot;:712,&quot;column&quot;:37}}">{item.amount}</div>}
-                    {/* Stage dropdown for changing pipeline stage */}
+                    {/* Stage dropdown with Win/Lost */}
                     <select
                       className="pipeline-stage-select"
                       value={item.pipeStage}
-                      onChange={async (e) => {
+                      onChange={(e) => {
                         e.stopPropagation()
-                        if (item.id) {
-                          try {
-                            await api.updatePipelineStage(item.id, Number(e.target.value))
-                            pipeData.reload()
-                          } catch (err) { console.error('Failed to update stage:', err) }
-                        }
+                        handleStageChange(item, e.target.value)
                       }}
                       onClick={e => e.stopPropagation()}
-                     data-qoder-id="qel-pipeline-stage-select-df65f77a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-pipeline-stage-select-df65f77a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;pipeline-stage-select&quot;,&quot;loc&quot;:{&quot;line&quot;:714,&quot;column&quot;:21}}">
+                    >
                       {PIPE_STAGES.map(s => (
-                        <option key={s.num} value={s.num} data-qoder-id="qel-option-a0a97e15" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-a0a97e15&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:729,&quot;column&quot;:25}}">{s.name}</option>
+                        <option key={s.num} value={s.num}>{s.name}</option>
                       ))}
+                      <option disabled>─────────</option>
+                      <option value="win">Win - 赢得商机</option>
+                      <option value="lost">Lost - 丢失商机</option>
                     </select>
-                    {/* Action buttons: won / lost / delete */}
-                    <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 2 }}>
-                      <button
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--status-success)', padding: 2 }}
-                        title="标记为赢得"
-                        onClick={async (e) => {
-                          e.stopPropagation()
-                          if (item.id && confirm(`确定将「${item.name}」标记为赢得吗？`)) {
-                            try {
-                              await api.markPipelineWin(item.id)
-                              pipeData.reload()
-                            } catch (err) { console.error('Failed to mark won:', err) }
-                          }
-                        }}
-                      >
-                        <CheckSquare size={12} />
-                      </button>
-                      <button
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--status-danger)', padding: 2 }}
-                        title="标记为丢失"
-                        onClick={async (e) => {
-                          e.stopPropagation()
-                          if (item.id && confirm(`确定将「${item.name}」标记为丢失吗？`)) {
-                            await handleMarkLost(item.id, '')
-                          }
-                        }}
-                      >
-                        <X size={12} />
-                      </button>
-                      <button
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, opacity: 0.5 }}
-                        title="删除商机"
-                        onClick={async (e) => {
-                          e.stopPropagation()
-                          if (item.id) await handleDeletePipeline(item.id, item.name)
-                        }}
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
                   </div>
                 ))}
               </div>
@@ -1173,7 +1150,7 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
         </div>
 
         {/* Lost Pipeline Items Section */}
-        <div style={{ marginTop: 24 }}>
+        <div style={{ marginTop: 24 }} data-qoder-id="qel-div-17808b8b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-17808b8b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1176,&quot;column&quot;:9}}">
           <button
             style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px',
@@ -1181,48 +1158,48 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
               cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'var(--fg-secondary)',
             }}
             onClick={() => { setShowLost(!showLost); if (!showLost && lostItems.length === 0) loadLostItems() }}
-          >
-            <AlertTriangle size={14} style={{ color: 'var(--status-warning)' }} />
-            丢失商机 {lostItems.length > 0 && <span style={{ color: 'var(--fg-muted)' }}>({lostItems.length})</span>}
-            {showLost ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+           data-qoder-id="qel-button-10080b74" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-10080b74&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1177,&quot;column&quot;:11}}">
+            <AlertTriangle size={14} style={{ color: 'var(--status-warning)' }}  data-qoder-id="qel-alerttriangle-01918272" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-alerttriangle-01918272&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;alerttriangle&quot;,&quot;loc&quot;:{&quot;line&quot;:1185,&quot;column&quot;:13}}"/>
+            丢失商机 {lostItems.length > 0 && <span style={{ color: 'var(--fg-muted)' }} data-qoder-id="qel-span-427466d9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-427466d9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1186,&quot;column&quot;:43}}">({lostItems.length})</span>}
+            {showLost ? <ChevronDown size={14}  data-qoder-id="qel-chevrondown-708dc21c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-chevrondown-708dc21c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;chevrondown&quot;,&quot;loc&quot;:{&quot;line&quot;:1187,&quot;column&quot;:25}}"/> : <ChevronRight size={14}  data-qoder-id="qel-chevronright-639ebe9d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-chevronright-639ebe9d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;chevronright&quot;,&quot;loc&quot;:{&quot;line&quot;:1187,&quot;column&quot;:53}}"/>}
           </button>
           {showLost && (
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 12 }} data-qoder-id="qel-div-a57d997e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a57d997e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1190,&quot;column&quot;:13}}">
               {lostLoading ? (
-                <div style={{ padding: 20, color: 'var(--fg-muted)', fontSize: 13 }}>加载中...</div>
+                <div style={{ padding: 20, color: 'var(--fg-muted)', fontSize: 13 }} data-qoder-id="qel-div-a67d9b11" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a67d9b11&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1192,&quot;column&quot;:17}}">加载中...</div>
               ) : lostItems.length === 0 ? (
-                <div style={{ padding: 20, color: 'var(--fg-muted)', fontSize: 13 }}>暂无丢失商机</div>
+                <div style={{ padding: 20, color: 'var(--fg-muted)', fontSize: 13 }} data-qoder-id="qel-div-a37d9658" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a37d9658&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1194,&quot;column&quot;:17}}">暂无丢失商机</div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }} data-qoder-id="qel-div-a47d97eb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a47d97eb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1196,&quot;column&quot;:17}}">
                   {lostItems.map(item => (
-                    <div key={item.id} className="card" style={{ opacity: 0.7, borderLeft: '3px solid var(--status-danger)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600 }}>{item.name}</div>
-                          <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>{item.customerName}</div>
+                    <div key={item.id} className="card" style={{ opacity: 0.7, borderLeft: '3px solid var(--status-danger)' }} data-qoder-id="qel-card-40f1a3e5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-card-40f1a3e5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;card&quot;,&quot;loc&quot;:{&quot;line&quot;:1198,&quot;column&quot;:21}}">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }} data-qoder-id="qel-div-a27d94c5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a27d94c5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1199,&quot;column&quot;:23}}">
+                        <div style={{ flex: 1 }} data-qoder-id="qel-div-a37b57c1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a37b57c1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1200,&quot;column&quot;:25}}">
+                          <div style={{ fontSize: 13, fontWeight: 600 }} data-qoder-id="qel-div-a27b562e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a27b562e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1201,&quot;column&quot;:27}}">{item.name}</div>
+                          <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }} data-qoder-id="qel-div-a17b549b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a17b549b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1202,&quot;column&quot;:27}}">{item.customerName}</div>
                           {editingLostId === item.id ? (
-                            <div style={{ marginTop: 6 }}>
+                            <div style={{ marginTop: 6 }} data-qoder-id="qel-div-a07b5308" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a07b5308&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1204,&quot;column&quot;:29}}">
                               <textarea
                                 value={editLostReason}
                                 onChange={e => setEditLostReason(e.target.value)}
                                 placeholder="丢失原因..."
                                 style={{ width: '100%', minHeight: 48, padding: '6px 10px', fontSize: 12, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', resize: 'vertical', outline: 'none' }}
-                              />
-                              <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-                                <Button variant="default" size="sm" onClick={() => handleSaveLostReason(item.id!)}>保存</Button>
-                                <Button variant="outline" size="sm" onClick={() => setEditingLostId(null)}>取消</Button>
+                               data-qoder-id="qel-textarea-bff3403d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-textarea-bff3403d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;textarea&quot;,&quot;loc&quot;:{&quot;line&quot;:1205,&quot;column&quot;:31}}"/>
+                              <div style={{ display: 'flex', gap: 4, marginTop: 4 }} data-qoder-id="qel-div-a67b5c7a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a67b5c7a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1211,&quot;column&quot;:31}}">
+                                <Button variant="default" size="sm" onClick={() => handleSaveLostReason(item.id!)} data-qoder-id="qel-button-432e33eb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-432e33eb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1212,&quot;column&quot;:33}}">保存</Button>
+                                <Button variant="outline" size="sm" onClick={() => setEditingLostId(null)} data-qoder-id="qel-button-422e3258" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-422e3258&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1213,&quot;column&quot;:33}}">取消</Button>
                               </div>
                             </div>
                           ) : (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                              <div style={{ fontSize: 11, color: 'var(--status-danger)', flex: 1 }}>{item.lostReason ? `原因: ${item.lostReason}` : '暂无原因'}</div>
-                              <Button variant="ghost" size="sm" onClick={() => { setEditingLostId(item.id!); setEditLostReason(item.lostReason || '') }}>
-                                <Edit3 size={12} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }} data-qoder-id="qel-div-9b7b4b29" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9b7b4b29&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1217,&quot;column&quot;:29}}">
+                              <div style={{ fontSize: 11, color: 'var(--status-danger)', flex: 1 }} data-qoder-id="qel-div-9a7b4996" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9a7b4996&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1218,&quot;column&quot;:31}}">{item.lostReason ? `原因: ${item.lostReason}` : '暂无原因'}</div>
+                              <Button variant="ghost" size="sm" onClick={() => { setEditingLostId(item.id!); setEditLostReason(item.lostReason || '') }} data-qoder-id="qel-button-432bf554" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-432bf554&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1219,&quot;column&quot;:31}}">
+                                <Edit3 size={12}  data-qoder-id="qel-edit3-1833df5f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-edit3-1833df5f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;edit3&quot;,&quot;loc&quot;:{&quot;line&quot;:1220,&quot;column&quot;:33}}"/>
                               </Button>
                             </div>
                           )}
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => handleRestore(item.id!)}>恢复</Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleRestore(item.id!)} data-qoder-id="qel-button-452bf87a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-452bf87a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1225,&quot;column&quot;:25}}">恢复</Button>
                       </div>
                     </div>
                   ))}
@@ -1233,7 +1210,7 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
         </div>
 
         {/* Won Pipeline Items Section */}
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 12 }} data-qoder-id="qel-div-a0791471" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a0791471&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1236,&quot;column&quot;:9}}">
           <button
             style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px',
@@ -1241,28 +1218,28 @@ function PipelinePage({ customers, custLoading, custError, onRetry, pipeData, on
               cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'var(--fg-secondary)',
             }}
             onClick={() => { setShowWon(!showWon); if (!showWon && wonItems.length === 0) loadWonItems() }}
-          >
-            <CheckSquare size={14} style={{ color: 'var(--status-success)' }} />
-            赢得商机 {wonItems.length > 0 && <span style={{ color: 'var(--fg-muted)' }}>({wonItems.length})</span>}
-            {showWon ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+           data-qoder-id="qel-button-93008ae8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-93008ae8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1237,&quot;column&quot;:11}}">
+            <CheckSquare size={14} style={{ color: 'var(--status-success)' }}  data-qoder-id="qel-checksquare-87cc36fb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-checksquare-87cc36fb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;checksquare&quot;,&quot;loc&quot;:{&quot;line&quot;:1245,&quot;column&quot;:13}}"/>
+            赢得商机 {wonItems.length > 0 && <span style={{ color: 'var(--fg-muted)' }} data-qoder-id="qel-span-d36f3aee" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-d36f3aee&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1246,&quot;column&quot;:42}}">({wonItems.length})</span>}
+            {showWon ? <ChevronDown size={14}  data-qoder-id="qel-chevrondown-ed8876b5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-chevrondown-ed8876b5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;chevrondown&quot;,&quot;loc&quot;:{&quot;line&quot;:1247,&quot;column&quot;:24}}"/> : <ChevronRight size={14}  data-qoder-id="qel-chevronright-d4a3edae" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-chevronright-d4a3edae&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;chevronright&quot;,&quot;loc&quot;:{&quot;line&quot;:1247,&quot;column&quot;:52}}"/>}
           </button>
           {showWon && (
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 12 }} data-qoder-id="qel-div-967904b3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-967904b3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1250,&quot;column&quot;:13}}">
               {wonLoading ? (
-                <div style={{ padding: 20, color: 'var(--fg-muted)', fontSize: 13 }}>加载中...</div>
+                <div style={{ padding: 20, color: 'var(--fg-muted)', fontSize: 13 }} data-qoder-id="qel-div-9776c7af" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9776c7af&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1252,&quot;column&quot;:17}}">加载中...</div>
               ) : wonItems.length === 0 ? (
-                <div style={{ padding: 20, color: 'var(--fg-muted)', fontSize: 13 }}>暂无赢得商机</div>
+                <div style={{ padding: 20, color: 'var(--fg-muted)', fontSize: 13 }} data-qoder-id="qel-div-9676c61c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9676c61c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1254,&quot;column&quot;:17}}">暂无赢得商机</div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }} data-qoder-id="qel-div-9976cad5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9976cad5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1256,&quot;column&quot;:17}}">
                   {wonItems.map(item => (
-                    <div key={item.id} className="card" style={{ opacity: 0.8, borderLeft: '3px solid var(--status-success)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600 }}>{item.name}</div>
-                          <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }}>{item.customerName}</div>
-                          {item.amount && <div style={{ fontSize: 11, color: 'var(--status-success)', marginTop: 4 }}>{item.amount}</div>}
+                    <div key={item.id} className="card" style={{ opacity: 0.8, borderLeft: '3px solid var(--status-success)' }} data-qoder-id="qel-card-bdf92471" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-card-bdf92471&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;card&quot;,&quot;loc&quot;:{&quot;line&quot;:1258,&quot;column&quot;:21}}">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }} data-qoder-id="qel-div-9376c163" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9376c163&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1259,&quot;column&quot;:23}}">
+                        <div style={{ flex: 1 }} data-qoder-id="qel-div-9276bfd0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9276bfd0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1260,&quot;column&quot;:25}}">
+                          <div style={{ fontSize: 13, fontWeight: 600 }} data-qoder-id="qel-div-9576c489" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9576c489&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1261,&quot;column&quot;:27}}">{item.name}</div>
+                          <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 2 }} data-qoder-id="qel-div-9476c2f6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9476c2f6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1262,&quot;column&quot;:27}}">{item.customerName}</div>
+                          {item.amount && <div style={{ fontSize: 11, color: 'var(--status-success)', marginTop: 4 }} data-qoder-id="qel-div-9f76d447" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9f76d447&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1263,&quot;column&quot;:43}}">{item.amount}</div>}
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => handleRestore(item.id!)}>恢复</Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleRestore(item.id!)} data-qoder-id="qel-button-343d26d8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-343d26d8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;PipelinePage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1265,&quot;column&quot;:25}}">恢复</Button>
                       </div>
                     </div>
                   ))}
@@ -1296,11 +1273,11 @@ function CompetitivePage({ customers, custLoading, custError, onRetry }: {
         <h1 className="page-title" data-qoder-id="qel-page-title-93d00b77" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-title-93d00b77&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CompetitivePage&quot;,&quot;elementRole&quot;:&quot;page-title&quot;,&quot;loc&quot;:{&quot;line&quot;:759,&quot;column&quot;:9}}">竞品分析</h1>
         <p className="page-subtitle" data-qoder-id="qel-page-subtitle-0fa09f33" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-subtitle-0fa09f33&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CompetitivePage&quot;,&quot;elementRole&quot;:&quot;page-subtitle&quot;,&quot;loc&quot;:{&quot;line&quot;:760,&quot;column&quot;:9}}">{compMap.size} 个主要竞争对手 · {activeCusts.length} 个客户存在竞品</p>
       </div>
-      <DataState loading={custLoading} error={custError} onRetry={onRetry}>
+      <DataState loading={custLoading} error={custError} onRetry={onRetry} data-qoder-id="qel-datastate-066713b0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-datastate-066713b0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CompetitivePage&quot;,&quot;elementRole&quot;:&quot;datastate&quot;,&quot;loc&quot;:{&quot;line&quot;:1299,&quot;column&quot;:7}}">
       {activeCusts.length === 0 ? (
-        <EmptyState icon={<Swords size={20} />} message="暂无竞品数据" hint="客户档案中设置竞品信息后将在此显示竞品分析" />
+        <EmptyState icon={<Swords size={20} />} message="暂无竞品数据" hint="客户档案中设置竞品信息后将在此显示竞品分析"  data-qoder-id="qel-emptystate-9f3a7d55" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-emptystate-9f3a7d55&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CompetitivePage&quot;,&quot;elementRole&quot;:&quot;emptystate&quot;,&quot;loc&quot;:{&quot;line&quot;:1301,&quot;column&quot;:9}}"/>
       ) : (
-      <div className="page-body">
+      <div className="page-body" data-qoder-id="qel-page-body-681feb9f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-body-681feb9f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CompetitivePage&quot;,&quot;elementRole&quot;:&quot;page-body&quot;,&quot;loc&quot;:{&quot;line&quot;:1303,&quot;column&quot;:7}}">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16, marginBottom: 32 }} data-qoder-id="qel-div-55d51347" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-55d51347&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CompetitivePage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:553,&quot;column&quot;:9}}">
           {COMPETITOR_INTEL.map(comp => (
             <div key={comp.name} className="card" data-qoder-id="qel-card-f862f391" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-card-f862f391&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CompetitivePage&quot;,&quot;elementRole&quot;:&quot;card&quot;,&quot;loc&quot;:{&quot;line&quot;:555,&quot;column&quot;:13}}">
@@ -1413,7 +1390,12 @@ function EnergyPage({ customers, custLoading, custError, onRetry }: {
 /* ═══════════════════════ PAGE 6: AI COACH ═════════════════════ */
 function CoachPage({ customers }: { customers: Customer[] }) {
   // Investment scoring state: { [itemKey]: { [dimIndex]: score } }
-  const [scores, setScores] = useState<Record<string, Record<number, number>>>({})
+  const [scores, setScores] = useState<Record<string, Record<number, number>>>(() => {
+    try {
+      const saved = localStorage.getItem('crm-invest-scores')
+      return saved ? JSON.parse(saved) : {}
+    } catch { return {} }
+  })
   // Dynamic investment items (persisted to DB)
   const [investItems, setInvestItems] = useState<{ name: string; key: string; customerId?: string; customerName?: string }[]>([])
   const [newItemName, setNewItemName] = useState('')
@@ -1440,7 +1422,9 @@ function CoachPage({ customers }: { customers: Customer[] }) {
       } else {
         itemScores[dimIdx] = value
       }
-      return { ...prev, [itemKey]: itemScores }
+      const next = { ...prev, [itemKey]: itemScores }
+      try { localStorage.setItem('crm-invest-scores', JSON.stringify(next)) } catch {}
+      return next
     })
   }
 
@@ -1479,6 +1463,7 @@ function CoachPage({ customers }: { customers: Customer[] }) {
       setScores(prev => {
         const next = { ...prev }
         delete next[key]
+        try { localStorage.setItem('crm-invest-scores', JSON.stringify(next)) } catch {}
         return next
       })
     } catch (err) {
@@ -1487,9 +1472,9 @@ function CoachPage({ customers }: { customers: Customer[] }) {
   }
 
   const iconMap: Record<string, React.ReactNode> = {
-    megaphone: <Megaphone size={18} style={{ color: 'var(--accent)' }} />,
-    shield: <Shield size={18} style={{ color: 'var(--accent)' }} />,
-    'arrow-up-circle': <ArrowUpCircle size={18} style={{ color: 'var(--accent)' }} />,
+    megaphone: <Megaphone size={18} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-megaphone-1d6a1e04" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-megaphone-1d6a1e04&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;megaphone&quot;,&quot;loc&quot;:{&quot;line&quot;:1490,&quot;column&quot;:16}}"/>,
+    shield: <Shield size={18} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-shield-ed481e99" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-shield-ed481e99&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;shield&quot;,&quot;loc&quot;:{&quot;line&quot;:1491,&quot;column&quot;:13}}"/>,
+    'arrow-up-circle': <ArrowUpCircle size={18} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-arrowupcircle-f812c4aa" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-arrowupcircle-f812c4aa&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;arrowupcircle&quot;,&quot;loc&quot;:{&quot;line&quot;:1492,&quot;column&quot;:24}}"/>,
   }
 
   return (
@@ -1523,97 +1508,91 @@ function CoachPage({ customers }: { customers: Customer[] }) {
             <Target size={16} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-target-8a4a6024" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-target-8a4a6024&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;target&quot;,&quot;loc&quot;:{&quot;line&quot;:682,&quot;column&quot;:13}}"/>
             <span style={{ fontSize: 15, fontWeight: 600 }} data-qoder-id="qel-span-a090956f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-a090956f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:683,&quot;column&quot;:13}}">投资评分矩阵</span>
           </div>
-          <table className="data-table" data-qoder-id="qel-data-table-008d2a79" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-data-table-008d2a79&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;data-table&quot;,&quot;loc&quot;:{&quot;line&quot;:685,&quot;column&quot;:11}}">
-            <thead data-qoder-id="qel-thead-6335f610" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-thead-6335f610&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;thead&quot;,&quot;loc&quot;:{&quot;line&quot;:686,&quot;column&quot;:13}}">
-              <tr data-qoder-id="qel-tr-c8c656a3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-tr-c8c656a3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;tr&quot;,&quot;loc&quot;:{&quot;line&quot;:687,&quot;column&quot;:15}}">
-                <th data-qoder-id="qel-th-a49ab162" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-th-a49ab162&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;th&quot;,&quot;loc&quot;:{&quot;line&quot;:688,&quot;column&quot;:17}}">项目</th>
-                <th>客户</th>
-                {INVESTMENT_DIMS.map(d => <th key={d} data-qoder-id="qel-th-a59ab2f5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-th-a59ab2f5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;th&quot;,&quot;loc&quot;:{&quot;line&quot;:689,&quot;column&quot;:43}}">{d}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {investItems.map(item => {
-                const itemScores = scores[item.key] || {}
-                const totalScore = Object.values(itemScores).reduce((s, v) => s + v, 0)
-                const scoredDims = Object.keys(itemScores).length
-                return (
-                <tr key={item.key}>
-                  <td style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {editingInvestKey === item.key ? (
-                      <input
-                        className="search-input"
-                        style={{ padding: '2px 6px', fontSize: 13, width: '100%' }}
-                        value={editingInvestName}
-                        onChange={e => setEditingInvestName(e.target.value)}
-                        onBlur={() => handleSaveInvestName(item.key)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleSaveInvestName(item.key); if (e.key === 'Escape') setEditingInvestKey(null) }}
-                        autoFocus
-                      />
-                    ) : (
-                      <span
-                        style={{ cursor: 'pointer' }}
-                        onDoubleClick={() => { setEditingInvestKey(item.key); setEditingInvestName(item.name) }}
-                      >
-                        {item.name}{scoredDims > 0 && <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--accent)' }}>({totalScore})</span>}
-                      </span>
-                    )}
-                    <button onClick={() => handleDeleteItem(item.key)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, flexShrink: 0 }} title="删除项目">
-                      <Trash2 size={11} />
-                    </button>
-                  </td>
-                  <td>
-                    <select
+          <div className="invest-matrix">
+            <div className="invest-matrix-header">
+              <div className="invest-col-name">项目</div>
+              <div className="invest-col-cust">客户</div>
+              {INVESTMENT_DIMS.map(d => <div key={d} className="invest-col-dim">{d}</div>)}
+            </div>
+            {investItems.map(item => {
+              const itemScores = scores[item.key] || {}
+              const totalScore = Object.values(itemScores).reduce((s, v) => s + v, 0)
+              const scoredDims = Object.keys(itemScores).length
+              return (
+              <div key={item.key} className="invest-matrix-row">
+                <div className="invest-col-name" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {editingInvestKey === item.key ? (
+                    <input
                       className="search-input"
-                      style={{ padding: '2px 6px', fontSize: 12, minWidth: 80 }}
-                      value={item.customerId || ''}
-                      onChange={e => handleUpdateInvestCust(item.key, e.target.value)}
+                      style={{ padding: '2px 6px', fontSize: 13, width: '100%' }}
+                      value={editingInvestName}
+                      onChange={e => setEditingInvestName(e.target.value)}
+                      onBlur={() => handleSaveInvestName(item.key)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleSaveInvestName(item.key); if (e.key === 'Escape') setEditingInvestKey(null) }}
+                      autoFocus
+                    />
+                  ) : (
+                    <span
+                      style={{ cursor: 'pointer', fontWeight: 500, fontSize: 13 }}
+                      onDoubleClick={() => { setEditingInvestKey(item.key); setEditingInvestName(item.name) }}
                     >
-                      <option value="">未关联</option>
-                      {customers.filter(c => !c.isGroup).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </td>
-                  {INVESTMENT_DIMS.map((_, di) => (
-                    <td key={di}>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        {[1, 2, 3, 4, 5].map(v => {
-                          const selected = itemScores[di] === v
-                          const filled = itemScores[di] != null && v <= itemScores[di]!
-                          return (
-                          <div
-                            key={v}
-                            onClick={() => handleScore(item.key, di, v)}
-                            style={{
-                              width: 24, height: 24, borderRadius: 'var(--radius-xs)',
-                              background: selected ? 'var(--accent)' : filled ? 'var(--accent-bg)' : 'var(--bg-elevated)',
-                              border: `1px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
-                              cursor: 'pointer', fontSize: 11, fontWeight: selected ? 600 : 400,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: selected ? '#fff' : filled ? 'var(--accent)' : 'var(--fg-muted)',
-                              transition: 'all 0.15s ease',
-                            }}
-                          >
-                            {v}
-                          </div>
-                          )
-                        })}
+                      {item.name}{scoredDims > 0 && <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--accent)' }}>({totalScore})</span>}
+                    </span>
+                  )}
+                  <button onClick={() => handleDeleteItem(item.key)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, flexShrink: 0 }} title="删除项目">
+                    <Trash2 size={11} />
+                  </button>
+                </div>
+                <div className="invest-col-cust">
+                  <select
+                    className="search-input"
+                    style={{ padding: '3px 6px', fontSize: 12, width: '100%' }}
+                    value={item.customerId || ''}
+                    onChange={e => handleUpdateInvestCust(item.key, e.target.value)}
+                  >
+                    <option value="">未关联</option>
+                    {customers.filter(c => !c.isGroup).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                {INVESTMENT_DIMS.map((_, di) => (
+                  <div key={di} className="invest-col-dim" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 3 }}>
+                    {[1, 2, 3, 4, 5].map(v => {
+                      const selected = itemScores[di] === v
+                      const filled = itemScores[di] != null && v <= itemScores[di]!
+                      return (
+                      <div
+                        key={v}
+                        onClick={() => handleScore(item.key, di, v)}
+                        style={{
+                          width: 26, height: 26, borderRadius: 'var(--radius-xs)',
+                          background: selected ? 'var(--accent)' : filled ? 'var(--accent-bg)' : 'var(--bg-elevated)',
+                          border: `1px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
+                          cursor: 'pointer', fontSize: 11, fontWeight: selected ? 600 : 400,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: selected ? '#fff' : filled ? 'var(--accent)' : 'var(--fg-muted)',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {v}
                       </div>
-                    </td>
-                  ))}
-                </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+              )
+            })}
+          </div>
           {/* Add new investment item */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+          <div style={{ display: 'flex', gap: 8, marginTop: 16 }} data-qoder-id="qel-div-6c59b360" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-6c59b360&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1608,&quot;column&quot;:11}}">
             <select
               className="search-input"
               style={{ width: 140 }}
               value={newItemCustId}
               onChange={e => setNewItemCustId(e.target.value)}
-            >
-              <option value="">选择客户（可选）</option>
-              {customers.filter(c => !c.isGroup).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+             data-qoder-id="qel-search-input-9084fec1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-9084fec1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1609,&quot;column&quot;:13}}">
+              <option value="" data-qoder-id="qel-option-81025c69" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-81025c69&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1615,&quot;column&quot;:15}}">选择客户（可选）</option>
+              {customers.filter(c => !c.isGroup).map(c => <option key={c.id} value={c.id} data-qoder-id="qel-option-7e0257b0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-7e0257b0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1616,&quot;column&quot;:59}}">{c.name}</option>)}
             </select>
             <input
               className="search-input"
@@ -1622,9 +1601,9 @@ function CoachPage({ customers }: { customers: Customer[] }) {
               value={newItemName}
               onChange={e => setNewItemName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleAddItem() }}
-            />
-            <Button variant="outline" size="sm" onClick={handleAddItem} disabled={!newItemName.trim()}>
-              <Plus size={14} /> 添加
+             data-qoder-id="qel-search-input-1ab4156c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-1ab4156c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1618,&quot;column&quot;:13}}"/>
+            <Button variant="outline" size="sm" onClick={handleAddItem} disabled={!newItemName.trim()} data-qoder-id="qel-button-c948958c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-c948958c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1626,&quot;column&quot;:13}}">
+              <Plus size={14}  data-qoder-id="qel-plus-67a06e67" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-plus-67a06e67&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;plus&quot;,&quot;loc&quot;:{&quot;line&quot;:1627,&quot;column&quot;:15}}"/> 添加
             </Button>
           </div>
         </div>
@@ -1634,7 +1613,7 @@ function CoachPage({ customers }: { customers: Customer[] }) {
 }
 
 /* ═══════════════════════ PAGE 7: WEEKLY ═══════════════════════ */
-function WeeklyPage() {
+function WeeklyPage(qoderProps: Record<string, any>) {
   const [openWeek, setOpenWeek] = useState<string>('')
   const [reports, setReports] = useState<api.WeeklyReport[]>([])
   const [loading, setLoading] = useState(true)
@@ -1757,43 +1736,43 @@ function WeeklyPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-        <Loader2 size={24} className="animate-spin" style={{ color: 'var(--fg-muted)' }} />
+      <div style={{ ...({ display: 'flex', justifyContent: 'center', padding: 60 }), ...((qoderProps as any)?.style) }} className={(qoderProps as any)?.className} data-qoder-id={(qoderProps as any)?.["data-qoder-id"]} data-qoder-source={(qoderProps as any)?.["data-qoder-source"]}>
+        <Loader2 size={24} className="animate-spin" style={{ color: 'var(--fg-muted)' }}  data-qoder-id="qel-animate-spin-36a027fb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-animate-spin-36a027fb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;animate-spin&quot;,&quot;loc&quot;:{&quot;line&quot;:1761,&quot;column&quot;:9}}"/>
       </div>
     )
   }
 
   return (
     <>
-      <div className="page-header">
-        <h1 className="page-title">周报</h1>
-        <p className="page-subtitle">工作记录与回顾</p>
+      <div className="page-header" data-qoder-id="qel-page-header-d895e1b7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-header-d895e1b7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;page-header&quot;,&quot;loc&quot;:{&quot;line&quot;:1768,&quot;column&quot;:7}}">
+        <h1 className="page-title" data-qoder-id="qel-page-title-418393e5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-title-418393e5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;page-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1769,&quot;column&quot;:9}}">周报</h1>
+        <p className="page-subtitle" data-qoder-id="qel-page-subtitle-7ebe9c00" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-subtitle-7ebe9c00&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;page-subtitle&quot;,&quot;loc&quot;:{&quot;line&quot;:1770,&quot;column&quot;:9}}">工作记录与回顾</p>
       </div>
-      <div className="page-body">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="page-body" data-qoder-id="qel-page-body-55d5dac0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-body-55d5dac0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;page-body&quot;,&quot;loc&quot;:{&quot;line&quot;:1772,&quot;column&quot;:7}}">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-qoder-id="qel-div-838711e0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-838711e0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1773,&quot;column&quot;:9}}">
           {reports.map(r => {
             const isOpen = openWeek === r.weekId
             return (
-              <div key={r.weekId} className="week-panel">
-                <div className="week-panel-header" onClick={() => setOpenWeek(isOpen ? '' : r.weekId)}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>{r.label}</span>
-                    {r.isCurrent && <span className="badge badge-teal">本周</span>}
+              <div key={r.weekId} className="week-panel" data-qoder-id="qel-week-panel-f900c253" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-week-panel-f900c253&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;week-panel&quot;,&quot;loc&quot;:{&quot;line&quot;:1777,&quot;column&quot;:15}}">
+                <div className="week-panel-header" onClick={() => setOpenWeek(isOpen ? '' : r.weekId)} data-qoder-id="qel-week-panel-header-cb07215a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-week-panel-header-cb07215a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;week-panel-header&quot;,&quot;loc&quot;:{&quot;line&quot;:1778,&quot;column&quot;:17}}">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} data-qoder-id="qel-div-8a871ce5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-8a871ce5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1779,&quot;column&quot;:19}}">
+                    {isOpen ? <ChevronDown size={16}  data-qoder-id="qel-chevrondown-1fd18fcc" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-chevrondown-1fd18fcc&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;chevrondown&quot;,&quot;loc&quot;:{&quot;line&quot;:1780,&quot;column&quot;:31}}"/> : <ChevronRight size={16}  data-qoder-id="qel-chevronright-f0c52aa9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-chevronright-f0c52aa9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;chevronright&quot;,&quot;loc&quot;:{&quot;line&quot;:1780,&quot;column&quot;:59}}"/>}
+                    <span style={{ fontSize: 14, fontWeight: 600 }} data-qoder-id="qel-span-48acb6e2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-48acb6e2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1781,&quot;column&quot;:21}}">{r.label}</span>
+                    {r.isCurrent && <span className="badge badge-teal" data-qoder-id="qel-badge-61cb418c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-badge-61cb418c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;badge&quot;,&quot;loc&quot;:{&quot;line&quot;:1782,&quot;column&quot;:37}}">本周</span>}
                   </div>
                 </div>
                 {isOpen && (
-                  <div className="week-panel-body">
+                  <div className="week-panel-body" data-qoder-id="qel-week-panel-body-2fcf71e5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-week-panel-body-2fcf71e5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;week-panel-body&quot;,&quot;loc&quot;:{&quot;line&quot;:1786,&quot;column&quot;:19}}">
                     {/* Focus Items */}
-                    <div style={{ marginBottom: 20 }}>
-                      <div className="detail-section-title">本周重点</div>
+                    <div style={{ marginBottom: 20 }} data-qoder-id="qel-div-1e05995f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1e05995f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1788,&quot;column&quot;:21}}">
+                      <div className="detail-section-title" data-qoder-id="qel-detail-section-title-6a583061" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-section-title-6a583061&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;detail-section-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1789,&quot;column&quot;:23}}">本周重点</div>
                       {r.focuses.map((f, i) => (
-                        <div key={i} className="action-row">
-                          <div className="dot dot-teal" />
-                          <span className="action-row-label">{f.text}</span>
+                        <div key={i} className="action-row" data-qoder-id="qel-action-row-9d70013d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-9d70013d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;action-row&quot;,&quot;loc&quot;:{&quot;line&quot;:1791,&quot;column&quot;:25}}">
+                          <div className="dot dot-teal"  data-qoder-id="qel-dot-c0b30a7c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-dot-c0b30a7c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;dot&quot;,&quot;loc&quot;:{&quot;line&quot;:1792,&quot;column&quot;:27}}"/>
+                          <span className="action-row-label" data-qoder-id="qel-action-row-label-2623be8f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-label-2623be8f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;action-row-label&quot;,&quot;loc&quot;:{&quot;line&quot;:1793,&quot;column&quot;:27}}">{f.text}</span>
                         </div>
                       ))}
-                      <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 8 }} data-qoder-id="qel-div-1b0594a6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1b0594a6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1796,&quot;column&quot;:23}}">
                         <input
                           type="text"
                           placeholder="添加重点..."
@@ -1802,36 +1781,36 @@ function WeeklyPage() {
                           onChange={e => { setNewFocusWeek(r.weekId); setNewFocusText(e.target.value) }}
                           onKeyDown={e => { if (e.key === 'Enter') handleAddFocus(r.weekId) }}
                           style={{ flex: 1, padding: '6px 10px', fontSize: 13, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', outline: 'none' }}
-                        />
-                        <button onClick={() => handleAddFocus(r.weekId)} style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--fg-secondary)' }}>
-                          <Plus size={14} />
+                         data-qoder-id="qel-input-68c4077d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-68c4077d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:1797,&quot;column&quot;:25}}"/>
+                        <button onClick={() => handleAddFocus(r.weekId)} style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--fg-secondary)' }} data-qoder-id="qel-button-f01bde4c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-f01bde4c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1806,&quot;column&quot;:25}}">
+                          <Plus size={14}  data-qoder-id="qel-plus-c51c8027" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-plus-c51c8027&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;plus&quot;,&quot;loc&quot;:{&quot;line&quot;:1807,&quot;column&quot;:27}}"/>
                         </button>
                       </div>
                     </div>
                     {/* Action Items */}
-                    <div style={{ marginBottom: 20 }}>
-                      <div className="detail-section-title">行动清单</div>
+                    <div style={{ marginBottom: 20 }} data-qoder-id="qel-div-a308a955" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a308a955&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1812,&quot;column&quot;:21}}">
+                      <div className="detail-section-title" data-qoder-id="qel-detail-section-title-e3551d45" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-section-title-e3551d45&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;detail-section-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1813,&quot;column&quot;:23}}">行动清单</div>
                       {r.actions.map(a => {
                         const isChecked = !!localChecked[a.id]
                         return (
-                          <div key={a.id} className="action-row" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div onClick={() => handleToggleAction(r.weekId, a.id, !!a.completed)} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                          <div key={a.id} className="action-row" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }} data-qoder-id="qel-action-row-9e724167" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-9e724167&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;action-row&quot;,&quot;loc&quot;:{&quot;line&quot;:1817,&quot;column&quot;:27}}">
+                            <div onClick={() => handleToggleAction(r.weekId, a.id, !!a.completed)} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }} data-qoder-id="qel-div-a008a49c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a008a49c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1818,&quot;column&quot;:29}}">
                               {isChecked
-                                ? <CheckSquare size={14} style={{ color: 'var(--status-success)', flexShrink: 0 }} />
-                                : <Square size={14} style={{ color: 'var(--fg-muted)', flexShrink: 0 }} />
+                                ? <CheckSquare size={14} style={{ color: 'var(--status-success)', flexShrink: 0 }}  data-qoder-id="qel-checksquare-7d1bad7d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-checksquare-7d1bad7d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;checksquare&quot;,&quot;loc&quot;:{&quot;line&quot;:1820,&quot;column&quot;:35}}"/>
+                                : <Square size={14} style={{ color: 'var(--fg-muted)', flexShrink: 0 }}  data-qoder-id="qel-square-f134ee8c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-square-f134ee8c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;square&quot;,&quot;loc&quot;:{&quot;line&quot;:1821,&quot;column&quot;:35}}"/>
                               }
                               <span className="action-row-label" style={{
                                 textDecoration: isChecked ? 'line-through' : 'none',
                                 color: isChecked ? 'var(--fg-muted)' : 'var(--fg)',
-                              }}>{a.text}</span>
+                              }} data-qoder-id="qel-action-row-label-292601df" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-label-292601df&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;action-row-label&quot;,&quot;loc&quot;:{&quot;line&quot;:1823,&quot;column&quot;:31}}">{a.text}</span>
                             </div>
-                            <button onClick={() => handleDeleteAction(r.weekId, a.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }} title="删除">
-                              <Trash2 size={12} />
+                            <button onClick={() => handleDeleteAction(r.weekId, a.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }} title="删除" data-qoder-id="qel-button-771ef168" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-771ef168&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1828,&quot;column&quot;:29}}">
+                              <Trash2 size={12}  data-qoder-id="qel-trash2-f85cf1bd" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-trash2-f85cf1bd&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;trash2&quot;,&quot;loc&quot;:{&quot;line&quot;:1829,&quot;column&quot;:31}}"/>
                             </button>
                           </div>
                         )
                       })}
-                      <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 8 }} data-qoder-id="qel-div-aa08b45a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-aa08b45a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1834,&quot;column&quot;:23}}">
                         <input
                           type="text"
                           placeholder="添加行动项..."
@@ -1840,24 +1819,24 @@ function WeeklyPage() {
                           onChange={e => { setNewActionWeek(r.weekId); setNewActionText(e.target.value) }}
                           onKeyDown={e => { if (e.key === 'Enter') handleAddAction(r.weekId) }}
                           style={{ flex: 1, padding: '6px 10px', fontSize: 13, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', outline: 'none' }}
-                        />
-                        <button onClick={() => handleAddAction(r.weekId)} style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--fg-secondary)' }}>
-                          <Plus size={14} />
+                         data-qoder-id="qel-input-6dc88c8a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-input-6dc88c8a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;input&quot;,&quot;loc&quot;:{&quot;line&quot;:1835,&quot;column&quot;:25}}"/>
+                        <button onClick={() => handleAddAction(r.weekId)} style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--fg-secondary)' }} data-qoder-id="qel-button-652113a9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-652113a9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1844,&quot;column&quot;:25}}">
+                          <Plus size={14}  data-qoder-id="qel-plus-4621c868" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-plus-4621c868&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;plus&quot;,&quot;loc&quot;:{&quot;line&quot;:1845,&quot;column&quot;:27}}"/>
                         </button>
                       </div>
                     </div>
                     {/* Daily Notes */}
-                    <div>
-                      <div className="detail-section-title">每日记录</div>
+                    <div data-qoder-id="qel-div-a80aefcb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a80aefcb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1850,&quot;column&quot;:21}}">
+                      <div className="detail-section-title" data-qoder-id="qel-detail-section-title-e052d9f5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-section-title-e052d9f5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;detail-section-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1851,&quot;column&quot;:23}}">每日记录</div>
                       {DAYS.map(d => (
-                        <div key={d.key} style={{ marginBottom: 12 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-secondary)', marginBottom: 6 }}>{d.label}</div>
+                        <div key={d.key} style={{ marginBottom: 12 }} data-qoder-id="qel-div-ae0af93d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-ae0af93d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1853,&quot;column&quot;:25}}">
+                          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-secondary)', marginBottom: 6 }} data-qoder-id="qel-div-ab0af484" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-ab0af484&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1854,&quot;column&quot;:27}}">{d.label}</div>
                           <textarea
                             style={{ width: '100%', minHeight: 60, padding: '10px 14px', fontSize: 13, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', resize: 'vertical', outline: 'none' }}
                             placeholder={`${d.label}的工作记录...`}
                             value={dailyNotes[`${r.weekId}_${d.key}`] || ''}
                             onChange={e => handleDailyNoteChange(r.weekId, d.key, e.target.value)}
-                          />
+                           data-qoder-id="qel-textarea-f9d5f6eb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-textarea-f9d5f6eb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;textarea&quot;,&quot;loc&quot;:{&quot;line&quot;:1855,&quot;column&quot;:27}}"/>
                         </div>
                       ))}
                     </div>
@@ -1919,12 +1898,12 @@ function QuickNoteModal({ customers, onClose, ...qoderProps }: { customers: Cust
           <Button variant="ghost" size="icon" onClick={onClose} data-qoder-id="qel-button-ad688a0f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-ad688a0f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1054,&quot;column&quot;:11}}"><X size={18}  data-qoder-id="qel-x-498164a0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-x-498164a0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;x&quot;,&quot;loc&quot;:{&quot;line&quot;:1054,&quot;column&quot;:65}}"/></Button>
         </div>
         {/* Write area */}
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12 }} data-qoder-id="qel-div-1c3bad0f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1c3bad0f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1922,&quot;column&quot;:9}}">
           <select value={custId} onChange={e => setCustId(e.target.value)}
-            style={{ width: '100%', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', outline: 'none' }}>
-            <option value="">选择客户...</option>
+            style={{ width: '100%', padding: '10px 14px', fontSize: 14, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', outline: 'none' }} data-qoder-id="qel-select-a4633af8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-select-a4633af8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;select&quot;,&quot;loc&quot;:{&quot;line&quot;:1923,&quot;column&quot;:11}}">
+            <option value="" data-qoder-id="qel-option-10eb0a77" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-10eb0a77&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1925,&quot;column&quot;:13}}">选择客户...</option>
             {customers.filter(c => !c.isGroup).map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id} data-qoder-id="qel-option-0feb08e4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-0feb08e4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1927,&quot;column&quot;:15}}">{c.name}</option>
             ))}
           </select>
         </div>
@@ -1933,32 +1912,32 @@ function QuickNoteModal({ customers, onClose, ...qoderProps }: { customers: Cust
           onChange={e => setNote(e.target.value)}
           placeholder="记录沟通内容..."
           style={{ width: '100%', minHeight: 100, padding: '12px 14px', fontSize: 14, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', resize: 'vertical', outline: 'none', marginBottom: 12 }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 20 }}>
-          <Button variant="default" onClick={handleSave} disabled={saving || !custId || !note.trim()}>
+         data-qoder-id="qel-textarea-8344b4f7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-textarea-8344b4f7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;textarea&quot;,&quot;loc&quot;:{&quot;line&quot;:1931,&quot;column&quot;:9}}"/>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 20 }} data-qoder-id="qel-div-1f3bb1c8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1f3bb1c8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1937,&quot;column&quot;:9}}">
+          <Button variant="default" onClick={handleSave} disabled={saving || !custId || !note.trim()} data-qoder-id="qel-button-2dae5c64" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-2dae5c64&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1938,&quot;column&quot;:11}}">
             {saving ? '保存中...' : '保存'}
           </Button>
         </div>
         {/* Recent notes history */}
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-secondary)', marginBottom: 8 }}>最近笔记</div>
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }} data-qoder-id="qel-div-1f3df05f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1f3df05f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1943,&quot;column&quot;:9}}">
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-secondary)', marginBottom: 8 }} data-qoder-id="qel-div-203df1f2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-203df1f2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1944,&quot;column&quot;:11}}">最近笔记</div>
           {notesLoading ? (
-            <div style={{ padding: 12, color: 'var(--fg-muted)', fontSize: 12 }}>加载中...</div>
+            <div style={{ padding: 12, color: 'var(--fg-muted)', fontSize: 12 }} data-qoder-id="qel-div-213df385" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-213df385&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1946,&quot;column&quot;:13}}">加载中...</div>
           ) : recentNotes.length === 0 ? (
-            <div style={{ padding: 12, color: 'var(--fg-muted)', fontSize: 12 }}>暂无笔记</div>
+            <div style={{ padding: 12, color: 'var(--fg-muted)', fontSize: 12 }} data-qoder-id="qel-div-1a3de880" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1a3de880&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1948,&quot;column&quot;:13}}">暂无笔记</div>
           ) : (
-            <div style={{ maxHeight: 240, overflowY: 'auto' }}>
+            <div style={{ maxHeight: 240, overflowY: 'auto' }} data-qoder-id="qel-div-1b3dea13" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1b3dea13&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1950,&quot;column&quot;:13}}">
               {recentNotes.map(n => (
-                <div key={n.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border-subtle)', display: 'flex', gap: 8 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{n.customerName || '未知客户'}</span>
-                      <span style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{n.createdAt?.slice(0, 16).replace('T', ' ')}</span>
+                <div key={n.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border-subtle)', display: 'flex', gap: 8 }} data-qoder-id="qel-div-1c3deba6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1c3deba6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1952,&quot;column&quot;:17}}">
+                  <div style={{ flex: 1, minWidth: 0 }} data-qoder-id="qel-div-1d3ded39" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1d3ded39&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1953,&quot;column&quot;:19}}">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }} data-qoder-id="qel-div-263dfb64" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-263dfb64&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1954,&quot;column&quot;:21}}">
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }} data-qoder-id="qel-span-de325253" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-de325253&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1955,&quot;column&quot;:23}}">{n.customerName || '未知客户'}</span>
+                      <span style={{ fontSize: 11, color: 'var(--fg-muted)' }} data-qoder-id="qel-span-6b356ee1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-6b356ee1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1956,&quot;column&quot;:23}}">{n.createdAt?.slice(0, 16).replace('T', ' ')}</span>
                     </div>
-                    <div style={{ fontSize: 13, color: 'var(--fg)', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{n.content}</div>
+                    <div style={{ fontSize: 13, color: 'var(--fg)', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }} data-qoder-id="qel-div-a340fec2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a340fec2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1958,&quot;column&quot;:21}}">{n.content}</div>
                   </div>
-                  <button onClick={() => handleDeleteNote(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, flexShrink: 0, alignSelf: 'flex-start' }} title="删除">
-                    <Trash2 size={12} />
+                  <button onClick={() => handleDeleteNote(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, flexShrink: 0, alignSelf: 'flex-start' }} title="删除" data-qoder-id="qel-button-404649e7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-404649e7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1960,&quot;column&quot;:19}}">
+                    <Trash2 size={12}  data-qoder-id="qel-trash2-d31c447c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-trash2-d31c447c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;QuickNoteModal&quot;,&quot;elementRole&quot;:&quot;trash2&quot;,&quot;loc&quot;:{&quot;line&quot;:1961,&quot;column&quot;:21}}"/>
                   </button>
                 </div>
               ))}

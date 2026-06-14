@@ -727,6 +727,81 @@ body {
 }
 
 /* --------------------------------------------------------------------------
+   13.5 INVESTMENT SCORING MATRIX
+   -------------------------------------------------------------------------- */
+
+.invest-matrix {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.invest-matrix-header {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.2fr) minmax(100px, 1fr) repeat(4, minmax(140px, 1fr));
+  align-items: center;
+  padding: 10px 0;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+}
+
+.invest-matrix-header > div {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-tertiary);
+  text-align: center;
+  padding: 0 8px;
+}
+
+.invest-matrix-header > div:first-child {
+  text-align: left;
+  padding-left: 16px;
+}
+
+.invest-matrix-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.2fr) minmax(100px, 1fr) repeat(4, minmax(140px, 1fr));
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+}
+
+.invest-matrix-row:last-child {
+  border-bottom: none;
+}
+
+.invest-matrix-row:hover {
+  background: var(--bg-elevated);
+}
+
+.invest-col-name {
+  padding: 0 8px 0 16px;
+  font-size: 13px;
+  color: var(--fg);
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.invest-col-cust {
+  padding: 0 8px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.invest-col-dim {
+  padding: 0 8px;
+  min-height: 32px;
+  font-size: 13px;
+  color: var(--fg-secondary);
+}
+
+/* --------------------------------------------------------------------------
    14. WEEKLY ACCORDION
    -------------------------------------------------------------------------- */
 
