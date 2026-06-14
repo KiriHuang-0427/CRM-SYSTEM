@@ -6,6 +6,7 @@ import {
   Target, AlertTriangle, Star, BarChart3,
   CheckSquare, Square, Megaphone, Shield, ArrowUpCircle,
   Clock, Calendar, Menu, Plus, Trash2, Loader2, RefreshCw, Edit3,
+  Brain, Database, Filter,
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
@@ -432,7 +433,7 @@ function DashboardPage({ customers, custLoading, custError, onRetry, todos, todo
                   <YAxis type="category" dataKey="name" width={200} tick={{ fontSize: 11, fill: 'var(--fg-secondary)' }} tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '…' : v}  data-qoder-id="qel-yaxis-583835d3" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-yaxis-583835d3&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;yaxis&quot;,&quot;loc&quot;:{&quot;line&quot;:379,&quot;column&quot;:19}}"/>
                   <ReTooltip
                     contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }}
-                    formatter={(value: number, name: string) => [fmtK(value), name === 'cy' ? 'CY YTD' : 'PY YTD']}
+                    formatter={(value: any, name: any) => [fmtK(value as number), name === 'cy' ? 'CY YTD' : 'PY YTD']}
                    data-qoder-id="qel-retooltip-87e99638" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-retooltip-87e99638&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;retooltip&quot;,&quot;loc&quot;:{&quot;line&quot;:380,&quot;column&quot;:19}}"/>
                   <Bar dataKey="py" fill="var(--border-strong)" radius={[0, 3, 3, 0]} barSize={10} name="py"  data-qoder-id="qel-bar-3ee7b2a5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-bar-3ee7b2a5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;bar&quot;,&quot;loc&quot;:{&quot;line&quot;:384,&quot;column&quot;:19}}"/>
                   <Bar dataKey="cy" fill="var(--accent)" radius={[0, 3, 3, 0]} barSize={10} name="cy"  data-qoder-id="qel-bar-3de7b112" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-bar-3de7b112&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;DashboardPage&quot;,&quot;elementRole&quot;:&quot;bar&quot;,&quot;loc&quot;:{&quot;line&quot;:385,&quot;column&quot;:19}}"/>
@@ -910,9 +911,9 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
         )}
 
         {/* Talk Points */}
-        {c.talkPoints?.length > 0 && (
+        {(c.talkPoints?.length ?? 0) > 0 && (
           <Section title="话术参考" data-qoder-id="qel-section-e0bb918e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-section-e0bb918e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;section&quot;,&quot;loc&quot;:{&quot;line&quot;:914,&quot;column&quot;:11}}">
-            {c.talkPoints.map((tp, i) => (
+            {(c.talkPoints ?? []).map((tp, i) => (
               <div key={i} className="talk-point" style={{ '--tp-color': tp.color } as React.CSSProperties} data-qoder-id="qel-talk-point-87c7ccab" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-talk-point-87c7ccab&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;talk-point&quot;,&quot;loc&quot;:{&quot;line&quot;:916,&quot;column&quot;:15}}">
                 <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }} data-qoder-id="qel-div-9f55010c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9f55010c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:917,&quot;column&quot;:17}}">{tp.title}</div>
                 {tp.text}
@@ -920,8 +921,197 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
             ))}
           </Section>
         )}
+
+        {/* AI Memory Foundation Panel (V26.07.00) */}
+        <MemoryPanel customerId={c.id} />
       </div>
     </div>
+  )
+}
+
+// ─── Memory Panel Component (V26.07.00) ──────────────────────
+// Displays memory summary in customer detail modal
+
+const MEMORY_TYPE_LABELS: Record<string, string> = {
+  customer_profile: '客户画像',
+  relationship: '联系人',
+  project: '项目/商机',
+  risk: '风险',
+  competitor: '竞品',
+  strategy: '策略',
+  decision: '决策',
+  meeting: '拜访记录',
+  weekly: '周报',
+  todo_context: '待办',
+  sales_data: '销售数据',
+  archive_raw: '原始档案',
+};
+
+const MEMORY_TYPE_COLORS: Record<string, string> = {
+  customer_profile: 'var(--accent)',
+  relationship: '#27ae60',
+  project: '#e67e22',
+  risk: '#e74c3c',
+  competitor: '#9b59b6',
+  strategy: '#2980b9',
+  decision: '#f39c12',
+  meeting: '#1abc9c',
+  weekly: '#3498db',
+  todo_context: '#95a5a6',
+  sales_data: '#34495e',
+  archive_raw: '#7f8c8d',
+};
+
+function MemoryPanel({ customerId }: { customerId: string }) {
+  const [memories, setMemories] = useState<api.Memory[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+  const [filterType, setFilterType] = useState('')
+  const [allMemories, setAllMemories] = useState<api.Memory[]>([])
+  const [allTotal, setAllTotal] = useState(0)
+
+  // Load recent 5 memories
+  useEffect(() => {
+    setLoading(true)
+    api.getMemories({ customerId, limit: 5 })
+      .then(res => { setMemories(res.data); setTotal(res.total) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [customerId])
+
+  // Load all memories when modal opens
+  useEffect(() => {
+    if (!showAll) return
+    const params: any = { customerId, limit: 100 }
+    if (filterType) params.memoryType = filterType
+    api.getMemories(params)
+      .then(res => { setAllMemories(res.data); setAllTotal(res.total) })
+      .catch(() => {})
+  }, [showAll, customerId, filterType])
+
+  // Count by type
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const m of memories) {
+      counts[m.memoryType] = (counts[m.memoryType] || 0) + 1
+    }
+    return counts
+  }, [memories])
+
+  if (loading) {
+    return (
+      <Section title="历史记忆 / AI地基">
+        <div style={{ padding: '12px 16px', color: 'var(--fg-tertiary)', fontSize: 12 }}>
+          <Loader2 size={14} className="spin" /> 加载中...
+        </div>
+      </Section>
+    )
+  }
+
+  if (total === 0) {
+    return (
+      <Section title="历史记忆 / AI地基">
+        <div style={{ padding: '12px 16px', color: 'var(--fg-tertiary)', fontSize: 12 }}>
+          <Database size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+          该客户暂无记忆数据
+        </div>
+      </Section>
+    )
+  }
+
+  return (
+    <Section title="历史记忆 / AI地基">
+      {/* Summary bar */}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10, padding: '0 2px' }}>
+        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'var(--accent-bg)', color: 'var(--accent)', fontWeight: 600 }}>
+          共 {total} 条记忆
+        </span>
+        {Object.entries(typeCounts).slice(0, 5).map(([type, count]) => (
+          <span key={type} style={{
+            fontSize: 11, padding: '2px 8px', borderRadius: 10,
+            background: `${MEMORY_TYPE_COLORS[type] || 'var(--fg-tertiary)'}15`,
+            color: MEMORY_TYPE_COLORS[type] || 'var(--fg-tertiary)',
+            fontWeight: 500,
+          }}>
+            {MEMORY_TYPE_LABELS[type] || type} {count}
+          </span>
+        ))}
+      </div>
+
+      {/* Recent memories list */}
+      {memories.map(m => (
+        <div key={m.id} style={{
+          padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
+          marginBottom: 4, borderLeft: `3px solid ${MEMORY_TYPE_COLORS[m.memoryType] || 'var(--border)'}`,
+          fontSize: 12, lineHeight: 1.5,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: MEMORY_TYPE_COLORS[m.memoryType] || 'var(--fg-tertiary)', textTransform: 'uppercase' }}>
+              {MEMORY_TYPE_LABELS[m.memoryType] || m.memoryType}
+            </span>
+            {m.importance >= 4 && <span style={{ fontSize: 9, color: '#e74c3c' }}>●高重要</span>}
+            {m.sourceFile && <span style={{ fontSize: 10, color: 'var(--fg-tertiary)', marginLeft: 'auto' }}>{m.sourceFile}</span>}
+          </div>
+          <div style={{ color: 'var(--fg-primary)', fontWeight: 500 }}>{m.title}</div>
+          {m.content && m.content.length > 120 && (
+            <div style={{ color: 'var(--fg-tertiary)', fontSize: 11, marginTop: 2 }}>
+              {m.content.slice(0, 120)}...
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* View all button */}
+      {total > 5 && (
+        <button onClick={() => setShowAll(!showAll)} style={{
+          width: '100%', padding: '8px', marginTop: 6, border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', background: 'transparent', color: 'var(--accent)',
+          cursor: 'pointer', fontSize: 12, fontWeight: 500,
+        }}>
+          {showAll ? '收起' : `查看全部 ${total} 条记忆`}
+        </button>
+      )}
+
+      {/* Expanded view with filter */}
+      {showAll && (
+        <div style={{ marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
+            <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{
+              fontSize: 11, padding: '3px 6px', borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--fg-primary)',
+            }}>
+              <option value="">全部类型</option>
+              {Object.entries(MEMORY_TYPE_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+            <span style={{ fontSize: 11, color: 'var(--fg-tertiary)', alignSelf: 'center' }}>
+              {allTotal} 条
+            </span>
+          </div>
+          <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+            {allMemories.map(m => (
+              <div key={m.id} style={{
+                padding: '6px 10px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
+                marginBottom: 3, borderLeft: `3px solid ${MEMORY_TYPE_COLORS[m.memoryType] || 'var(--border)'}`,
+                fontSize: 11, lineHeight: 1.5,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: MEMORY_TYPE_COLORS[m.memoryType] || 'var(--fg-tertiary)' }}>
+                    {MEMORY_TYPE_LABELS[m.memoryType] || m.memoryType}
+                  </span>
+                  <span style={{ fontSize: 10, color: 'var(--fg-tertiary)', marginLeft: 'auto' }}>
+                    {m.sourceKind === 'markdown' ? '📄' : m.sourceKind === 'xlsx' ? '📊' : m.sourceKind === 'database' ? '💾' : ''} {m.sourceFile || ''}
+                  </span>
+                </div>
+                <div style={{ color: 'var(--fg-primary)', fontWeight: 500, marginTop: 1 }}>{m.title}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Section>
   )
 }
 

@@ -607,6 +607,308 @@ function seedWeeklyData() {
   console.log('[DB] Weekly seed data inserted: W22, W23, W24 (focuses + actions)');
 }
 
+// ─── AI Foundation Tables (V26.07.00) ──────────────────────────
+// Memory layer, source tracking, import jobs, and memory links
+
+function initAIFoundation() {
+  // ai_memories — core memory layer for AI context
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ai_memories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id TEXT,
+      memory_type TEXT NOT NULL,
+      title TEXT,
+      content TEXT NOT NULL,
+      summary TEXT,
+      importance INTEGER DEFAULT 3,
+      confidence REAL DEFAULT 0.8,
+      source_kind TEXT,
+      source_file TEXT,
+      source_path TEXT,
+      source_anchor TEXT,
+      source_table TEXT,
+      source_id TEXT,
+      occurred_at TEXT,
+      tags TEXT,
+      metadata_json TEXT,
+      checksum TEXT UNIQUE,
+      is_archived INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // ai_source_files — track imported historical files
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ai_source_files (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_root TEXT NOT NULL,
+      file_path TEXT NOT NULL UNIQUE,
+      file_name TEXT NOT NULL,
+      file_ext TEXT,
+      file_size INTEGER,
+      file_mtime TEXT,
+      checksum TEXT,
+      import_status TEXT DEFAULT 'pending',
+      imported_at TEXT,
+      error_message TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // ai_import_jobs — track migration job runs
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ai_import_jobs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_root TEXT NOT NULL,
+      status TEXT DEFAULT 'running',
+      total_files INTEGER DEFAULT 0,
+      imported_files INTEGER DEFAULT 0,
+      skipped_files INTEGER DEFAULT 0,
+      failed_files INTEGER DEFAULT 0,
+      created_memories INTEGER DEFAULT 0,
+      linked_customers INTEGER DEFAULT 0,
+      unlinked_memories INTEGER DEFAULT 0,
+      started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      finished_at TEXT,
+      error_message TEXT,
+      metadata_json TEXT
+    );
+  `);
+
+  // ai_memory_links — many-to-many links between memories and entities
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ai_memory_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      memory_id INTEGER NOT NULL,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      relation_type TEXT DEFAULT 'related',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(memory_id, entity_type, entity_id, relation_type)
+    );
+  `);
+
+  // Indexes for AI tables
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_ai_memories_customer ON ai_memories(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_ai_memories_type ON ai_memories(memory_type);
+    CREATE INDEX IF NOT EXISTS idx_ai_memories_source ON ai_memories(source_kind, source_file);
+    CREATE INDEX IF NOT EXISTS idx_ai_memories_occurred ON ai_memories(occurred_at);
+    CREATE INDEX IF NOT EXISTS idx_ai_memory_links_entity ON ai_memory_links(entity_type, entity_id);
+    CREATE INDEX IF NOT EXISTS idx_ai_source_files_status ON ai_source_files(import_status);
+  `);
+
+  console.log('[DB] AI Foundation tables ready (ai_memories, ai_source_files, ai_import_jobs, ai_memory_links)');
+}
+
+// ─── Seed AI Memories from Existing Business Data (V26.07.00) ───
+// One-time initialization: copy key fields from business tables into ai_memories
+// Idempotent: uses checksum to avoid duplicates
+
+function seedAIMemoriesFromDB() {
+  const marker = db.prepare("SELECT COUNT(*) as cnt FROM ai_memories WHERE source_table = 'seed_marker' AND source_id = 'v26.07.00'").get();
+  if (marker.cnt > 0) {
+    console.log('[DB] AI memory seed from business tables already done, skipping');
+    return;
+  }
+
+  const crypto = require('crypto');
+  const mkChecksum = (parts) => crypto.createHash('sha256').update(parts.join('|')).digest('hex').slice(0, 32);
+
+  const insertMemory = db.prepare(`
+    INSERT OR IGNORE INTO ai_memories (customer_id, memory_type, title, content, importance, confidence,
+      source_kind, source_table, source_id, tags, checksum)
+    VALUES (@customer_id, @memory_type, @title, @content, @importance, @confidence,
+      @source_kind, @source_table, @source_id, @tags, @checksum)
+  `);
+
+  let count = 0;
+
+  const seedAll = db.transaction(() => {
+    // 10.1 customers table → ai_memories
+    const customers = db.prepare('SELECT * FROM customers').all();
+    for (const c of customers) {
+      // ai_coach → strategy
+      if (c.ai_coach && c.ai_coach.trim()) {
+        const checksum = mkChecksum(['seed', c.id, 'strategy', 'ai_coach', c.ai_coach]);
+        const r = insertMemory.run({
+          customer_id: c.id, memory_type: 'strategy',
+          title: `${c.name}｜AI教练建议`,
+          content: c.ai_coach, importance: 4, confidence: 0.9,
+          source_kind: 'database', source_table: 'customers', source_id: c.id,
+          tags: JSON.stringify(['seed', 'ai_coach']), checksum,
+        });
+        if (r.changes) count++;
+      }
+      // risk → risk
+      if (c.risk && c.risk.trim()) {
+        const checksum = mkChecksum(['seed', c.id, 'risk', 'risk', c.risk]);
+        const r = insertMemory.run({
+          customer_id: c.id, memory_type: 'risk',
+          title: `${c.name}｜风险提醒`,
+          content: c.risk, importance: 5, confidence: 0.9,
+          source_kind: 'database', source_table: 'customers', source_id: c.id,
+          tags: JSON.stringify(['seed', 'risk']), checksum,
+        });
+        if (r.changes) count++;
+      }
+      // talk_strategy → strategy
+      if (c.talk_strategy && c.talk_strategy.trim()) {
+        const checksum = mkChecksum(['seed', c.id, 'strategy', 'talk_strategy', c.talk_strategy]);
+        const r = insertMemory.run({
+          customer_id: c.id, memory_type: 'strategy',
+          title: `${c.name}｜话术策略`,
+          content: c.talk_strategy, importance: 4, confidence: 0.9,
+          source_kind: 'database', source_table: 'customers', source_id: c.id,
+          tags: JSON.stringify(['seed', 'talk_strategy']), checksum,
+        });
+        if (r.changes) count++;
+      }
+      // comp → competitor
+      if (c.comp && c.comp.trim()) {
+        const checksum = mkChecksum(['seed', c.id, 'competitor', 'comp', c.comp]);
+        const r = insertMemory.run({
+          customer_id: c.id, memory_type: 'competitor',
+          title: `${c.name}｜竞品信息`,
+          content: c.comp, importance: 4, confidence: 0.9,
+          source_kind: 'database', source_table: 'customers', source_id: c.id,
+          tags: JSON.stringify(['seed', 'competitor']), checksum,
+        });
+        if (r.changes) count++;
+      }
+      // industry/revenue/next_year → customer_profile
+      const profileParts = [];
+      if (c.industry) profileParts.push(`行业: ${c.industry}`);
+      if (c.revenue && c.revenue !== '0') profileParts.push(`营收: ${c.revenue}`);
+      if (c.next_year) profileParts.push(`明年预期: ${c.next_year}`);
+      if (profileParts.length > 0) {
+        const profileContent = profileParts.join('\n');
+        const checksum = mkChecksum(['seed', c.id, 'customer_profile', 'profile', profileContent]);
+        const r = insertMemory.run({
+          customer_id: c.id, memory_type: 'customer_profile',
+          title: `${c.name}｜客户画像`,
+          content: profileContent, importance: 3, confidence: 0.9,
+          source_kind: 'database', source_table: 'customers', source_id: c.id,
+          tags: JSON.stringify(['seed', 'profile']), checksum,
+        });
+        if (r.changes) count++;
+      }
+    }
+
+    // 10.2 contacts → relationship
+    const contacts = db.prepare('SELECT ct.*, c.name as customer_name FROM contacts ct LEFT JOIN customers c ON c.id = ct.customer_id').all();
+    for (const ct of contacts) {
+      const parts = [ct.name, ct.role, ct.tag, String(ct.stars), ct.phone || '', ct.email || ''].filter(Boolean);
+      const content = parts.join(' | ');
+      const checksum = mkChecksum(['seed', String(ct.id), 'relationship', 'contact', content]);
+      const r = insertMemory.run({
+        customer_id: ct.customer_id, memory_type: 'relationship',
+        title: `${ct.customer_name || ''}｜联系人: ${ct.name}`,
+        content, importance: 3, confidence: 0.9,
+        source_kind: 'database', source_table: 'contacts', source_id: String(ct.id),
+        tags: JSON.stringify(['seed', 'contact']), checksum,
+      });
+      if (r.changes) count++;
+    }
+
+    // 10.3 pipeline_stages → project
+    const pipelines = db.prepare(`
+      SELECT ps.*, c.name as customer_name
+      FROM pipeline_stages ps LEFT JOIN customers c ON c.id = ps.customer_id
+    `).all();
+    for (const p of pipelines) {
+      const statusParts = [p.stage, `阶段${p.pipe_stage}`, p.amount ? `金额:${p.amount}` : '', p.note || ''].filter(Boolean);
+      if (p.lost) statusParts.push(`丢失:${p.lost_reason || ''}`);
+      if (p.won) statusParts.push('已赢得');
+      const content = `${p.name}\n${statusParts.join(' | ')}`;
+      const checksum = mkChecksum(['seed', String(p.id), 'project', 'pipeline', content]);
+      const r = insertMemory.run({
+        customer_id: p.customer_id, memory_type: 'project',
+        title: `${p.customer_name || ''}｜${p.name}`,
+        content, importance: 3, confidence: 0.9,
+        source_kind: 'database', source_table: 'pipeline_stages', source_id: String(p.id),
+        tags: JSON.stringify(['seed', 'pipeline']), checksum,
+      });
+      if (r.changes) count++;
+    }
+
+    // 10.4 todos → todo_context (pending) or decision (completed)
+    const todos = db.prepare('SELECT * FROM todos').all();
+    for (const t of todos) {
+      const isCompleted = t.completed === 1;
+      const memType = isCompleted ? 'decision' : 'todo_context';
+      const importance = isCompleted ? 2 : 3;
+      const content = `${t.text}${t.deadline ? `\n截止: ${t.deadline}` : ''}${isCompleted ? '\n状态: 已完成' : ''}`;
+      const checksum = mkChecksum(['seed', String(t.id), memType, 'todo', content]);
+      const r = insertMemory.run({
+        customer_id: t.customer_id || null, memory_type: memType,
+        title: t.text.slice(0, 50),
+        content, importance, confidence: 0.9,
+        source_kind: 'database', source_table: 'todos', source_id: String(t.id),
+        tags: JSON.stringify(['seed', 'todo']), checksum,
+      });
+      if (r.changes) count++;
+    }
+
+    // 10.5 notes → meeting
+    const notes = db.prepare(`
+      SELECT n.*, c.name as customer_name FROM notes n LEFT JOIN customers c ON c.id = n.customer_id
+    `).all();
+    for (const n of notes) {
+      const checksum = mkChecksum(['seed', String(n.id), 'meeting', 'note', n.content]);
+      const r = insertMemory.run({
+        customer_id: n.customer_id, memory_type: 'meeting',
+        title: `${n.customer_name || ''}｜速记 ${n.created_at || ''}`,
+        content: n.content, importance: 3, confidence: 0.9,
+        source_kind: 'database', source_table: 'notes', source_id: String(n.id),
+        tags: JSON.stringify(['seed', 'note']), checksum,
+      });
+      if (r.changes) count++;
+    }
+
+    // 10.6 weekly tables → weekly
+    const reports = db.prepare('SELECT * FROM weekly_reports').all();
+    for (const wr of reports) {
+      const focuses = db.prepare('SELECT text FROM weekly_focuses WHERE week_id = ?').all(wr.week_id);
+      const actions = db.prepare('SELECT text, completed FROM weekly_actions WHERE week_id = ?').all(wr.week_id);
+      const dailyNotes = db.prepare('SELECT day_key, content FROM weekly_daily_notes WHERE week_id = ?').all(wr.week_id);
+      const contentParts = [`周次: ${wr.week_id}`, `标签: ${wr.label}`];
+      if (focuses.length) contentParts.push(`重点:\n${focuses.map(f => '- ' + f.text).join('\n')}`);
+      if (actions.length) contentParts.push(`行动项:\n${actions.map(a => `- ${a.text}${a.completed ? ' ✓' : ''}`).join('\n')}`);
+      if (dailyNotes.length) {
+        for (const dn of dailyNotes) {
+          if (dn.content && dn.content.trim()) contentParts.push(`${dn.day_key}: ${dn.content}`);
+        }
+      }
+      const content = contentParts.join('\n\n');
+      const checksum = mkChecksum(['seed', wr.week_id, 'weekly', 'report', content]);
+      const r = insertMemory.run({
+        customer_id: null, memory_type: 'weekly',
+        title: `${wr.label}`,
+        content, importance: 3, confidence: 0.9,
+        source_kind: 'database', source_table: 'weekly_reports', source_id: wr.week_id,
+        tags: JSON.stringify(['seed', 'weekly']), checksum,
+      });
+      if (r.changes) count++;
+    }
+
+    // Insert seed marker to prevent re-run
+    insertMemory.run({
+      customer_id: null, memory_type: 'decision',
+      title: 'V26.07.00 AI地基初始化标记',
+      content: 'Business table seed completed for V26.07.00',
+      importance: 1, confidence: 1.0,
+      source_kind: 'database', source_table: 'seed_marker', source_id: 'v26.07.00',
+      tags: JSON.stringify(['marker']), checksum: mkChecksum(['seed_marker', 'v26.07.00']),
+    });
+  });
+
+  seedAll();
+  console.log(`[DB] AI memory seed: ${count} memories created from business tables`);
+}
+
 // ─── Initialize ──────────────────────────────────────────────
 
 initSchema();
@@ -614,5 +916,7 @@ migrateSchema();
 seedData();
 seedInvestItems();
 seedWeeklyData();
+initAIFoundation();
+seedAIMemoriesFromDB();
 
 module.exports = db;

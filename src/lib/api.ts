@@ -428,6 +428,95 @@ export async function getHealth() {
     customers: number;
     todos: number;
     pipeline: number;
+    memories: number;
     timestamp: string;
   }>('/health');
+}
+
+// ─── Memories API ─────────────────────────────────────────────
+
+export interface Memory {
+  id: number;
+  customerId: string | null;
+  customerName: string | null;
+  memoryType: string;
+  title: string;
+  content: string;
+  summary: string | null;
+  importance: number;
+  confidence: number;
+  sourceKind: string | null;
+  sourceFile: string | null;
+  sourcePath: string | null;
+  sourceAnchor: string | null;
+  sourceTable: string | null;
+  sourceId: string | null;
+  occurredAt: string | null;
+  tags: string[] | string | null;
+  metadataJson: Record<string, any> | string | null;
+  checksum: string | null;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MemoryStats {
+  totalActive: number;
+  totalArchived: number;
+  byType: { memory_type: string; count: number }[];
+  bySource: { source_kind: string; count: number }[];
+  linkedCount: number;
+  unlinkedCount: number;
+  sourceFileCount: number;
+  importJobCount: number;
+  highRisk: number;
+  highImportance: number;
+}
+
+export async function getMemories(params?: {
+  customerId?: string;
+  memoryType?: string;
+  sourceKind?: string;
+  keyword?: string;
+  limit?: number;
+  offset?: number;
+  includeArchived?: boolean;
+}) {
+  const qs = new URLSearchParams();
+  if (params?.customerId) qs.set('customerId', params.customerId);
+  if (params?.memoryType) qs.set('memoryType', params.memoryType);
+  if (params?.sourceKind) qs.set('sourceKind', params.sourceKind);
+  if (params?.keyword) qs.set('keyword', params.keyword);
+  if (params?.limit) qs.set('limit', String(params.limit));
+  if (params?.offset) qs.set('offset', String(params.offset));
+  if (params?.includeArchived) qs.set('includeArchived', 'true');
+  const query = qs.toString();
+  return fetchApi<{ data: Memory[]; total: number; limit: number; offset: number }>(`/memories${query ? `?${query}` : ''}`);
+}
+
+export async function getMemoryStats() {
+  return fetchApi<ApiResponse<MemoryStats>>('/memories/stats/summary');
+}
+
+export async function archiveMemory(id: number) {
+  return fetchApi<{ success: boolean }>(`/memories/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// ─── Customer Context API ─────────────────────────────────────
+
+export interface CustomerContext {
+  customer: Record<string, any>;
+  contacts: any[];
+  pipeline: { active: any[]; lost: any[]; won: any[] };
+  todos: { pending: any[]; completedRecent: any[] };
+  notes: any[];
+  weekly: any[];
+  memories: Record<string, Memory[]>;
+  contextMeta: { memoryCount: number; lastUpdatedAt: string; generatedAt: string };
+}
+
+export async function getCustomerContext(customerId: string) {
+  return fetchApi<{ data: CustomerContext }>(`/customers/${customerId}/context`);
 }

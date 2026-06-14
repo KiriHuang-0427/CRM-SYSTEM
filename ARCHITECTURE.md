@@ -1,6 +1,6 @@
 # CRM 系统架构文档
 
-> 版本: V26.06.05 | 更新日期: 2026-06-14
+> 版本: V26.07.00 | 更新日期: 2026-06-14
 > 西门子OEM南京区域 · 个人销售CRM系统
 
 ---
@@ -93,6 +93,9 @@ graph LR
         A4[/api/notes]
         A5[/api/invest-items]
         A6[/api/weekly]
+        A7[/api/memories]
+        A8[/api/imports]
+        A9[/api/customers/:id/context]
     end
     
     subgraph 数据库表
@@ -106,14 +109,20 @@ graph LR
         T8[(weekly_focuses)]
         T9[(weekly_actions)]
         T10[(weekly_daily_notes)]
+        T11[(ai_memories)]
+        T12[(ai_source_files)]
+        T13[(ai_import_jobs)]
+        T14[(ai_memory_links)]
     end
     
     P1 --> A1
     P1 --> A3
     P2 --> A1
+    P2 --> A9
     P3 --> A2
     P4 --> A1
     P6 --> A5
+    P6 --> A7
     P7 --> A6
     
     A1 --> T1
@@ -126,6 +135,11 @@ graph LR
     A6 --> T8
     A6 --> T9
     A6 --> T10
+    A7 --> T11
+    A8 --> T12
+    A8 --> T13
+    A9 --> T11
+    A9 --> T1
 ```
 
 ---
@@ -199,6 +213,31 @@ graph LR
 | PUT | `/api/weekly/:weekId/actions/:id` | 更新行动项 | Body: `{ completed?, text? }` | `{ data: WeeklyAction }` |
 | DELETE | `/api/weekly/:weekId/actions/:id` | 删除行动项 | URL参数 id | `{ success: true }` |
 | PUT | `/api/weekly/:weekId/label` | 更新周报标签 | Body: `{ label }` | `{ data: WeeklyReport }` |
+
+### 4.7 AI记忆管理 `/api/memories`（V26.07.00新增）
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/memories` | 查询记忆列表 | `?customerId=&memoryType=&sourceKind=&keyword=&limit=&offset=&includeArchived=` | `{ data: Memory[], total, limit, offset }` |
+| GET | `/api/memories/stats/summary` | 记忆统计摘要 | 无 | `{ data: MemoryStats }` |
+| GET | `/api/memories/:id` | 记忆详情 | URL参数 id | `{ data: Memory }` |
+| POST | `/api/memories` | 手动新增记忆 | Body: `{ memoryType, content, customerId?, title?, importance?, ... }` | `{ data: Memory }` |
+| PUT | `/api/memories/:id` | 修改记忆 | Body: `{ title?, memory_type?, importance?, tags?, summary? }` | `{ data: Memory }` |
+| DELETE | `/api/memories/:id` | 软删除(is_archived=1) | URL参数 id | `{ success: true }` |
+
+### 4.8 导入管理 `/api/imports`（V26.07.00新增）
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/imports/jobs` | 查看导入任务列表 | 无 | `{ data: ImportJob[] }` |
+| GET | `/api/imports/jobs/:id` | 查看单次导入详情 | URL参数 id | `{ data: ImportJob }` |
+| GET | `/api/imports/source-files` | 查看已扫描文件 | `?status=` | `{ data: SourceFile[] }` |
+
+### 4.9 客户上下文聚合 `/api/customers/:id/context`（V26.07.00新增）
+
+| 方法 | 路径 | 说明 | 请求参数 | 响应 |
+|------|------|------|----------|------|
+| GET | `/api/customers/:id/context` | 聚合客户全量上下文(不调用AI) | URL参数 id | `{ data: { customer, contacts, pipeline, todos, notes, weekly, memories, contextMeta } }` |
 
 ---
 
@@ -331,6 +370,80 @@ graph LR
 | day_key | TEXT NOT NULL | 星期标识(mon/tue/wed/thu/fri) |
 | content | TEXT | 记录内容 |
 
+### ai_memories（AI记忆层 — V26.07.00新增）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| customer_id | TEXT | 关联客户(可为空) |
+| memory_type | TEXT NOT NULL | 记忆类型(12种枚举值) |
+| title | TEXT | 短标题 |
+| content | TEXT NOT NULL | 原始或整理后的记忆内容 |
+| summary | TEXT | AI摘要(本版本可为空) |
+| importance | INTEGER | 重要性1-5 |
+| confidence | REAL | 解析可信度0-1 |
+| source_kind | TEXT | 来源类型:markdown/xlsx/database/manual/weekly/note |
+| source_file | TEXT | 文件名 |
+| source_path | TEXT | 原始文件路径 |
+| source_anchor | TEXT | Markdown标题/Excel sheet定位 |
+| source_table | TEXT | 来源业务表 |
+| source_id | TEXT | 来源业务表记录ID |
+| occurred_at | TEXT | 事情发生日期 |
+| tags | TEXT | JSON字符串或逗号标签 |
+| metadata_json | TEXT | 扩展信息JSON |
+| checksum | TEXT UNIQUE | 去重指纹(SHA256) |
+| is_archived | INTEGER | 是否归档(0/1) |
+| created_at | TEXT | 创建时间 |
+| updated_at | TEXT | 更新时间 |
+
+### ai_source_files（导入文件追踪 — V26.07.00新增）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| source_root | TEXT NOT NULL | 导入根目录 |
+| file_path | TEXT UNIQUE NOT NULL | 文件相对路径 |
+| file_name | TEXT NOT NULL | 文件名 |
+| file_ext | TEXT | 文件扩展名 |
+| file_size | INTEGER | 文件大小(字节) |
+| file_mtime | TEXT | 文件修改时间 |
+| checksum | TEXT | 文件校验和 |
+| import_status | TEXT | 导入状态:pending/imported/skipped/failed |
+| imported_at | TEXT | 导入完成时间 |
+| error_message | TEXT | 错误信息 |
+| created_at | TEXT | 创建时间 |
+| updated_at | TEXT | 更新时间 |
+
+### ai_import_jobs（导入任务记录 — V26.07.00新增）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| source_root | TEXT NOT NULL | 导入根目录 |
+| status | TEXT | 状态:running/completed/failed |
+| total_files | INTEGER | 扫描文件总数 |
+| imported_files | INTEGER | 成功导入数 |
+| skipped_files | INTEGER | 跳过数 |
+| failed_files | INTEGER | 失败数 |
+| created_memories | INTEGER | 创建记忆数 |
+| linked_customers | INTEGER | 关联客户数 |
+| unlinked_memories | INTEGER | 未关联记忆数 |
+| started_at | TEXT | 开始时间 |
+| finished_at | TEXT | 完成时间 |
+| error_message | TEXT | 错误信息 |
+| metadata_json | TEXT | 扩展信息JSON |
+
+### ai_memory_links（记忆关联表 — V26.07.00新增）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER PRIMARY KEY | 自增ID |
+| memory_id | INTEGER NOT NULL | 关联记忆 |
+| entity_type | TEXT NOT NULL | 实体类型:customer/pipeline/todo/note/weekly/contact/invest_item |
+| entity_id | TEXT NOT NULL | 实体ID |
+| relation_type | TEXT | 关系类型(默认related) |
+| created_at | TEXT | 创建时间 |
+
 ---
 
 ## 6. 部署架构
@@ -390,6 +503,7 @@ graph TB
 | UI组件 | shadcn/ui Button | - |
 | 后端框架 | Express | 4.x |
 | 数据库驱动 | better-sqlite3 | 11+ |
+| Excel解析 | xlsx | 0.18+ |
 | 进程管理 | systemd | - |
 | Web服务器 | Nginx | 1.18+ |
 | 部署工具 | Python paramiko | - |

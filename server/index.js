@@ -17,11 +17,15 @@ const customersRouter = require('./routes/customers');
 const pipelineRouter = require('./routes/pipeline');
 const todosRouter = require('./routes/todos');
 const weeklyRouter = require('./routes/weekly');
+const memoriesRouter = require('./routes/memories');
+const importsRouter = require('./routes/imports');
 
 app.use('/api/customers', customersRouter);
 app.use('/api/pipeline', pipelineRouter);
 app.use('/api/todos', todosRouter);
 app.use('/api/weekly', weeklyRouter);
+app.use('/api/memories', memoriesRouter);
+app.use('/api/imports', importsRouter);
 
 // ─── Notes API (inline — small enough) ───────────────────────
 
@@ -156,12 +160,14 @@ app.get('/api/health', (req, res) => {
   const custCount = db.prepare('SELECT COUNT(*) as cnt FROM customers').get();
   const todoCount = db.prepare('SELECT COUNT(*) as cnt FROM todos').get();
   const pipeCount = db.prepare('SELECT COUNT(*) as cnt FROM pipeline_stages').get();
+  const memCount = db.prepare('SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0').get();
   res.json({
     status: 'ok',
-    version: 'V26.06.05',
+    version: 'V26.07.00',
     customers: custCount.cnt,
     todos: todoCount.cnt,
     pipeline: pipeCount.cnt,
+    memories: memCount.cnt,
     timestamp: new Date().toISOString(),
   });
 });
@@ -181,7 +187,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[CRM API] Server running on http://0.0.0.0:${PORT}`);
-  console.log(`[CRM API] Version: V26.06.05`);
+  console.log(`[CRM API] Version: V26.07.00`);
   console.log(`[CRM API] Database: ${path.join(__dirname, '..', 'data', 'crm.db')}`);
   // Auto-create current week report if missing
   const { ensureCurrentWeek } = require('./routes/weekly');

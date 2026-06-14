@@ -4,7 +4,7 @@
 
 ## 当前版本
 
-**V26.06.05** — 交互增强版：Todo时间戳、图表优化、Pipeline增删+Win/Lost、投资评分客户列+可编辑、速记回顾、Git初始化
+**V26.07.00** — AI地基与历史资料迁移版：AI记忆层数据库、历史资料迁移、客户上下文聚合接口
 
 ## 版本命名规范
 
@@ -22,6 +22,7 @@
 
 | 版本号 | 日期 | 变更摘要 | 备注 |
 |--------|------|----------|------|
+| V26.07.00 | 2026-06-14 | 新增ai_memories/ai_source_files/ai_import_jobs/ai_memory_links四张AI地基表，新增Memory API(查询/详情/统计/软删除)，新增客户上下文聚合接口/api/customers/:id/context，历史资料迁移脚本(29文件184条记忆从D:\知识库创建\06_客户追踪导入)，客户详情新增AI记忆面板，AI Provider预留目录 | AI地基与历史资料迁移版 |
 | V26.06.05 | 2026-06-14 | Todo创建时间戳显示、Revenue图表YAxis200+滚动+柱宽1.2x、Pipeline卡片Win/Lost按钮+赢得商机区+手动添加删除、投资评分矩阵客户列+名称可编辑、周报W22-W24数据迁移修复、速记弹窗历史笔记回顾、Git仓库初始化 | 交互增强版+Git版本管理 |
 | V26.06.04 | 2026-06-14 | Todo状态筛选切换、周报独立API(4表8端点)+自动生成当前周+去Todo同步、客户CRUD全功能(新增/编辑/删除+联系人增删改含电话邮箱)、Pipeline丢失原因内联编辑、contacts表新增phone/email字段 | 结构优化版 |
 | V26.06.03 | 2026-06-14 | 移除AI端点、Pipeline新增expected_close_date/status_description、Todos排序分状态优化、invest_items持久化表、optimistic UI、图表label≥180px | 非AI稳定版 |

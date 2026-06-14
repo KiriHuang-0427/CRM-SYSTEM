@@ -84,6 +84,22 @@ router.get('/', (req, res) => {
   }
 });
 
+// ─── GET /api/customers/:id/context ─────────────────────────────
+// Aggregated customer context for future AI access (V26.07.00)
+router.get('/:id/context', (req, res) => {
+  try {
+    const { buildCustomerContext } = require('../services/contextBuilder');
+    const context = buildCustomerContext(req.params.id);
+    if (!context) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    res.json(context);
+  } catch (err) {
+    console.error('[customers] GET :id/context error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── GET /api/customers/:id ──────────────────────────────────
 // Get single customer detail
 router.get('/:id', (req, res) => {
