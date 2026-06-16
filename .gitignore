@@ -30,3 +30,6 @@ data/
 *.sln
 *.sw?
 nul
+
+# Qoder IDE internal
+.qoder/repowiki/
