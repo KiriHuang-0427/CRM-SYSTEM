@@ -1,0 +1,125 @@
+# 西门子OEM销售CRM — 项目开发规则
+
+> Qoder IDE 自动加载此文件。每次在本项目中编码时请遵循以下规则。
+
+## 项目身份
+
+- 西门子OEM南京区域个人销售CRM，当前版本 V26.07.01
+- 全栈：React 19 + TS 6 + TailwindCSS v4 + Vite 8 (前端) + Express + better-sqlite3 (后端)
+- 数据库：SQLite `data/crm.db`，WAL模式，16张表（12业务+4AI记忆层）
+- 服务器：39.96.40.142（Ubuntu 24.04 + nginx + Node.js 20 + systemd）
+- 部署脚本：`deploy_server.py`（paramiko SSH, root / Aahfh123123@）
+
+## 绝对禁止
+
+1. 禁止接入真实AI模型 — AI Provider 目录已预留但使用 disabledProvider
+2. 禁止覆盖服务器数据库 — 只能通过API或迁移脚本修改
+3. 禁止物理删除数据 — 只允许软归档 is_archived=1
+4. 禁止重构现有业务功能 — 只做增量
+5. 版本号格式：V{年}.{月}.{序号}（如V26.07.02），禁止 v5/v6/v7
+6. Windows 环境用 `py` 启动 Python（不是 `python`）
+
+## 本地开发
+
+```bash
+# 前端（端口5173）
+npx vite
+
+# 后端（端口3001）
+cd server && node index.js
+# 或热重载：node --watch index.js
+
+# 构建
+npm run build
+```
+
+## 代码架构要点
+
+- **App.tsx**（~1400行）：8个页面模块无路由库，useState切换Tab，MemoryReviewPage是第8个Tab
+- **api.ts**：所有 fetch 调用集中于此，不要在其他组件中直接 fetch
+- **server/index.js**：Express 入口，端口3001，静态文件服务+SPA回退，内联了 notes 和 invest-items 路由
+- **server/database.js**：模块加载时自动执行初始化链（8个函数顺序执行）
+- **路由顺序重要**：`/stats/summary`、`/unlinked`、`/batch` 必须在 `/:id` 之前注册
+- **TailwindCSS v4**：通过 `@tailwindcss/vite` 插件配置，设计Token在 `src/index.css`（CSS变量，西门子品牌色 #009999）
+- **TypeScript 6**：`tsconfig.app.json` 含 `"ignoreDeprecations": "6.0"`
+- **数据库迁移安全模式**：PRAGMA table_info 检查列是否存在 → ALTER TABLE ADD COLUMN
+
+## API 端点总览
+
+| 前缀 | 端点数 | 关键路由 |
+|------|-------|---------|
+| /api/customers | 9 | CRUD + contacts + /:id/context 聚合 |
+| /api/pipeline | 9 | CRUD + Win/Lost/Restore + /lost + /won |
+| /api/todos | 4 | CRUD + status 筛选 |
+| /api/weekly | 8 | CRUD + focuses/daily-notes/actions |
+| /api/memories | 11 | CRUD + stats + unlinked + batch + link/archive |
+| /api/imports | 3 | jobs + source-files 查询 |
+| /api/notes | 3 | 内联在index.js |
+| /api/invest-items | 5 | 内联在index.js |
+| /api/health | 1 | 版本+计数 |
+
+## 部署流程
+
+```bash
+# 一键部署（构建+上传+npm install+nginx+systemd）
+py deploy_server.py
+
+# 冒烟测试
+curl http://39.96.40.142/api/health
+curl http://39.96.40.142/api/memories/stats/summary
+curl http://39.96.40.142/api/memories/unlinked?limit=2
+```
+
+## 版本发布流程（每次代码更新后执行）
+
+1. 确定版本号（V26.07.XX 递增）
+2. 更新 VERSION.md（当前版本行 + 日志表新行）
+3. 更新 ARCHITECTURE.md（如有架构变化：新API/新表/新页面）
+4. 更新 server/index.js 版本号（health端点 + 启动日志，共2处）
+5. 更新决策日志 D:\知识库创建\00_会话决策日志\决策日志.md
+6. 构建 npm run build + 部署 py deploy_server.py
+7. 冒烟测试（health版本号必须匹配 + 数据完整性 + 新端点抽检）
+8. Git commit + tag
+9. KB同步：cp VERSION.md ARCHITECTURE.md → D:\知识库创建\08_CRM系统\
+
+## 小修复快速部署（不更新版本号）
+
+```bash
+npm run build
+py deploy_server.py
+curl http://39.96.40.142/api/health
+git add --all -- . ':!nul' && git commit -m "hotfix: 修复描述"
+```
+
+## Git 注意事项
+
+- Windows 上排除 nul 文件：`git add --all -- . ':!nul'`
+- 不要 push 到远程（除非用户明确要求）
+- 提交信息格式：`V26.07.XX: 版本描述` 或 `hotfix: 修复描述`
+
+## UI 修复规则
+
+1. 先确认用户期望的交互方式再写代码
+2. 不要过度设计 — 不加新功能、不创建新页面、不引入AI
+3. UI修复后直接部署，告知验证地址 http://39.96.40.142
+
+## 知识库路径（D盘）
+
+```
+D:\知识库创建\
+├── 00_会话决策日志\
+│   ├── 决策日志.md      ← 每次会话必读
+│   ├── 投资笔记.md      ← 问股票时读
+│   └── 知识建设.md      ← 问知识库时读
+├── 06_客户追踪\
+│   ├── 客户档案\        ← 每客户一个MD
+│   └── 周报\            ← Excel格式
+└── 08_CRM系统\
+    ├── VERSION.md
+    └── ARCHITECTURE.md
+```
+
+## 服务器数据状态（V26.07.01）
+
+- 客户 16 | Pipeline 20 | 记忆 257（159 linked + 98 pending）
+- 待审核 98 条记忆可在"AI记忆审核"Tab中人工处理
