@@ -1,5 +1,5 @@
 // server/routes/imports.js
-// Import job management API routes (read-only for V26.07.00)
+// Import job management API routes (read-only for V26.06.06)
 
 const express = require('express');
 const router = express.Router();

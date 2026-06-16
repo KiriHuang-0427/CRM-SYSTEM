@@ -18,7 +18,7 @@ router.get('/stats/summary', (req, res) => {
 });
 
 // ─── GET /api/memories/unlinked ─────────────────────────────────
-// Get unlinked memories for review (V26.07.01)
+// Get unlinked memories for review (V26.06.07)
 router.get('/unlinked', (req, res) => {
   try {
     const { keyword, memoryType, sourceFile, sourceKind, reviewStatus, limit = '50', offset = '0' } = req.query;
@@ -35,7 +35,7 @@ router.get('/unlinked', (req, res) => {
 });
 
 // ─── PUT /api/memories/batch ────────────────────────────────────
-// Batch operation on memories (V26.07.01)
+// Batch operation on memories (V26.06.07)
 router.put('/batch', (req, res) => {
   try {
     const { ids, action, customerId, reason } = req.body;
@@ -97,7 +97,7 @@ router.get('/:id', (req, res) => {
 });
 
 // ─── PUT /api/memories/:id/link-customer ────────────────────────
-// Link memory to a customer (V26.07.01)
+// Link memory to a customer (V26.06.07)
 router.put('/:id/link-customer', (req, res) => {
   try {
     const { customerId, reason } = req.body;
@@ -116,7 +116,7 @@ router.put('/:id/link-customer', (req, res) => {
 });
 
 // ─── PUT /api/memories/:id/mark-unlinked-reviewed ───────────────
-// Mark as reviewed but no customer link (V26.07.01)
+// Mark as reviewed but no customer link (V26.06.07)
 router.put('/:id/mark-unlinked-reviewed', (req, res) => {
   try {
     const { reason } = req.body;
@@ -132,7 +132,7 @@ router.put('/:id/mark-unlinked-reviewed', (req, res) => {
 });
 
 // ─── PUT /api/memories/:id/archive ──────────────────────────────
-// Soft archive with review reason (V26.07.01)
+// Soft archive with review reason (V26.06.07)
 router.put('/:id/archive', (req, res) => {
   try {
     const { reason } = req.body;

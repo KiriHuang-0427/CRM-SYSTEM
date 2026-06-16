@@ -85,7 +85,7 @@ router.get('/', (req, res) => {
 });
 
 // ─── GET /api/customers/:id/context ─────────────────────────────
-// Aggregated customer context for future AI access (V26.07.00)
+// Aggregated customer context for future AI access (V26.06.06)
 router.get('/:id/context', (req, res) => {
   try {
     const { buildCustomerContext } = require('../services/contextBuilder');

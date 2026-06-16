@@ -607,7 +607,7 @@ function seedWeeklyData() {
   console.log('[DB] Weekly seed data inserted: W22, W23, W24 (focuses + actions)');
 }
 
-// ─── AI Foundation Tables (V26.07.00) ──────────────────────────
+// ─── AI Foundation Tables (V26.06.06) ──────────────────────────
 // Memory layer, source tracking, import jobs, and memory links
 
 function initAIFoundation() {
@@ -703,12 +703,12 @@ function initAIFoundation() {
   console.log('[DB] AI Foundation tables ready (ai_memories, ai_source_files, ai_import_jobs, ai_memory_links)');
 }
 
-// ─── Seed AI Memories from Existing Business Data (V26.07.00) ───
+// ─── Seed AI Memories from Existing Business Data (V26.06.06) ───
 // One-time initialization: copy key fields from business tables into ai_memories
 // Idempotent: uses checksum to avoid duplicates
 
 function seedAIMemoriesFromDB() {
-  const marker = db.prepare("SELECT COUNT(*) as cnt FROM ai_memories WHERE source_table = 'seed_marker' AND source_id = 'v26.07.00'").get();
+  const marker = db.prepare("SELECT COUNT(*) as cnt FROM ai_memories WHERE source_table = 'seed_marker' AND source_id = 'v26.06.06'").get();
   if (marker.cnt > 0) {
     console.log('[DB] AI memory seed from business tables already done, skipping');
     return;
@@ -897,11 +897,11 @@ function seedAIMemoriesFromDB() {
     // Insert seed marker to prevent re-run
     insertMemory.run({
       customer_id: null, memory_type: 'decision',
-      title: 'V26.07.00 AI地基初始化标记',
-      content: 'Business table seed completed for V26.07.00',
+      title: 'V26.06.06 AI地基初始化标记',
+      content: 'Business table seed completed for V26.06.06',
       importance: 1, confidence: 1.0,
-      source_kind: 'database', source_table: 'seed_marker', source_id: 'v26.07.00',
-      tags: JSON.stringify(['marker']), checksum: mkChecksum(['seed_marker', 'v26.07.00']),
+      source_kind: 'database', source_table: 'seed_marker', source_id: 'v26.06.06',
+      tags: JSON.stringify(['marker']), checksum: mkChecksum(['seed_marker', 'v26.06.06']),
     });
   });
 
@@ -909,7 +909,7 @@ function seedAIMemoriesFromDB() {
   console.log(`[DB] AI memory seed: ${count} memories created from business tables`);
 }
 
-// ─── Migrate AI Review Fields (V26.07.01) ───────────────────
+// ─── Migrate AI Review Fields (V26.06.07) ───────────────────
 function migrateAIReviewFields() {
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='ai_memories'").all();
   if (tables.length === 0) return;

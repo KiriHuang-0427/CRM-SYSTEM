@@ -156,18 +156,24 @@ app.delete('/api/invest-items/:key', (req, res) => {
 
 // ─── Health Check ────────────────────────────────────────────
 
+const serverStartTime = Date.now(); // V26.06.08: track server uptime
+
 app.get('/api/health', (req, res) => {
   const custCount = db.prepare('SELECT COUNT(*) as cnt FROM customers').get();
   const todoCount = db.prepare('SELECT COUNT(*) as cnt FROM todos').get();
   const pipeCount = db.prepare('SELECT COUNT(*) as cnt FROM pipeline_stages').get();
   const memCount = db.prepare('SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0').get();
+  const uptimeSeconds = Math.floor((Date.now() - serverStartTime) / 1000);
+  const uptime = `${Math.floor(uptimeSeconds / 86400)}d ${Math.floor((uptimeSeconds % 86400) / 3600)}h ${Math.floor((uptimeSeconds % 3600) / 60)}m ${uptimeSeconds % 60}s`;
   res.json({
     status: 'ok',
-    version: 'V26.07.01',
+    version: 'V26.06.08',
     customers: custCount.cnt,
     todos: todoCount.cnt,
     pipeline: pipeCount.cnt,
     memories: memCount.cnt,
+    uptime,
+    uptimeSeconds,
     timestamp: new Date().toISOString(),
   });
 });
@@ -187,7 +193,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[CRM API] Server running on http://0.0.0.0:${PORT}`);
-  console.log(`[CRM API] Version: V26.07.01`);
+  console.log(`[CRM API] Version: V26.06.08`);
   console.log(`[CRM API] Database: ${path.join(__dirname, '..', 'data', 'crm.db')}`);
   // Auto-create current week report if missing
   const { ensureCurrentWeek } = require('./routes/weekly');

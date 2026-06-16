@@ -113,7 +113,7 @@ const NAV_ITEMS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'review', label: 'AI记忆审核', icon: <ClipboardCheck size={18} /> },
 ]
 
-/* ─────────────────────── MemoryReviewPage (V26.07.01) ──────── */
+/* ─────────────────────── MemoryReviewPage (V26.06.07) ──────── */
 const MEMORY_TYPES = ['archive_raw','project','customer_profile','meeting','strategy','relationship','competitor','weekly','risk','decision','todo_context','sales_data'];
 const REVIEW_STATUSES = ['pending','linked','no_customer','archived'];
 
@@ -1249,14 +1249,14 @@ function CustomerDetailModal({ id, customers, onClose, onReload }: { id: string;
           </Section>
         )}
 
-        {/* AI Memory Foundation Panel (V26.07.00) */}
+        {/* AI Memory Foundation Panel (V26.06.06) */}
         <MemoryPanel customerId={c.id}  data-qoder-id="qel-memorypanel-566a2e6b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-memorypanel-566a2e6b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CustomerDetailModal&quot;,&quot;elementRole&quot;:&quot;memorypanel&quot;,&quot;loc&quot;:{&quot;line&quot;:926,&quot;column&quot;:9}}"/>
       </div>
     </div>
   )
 }
 
-// ─── Memory Panel Component (V26.07.00) ──────────────────────
+// ─── Memory Panel Component (V26.06.06) ──────────────────────
 // Displays memory summary in customer detail modal
 
 const MEMORY_TYPE_LABELS: Record<string, string> = {

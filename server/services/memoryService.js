@@ -206,7 +206,7 @@ function getStatsSummary() {
   const highRisk = db.prepare("SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0 AND memory_type = 'risk'").get().cnt;
   const highImportance = db.prepare('SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0 AND importance >= 4').get().cnt;
 
-  // Review status breakdown (V26.07.01)
+  // Review status breakdown (V26.06.07)
   const byReviewStatus = db.prepare(`
     SELECT review_status, COUNT(*) as count
     FROM ai_memories WHERE is_archived = 0
@@ -298,7 +298,7 @@ module.exports = {
   archiveMemory,
   getStatsSummary,
   getCustomerMemories,
-  // V26.07.01 — Review functions
+  // V26.06.07 — Review functions
   getUnlinkedMemories,
   linkCustomer,
   markUnlinkedReviewed,
@@ -306,7 +306,7 @@ module.exports = {
   batchOperation,
 };
 
-// ─── V26.07.01 Review Functions ─────────────────────────────
+// ─── V26.06.07 Review Functions ─────────────────────────────
 
 /**
  * Get unlinked memories (customer_id IS NULL, not archived)

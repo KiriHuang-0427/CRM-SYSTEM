@@ -1,8 +1,8 @@
-# AI Provider Directory (V26.07.00)
+# AI Provider Directory (V26.06.06)
 
 This directory is reserved for future AI provider implementations.
 
-## Current Status (V26.07.00)
+## Current Status (V26.06.06)
 
 AI is **disabled** in this version. Only the memory foundation and data context layer are built.
 

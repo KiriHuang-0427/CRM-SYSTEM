@@ -1,6 +1,6 @@
 # CRM 系统架构文档
 
-> 版本: V26.07.01 | 更新日期: 2026-06-14
+> 版本: V26.06.08 | 更新日期: 2026-06-16
 > 西门子OEM南京区域 · 个人销售CRM系统
 
 ---
@@ -214,7 +214,7 @@ graph LR
 | DELETE | `/api/weekly/:weekId/actions/:id` | 删除行动项 | URL参数 id | `{ success: true }` |
 | PUT | `/api/weekly/:weekId/label` | 更新周报标签 | Body: `{ label }` | `{ data: WeeklyReport }` |
 
-### 4.7 AI记忆管理 `/api/memories`（V26.07.00新增）
+### 4.7 AI记忆管理 `/api/memories`（V26.06.06新增）
 
 | 方法 | 路径 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
@@ -224,13 +224,13 @@ graph LR
 | POST | `/api/memories` | 手动新增记忆 | Body: `{ memoryType, content, customerId?, title?, importance?, ... }` | `{ data: Memory }` |
 | PUT | `/api/memories/:id` | 修改记忆 | Body: `{ title?, memory_type?, importance?, tags?, summary? }` | `{ data: Memory }` |
 | DELETE | `/api/memories/:id` | 软删除(is_archived=1) | URL参数 id | `{ success: true }` |
-| GET | `/api/memories/unlinked` | 查询未关联记忆(V26.07.01) | `?keyword=&memoryType=&sourceFile=&sourceKind=&reviewStatus=&limit=&offset=` | `{ data: Memory[], pagination }` |
-| PUT | `/api/memories/:id/link-customer` | 关联客户(V26.07.01) | Body: `{ customerId, reason? }` | `{ data: Memory }` |
-| PUT | `/api/memories/:id/mark-unlinked-reviewed` | 标记无需关联(V26.07.01) | Body: `{ reason? }` | `{ data: Memory }` |
-| PUT | `/api/memories/:id/archive` | 带审核理由归档(V26.07.01) | Body: `{ reason? }` | `{ success: true }` |
-| PUT | `/api/memories/batch` | 批量操作(V26.07.01) | Body: `{ ids[], action, customerId?, reason? }` | `{ data: { success, failed } }` |
+| GET | `/api/memories/unlinked` | 查询未关联记忆(V26.06.07) | `?keyword=&memoryType=&sourceFile=&sourceKind=&reviewStatus=&limit=&offset=` | `{ data: Memory[], pagination }` |
+| PUT | `/api/memories/:id/link-customer` | 关联客户(V26.06.07) | Body: `{ customerId, reason? }` | `{ data: Memory }` |
+| PUT | `/api/memories/:id/mark-unlinked-reviewed` | 标记无需关联(V26.06.07) | Body: `{ reason? }` | `{ data: Memory }` |
+| PUT | `/api/memories/:id/archive` | 带审核理由归档(V26.06.07) | Body: `{ reason? }` | `{ success: true }` |
+| PUT | `/api/memories/batch` | 批量操作(V26.06.07) | Body: `{ ids[], action, customerId?, reason? }` | `{ data: { success, failed } }` |
 
-### 4.8 导入管理 `/api/imports`（V26.07.00新增）
+### 4.8 导入管理 `/api/imports`（V26.06.06新增）
 
 | 方法 | 路径 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
@@ -238,7 +238,7 @@ graph LR
 | GET | `/api/imports/jobs/:id` | 查看单次导入详情 | URL参数 id | `{ data: ImportJob }` |
 | GET | `/api/imports/source-files` | 查看已扫描文件 | `?status=` | `{ data: SourceFile[] }` |
 
-### 4.9 客户上下文聚合 `/api/customers/:id/context`（V26.07.00新增）
+### 4.9 客户上下文聚合 `/api/customers/:id/context`（V26.06.06新增）
 
 | 方法 | 路径 | 说明 | 请求参数 | 响应 |
 |------|------|------|----------|------|
@@ -375,7 +375,7 @@ graph LR
 | day_key | TEXT NOT NULL | 星期标识(mon/tue/wed/thu/fri) |
 | content | TEXT | 记录内容 |
 
-### ai_memories（AI记忆层 — V26.07.00新增）
+### ai_memories（AI记忆层 — V26.06.06新增）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -398,13 +398,13 @@ graph LR
 | metadata_json | TEXT | 扩展信息JSON |
 | checksum | TEXT UNIQUE | 去重指纹(SHA256) |
 | is_archived | INTEGER | 是否归档(0/1) |
-| review_status | TEXT | 审核状态: pending/linked/no_customer/archived (V26.07.01) |
-| review_note | TEXT | 审核备注 (V26.07.01) |
-| reviewed_at | TEXT | 审核时间 (V26.07.01) |
+| review_status | TEXT | 审核状态: pending/linked/no_customer/archived (V26.06.07) |
+| review_note | TEXT | 审核备注 (V26.06.07) |
+| reviewed_at | TEXT | 审核时间 (V26.06.07) |
 | created_at | TEXT | 创建时间 |
 | updated_at | TEXT | 更新时间 |
 
-### ai_source_files（导入文件追踪 — V26.07.00新增）
+### ai_source_files（导入文件追踪 — V26.06.06新增）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -422,7 +422,7 @@ graph LR
 | created_at | TEXT | 创建时间 |
 | updated_at | TEXT | 更新时间 |
 
-### ai_import_jobs（导入任务记录 — V26.07.00新增）
+### ai_import_jobs（导入任务记录 — V26.06.06新增）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -441,7 +441,7 @@ graph LR
 | error_message | TEXT | 错误信息 |
 | metadata_json | TEXT | 扩展信息JSON |
 
-### ai_memory_links（记忆关联表 — V26.07.00新增）
+### ai_memory_links（记忆关联表 — V26.06.06新增）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -494,7 +494,7 @@ graph TB
 
 - `V26.06.01` — 2026年6月第1个版本
 - `V26.06.02` — 2026年6月第2个版本
-- `V26.07.01` — 2026年7月第1个版本
+- `V26.07.01` — 2026年7月第1个版本（注：V26.07已修正为V26.06.06/V26.06.07）
 
 ---
 

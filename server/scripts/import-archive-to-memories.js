@@ -24,7 +24,7 @@ const IGNORED_EXT = ['.html', '.png', '.jpg', '.pdf', '.tmp', '.lock', '.mermaid
 
 function main() {
   console.log('='.repeat(60));
-  console.log('CRM V26.07.00 — Historical Archive Import');
+  console.log('CRM V26.06.06 — Historical Archive Import');
   console.log('='.repeat(60));
   console.log(`Archive root: ${ARCHIVE_ROOT}`);
   console.log(`Time: ${new Date().toISOString()}`);
@@ -259,7 +259,7 @@ function createImportJob(sourceRoot) {
 function printReport(stats, totalFiles) {
   console.log('');
   console.log('='.repeat(60));
-  console.log('Import Report — V26.07.00');
+  console.log('Import Report — V26.06.06');
   console.log('='.repeat(60));
   console.log(`扫描目录：${ARCHIVE_ROOT}`);
   console.log(`扫描文件数：${totalFiles}`);

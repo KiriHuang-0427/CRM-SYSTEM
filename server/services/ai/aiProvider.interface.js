@@ -1,6 +1,6 @@
 // server/services/ai/aiProvider.interface.js
 // AI Provider interface definition — for future implementation only
-// V26.07.00 does NOT connect to any real AI model
+// V26.06.06 does NOT connect to any real AI model
 
 /**
  * AI Provider Interface
@@ -19,7 +19,7 @@
  */
 
 module.exports = {
-  // Interface definition only — no implementation in V26.07.00
+  // Interface definition only — no implementation in V26.06.06
   INTERFACE_VERSION: '1.0.0',
 
   REQUIRED_METHODS: ['generate', 'summarize', 'analyze'],
