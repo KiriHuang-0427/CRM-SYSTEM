@@ -15,11 +15,23 @@ if sys.platform == 'win32':
         pass
 
 # ===== 阿里云 OSS 配置 =====
+# 从环境变量读取密钥（.env 文件不提交到 Git）
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 OSS_KEY_ID     = os.environ.get('OSS_KEY_ID', '')
 OSS_KEY_SECRET = os.environ.get('OSS_KEY_SECRET', '')
 OSS_ENDPOINT   = 'https://oss-cn-hangzhou.aliyuncs.com'
 OSS_BUCKET     = 'siemens-crm'
 PUBLIC_URL     = 'https://siemens-crm.oss-cn-hangzhou.aliyuncs.com'
+
+if not OSS_KEY_ID or not OSS_KEY_SECRET:
+    print('错误: 请设置 OSS_KEY_ID 和 OSS_KEY_SECRET 环境变量')
+    print('或在 .env 文件中配置（参考 .env.example）')
+    sys.exit(1)
 
 # 项目路径
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

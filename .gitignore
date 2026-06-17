@@ -31,5 +31,9 @@ data/
 *.sw?
 nul
 
+# Environment secrets
+.env
+.env.local
+
 # Qoder IDE internal
 .qoder/repowiki/
