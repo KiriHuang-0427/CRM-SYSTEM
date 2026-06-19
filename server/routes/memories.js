@@ -4,6 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const memoryService = require('../services/memoryService');
+const validate = require('../middleware/validate');
 
 // ─── GET /api/memories/stats/summary ────────────────────────────
 // Memory statistics (must be before /:id to avoid route conflict)
@@ -36,7 +37,7 @@ router.get('/unlinked', (req, res) => {
 
 // ─── PUT /api/memories/batch ────────────────────────────────────
 // Batch operation on memories (V26.06.07)
-router.put('/batch', (req, res) => {
+router.put('/batch', validate({ ids: { required: true }, action: { required: true, maxLength: 50 } }), (req, res) => {
   try {
     const { ids, action, customerId, reason } = req.body;
     if (!ids || !action) {
@@ -98,7 +99,7 @@ router.get('/:id', (req, res) => {
 
 // ─── PUT /api/memories/:id/link-customer ────────────────────────
 // Link memory to a customer (V26.06.07)
-router.put('/:id/link-customer', (req, res) => {
+router.put('/:id/link-customer', validate({ customerId: { required: true, maxLength: 100 } }), (req, res) => {
   try {
     const { customerId, reason } = req.body;
     if (!customerId) {
@@ -149,7 +150,7 @@ router.put('/:id/archive', (req, res) => {
 
 // ─── POST /api/memories ────────────────────────────────────────
 // Create a new memory (manual)
-router.post('/', (req, res) => {
+router.post('/', validate({ content: { required: true }, memoryType: { required: true, maxLength: 50 } }), (req, res) => {
   try {
     const memory = memoryService.createMemory(req.body);
     res.status(201).json({ data: memory });

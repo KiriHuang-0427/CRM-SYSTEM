@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
+const validate = require('../middleware/validate');
 
 // ─── GET /api/pipeline ───────────────────────────────────────
 // Pipeline summary — count and total per stage (only active items)
@@ -173,7 +174,7 @@ router.get('/:customerId', (req, res) => {
 
 // ─── POST /api/pipeline ──────────────────────────────────────
 // Create new pipeline item
-router.post('/', (req, res) => {
+router.post('/', validate({ customerId: { required: true }, name: { required: true, maxLength: 200 } }), (req, res) => {
   try {
     const { customerId, name, stage, amount, pipeStage, note, expectedCloseDate, statusDescription } = req.body;
     if (!customerId || !name) {

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
+const validate = require('../middleware/validate');
 
 // ─── GET /api/todos ──────────────────────────────────────────
 // List todos, optionally filtered by status
@@ -58,7 +59,7 @@ router.get('/', (req, res) => {
 
 // ─── POST /api/todos ─────────────────────────────────────────
 // Create a new todo
-router.post('/', (req, res) => {
+router.post('/', validate({ text: { required: true, maxLength: 500 } }), (req, res) => {
   try {
     const { text, customerId, deadline } = req.body;
 

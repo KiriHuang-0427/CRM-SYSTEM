@@ -4,7 +4,7 @@
 
 ## 当前版本
 
-**V26.06.08** — 版本号修正与健康检查增强：修正所有V26.07错误版本号为V26.06，health端点新增uptime字段
+**V26.06.09** — 架构分层重构：数据库版本化迁移系统(10个迁移脚本) + 接口参数校验中间件(11处写操作) + 配置集中化(config/index.js) + 内联路由模块化提取(notes/investItems) + 统一错误处理中间件(errorHandler)
 
 ## 版本命名规范
 
@@ -22,6 +22,7 @@
 
 | 版本号 | 日期 | 变更摘要 | 备注 |
 |--------|------|----------|------|
+| V26.06.09 | 2026-06-16 | 架构分层重构：database.js 953→27行、index.js 207→85行；新增db/migrations/目录(10个版本化迁移脚本)、middleware/目录(validate.js+errorHandler.js)、config/目录(config/index.js)、routes/notes.js+investItems.js提取；11处写操作添加参数校验 | 架构稳定性重构版 |
 | V26.06.07 | 2026-06-14 | 本地历史资料上传服务器/opt/crm/imports/并导入257条记忆(184新增+73种子)，ai_memories新增review_status/review_note/reviewed_at三字段，新增5个审核API端点(unlinked/link-customer/mark-unlinked-reviewed/archive/batch)，新增第8导航页AI记忆审核(统计栏+筛选器+记忆卡片+关联/标记/归档+批量操作) | 服务器历史导入+记忆审核版 |
 | V26.06.06 | 2026-06-14 | 新增ai_memories/ai_source_files/ai_import_jobs/ai_memory_links四张AI地基表，新增Memory API(查询/详情/统计/软删除)，新增客户上下文聚合接口/api/customers/:id/context，历史资料迁移脚本(29文件184条记忆从D:\知识库创建\06_客户追踪导入)，客户详情新增AI记忆面板，AI Provider预留目录 | AI地基与历史资料迁移版 |
 | V26.06.05 | 2026-06-14 | Todo创建时间戳显示、Revenue图表YAxis200+滚动+柱宽1.2x、Pipeline卡片Win/Lost按钮+赢得商机区+手动添加删除、投资评分矩阵客户列+名称可编辑、周报W22-W24数据迁移修复、速记弹窗历史笔记回顾、Git仓库初始化 | 交互增强版+Git版本管理 |

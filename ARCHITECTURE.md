@@ -1,6 +1,6 @@
 # CRM 系统架构文档
 
-> 版本: V26.06.08 | 更新日期: 2026-06-16
+> 版本: V26.06.09 | 更新日期: 2026-06-16
 > 西门子OEM南京区域 · 个人销售CRM系统
 
 ---
@@ -495,6 +495,50 @@ graph TB
 - `V26.06.01` — 2026年6月第1个版本
 - `V26.06.02` — 2026年6月第2个版本
 - `V26.07.01` — 2026年7月第1个版本（注：V26.07已修正为V26.06.06/V26.06.07）
+
+---
+
+## 7.5 架构分层重构（V26.06.09）
+
+```mermaid
+graph TB
+    subgraph 后端分层架构
+        CFG[config/index.js<br/>集中配置] --> IDX[index.js<br/>入口+路由注册]
+        IDX --> MW[middleware/<br/>validate + errorHandler]
+        IDX --> RT[routes/<br/>8个路由模块]
+        RT --> DB_JS[database.js<br/>连接+迁移入口]
+        DB_JS --> MIG[db/migrate.js<br/>迁移执行器]
+        MIG --> MIGS[db/migrations/<br/>10个版本化脚本]
+        RT --> DB[(SQLite<br/>crm.db)]
+    end
+```
+
+**重构要点：**
+
+| 层级 | 重构前 | 重构后 | 文件 |
+|------|--------|--------|------|
+| 数据库层 | database.js 953行混合建表+种子+迁移 | database.js 27行，仅连接+WAL+调用迁移 | server/database.js |
+| 迁移系统 | 内联函数，无版本追踪 | schema_versions表 + 10个版本化迁移脚本 | server/db/migrate.js + migrations/ |
+| 配置层 | 硬编码在index.js | 集中到config/index.js，环境变量覆盖 | server/config/index.js |
+| 校验层 | 无参数校验 | validate中间件工厂，11处写操作全覆盖 | server/middleware/validate.js |
+| 错误处理 | 各路由独立try-catch | 统一errorHandler中间件 | server/middleware/errorHandler.js |
+| 路由层 | index.js内联127行notes+invest-items | 提取为独立路由文件 | server/routes/notes.js + investItems.js |
+| 入口层 | index.js 207行 | index.js 85行，仅注册路由 | server/index.js |
+
+**迁移脚本清单：**
+
+| 版本 | 文件 | 内容 |
+|------|------|------|
+| 001 | 001_init_core_tables.js | 12张业务核心表建表 |
+| 002 | 002_seed_data.js | 16客户+联系人+商机+话术+待办种子数据 |
+| 003 | 003_pipeline_lost_won.js | pipeline_stages丢失/赢得字段 |
+| 004 | 004_todos_sort_order.js | todos排序字段 |
+| 005 | 005_invest_items_weekly.js | invest_items表+种子+weekly表 |
+| 006 | 006_invest_customer_id.js | invest_items.customer_id列 |
+| 007 | 007_ai_foundation.js | AI四张地基表+索引 |
+| 008 | 008_ai_review_fields.js | ai_memories审核字段+backfill |
+| 009 | 009_seed_ai_memories.js | 81条AI记忆种子数据 |
+| 010 | 010_contacts_phone_email.js | contacts电话邮箱字段 |
 
 ---
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
+const validate = require('../middleware/validate');
 
 // Helper: get ISO week ID (YYYY-WNN) from a date
 function getISOWeekId(date) {
@@ -60,7 +61,7 @@ router.get('/', (req, res) => {
 
 // ─── POST /api/weekly — create a new weekly report ──────────────
 
-router.post('/', (req, res) => {
+router.post('/', validate({ weekId: { required: true, maxLength: 20 } }), (req, res) => {
   const { weekId, label } = req.body;
   if (!weekId) {
     return res.status(400).json({ error: 'weekId is required' });
@@ -136,7 +137,7 @@ router.put('/:weekId/daily-notes', (req, res) => {
 
 // ─── POST /api/weekly/:weekId/actions — add action item ─────────
 
-router.post('/:weekId/actions', (req, res) => {
+router.post('/:weekId/actions', validate({ text: { required: true, maxLength: 500 } }), (req, res) => {
   const { weekId } = req.params;
   const { text } = req.body;
   if (!text || !text.trim()) {

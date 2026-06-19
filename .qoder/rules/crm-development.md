@@ -1,3 +1,6 @@
+---
+trigger: always_on
+---
 # CRM 项目开发规则
 
 本规则适用于西门子OEM南京区域个人销售CRM系统的所有开发会话。
@@ -5,14 +8,14 @@
 ## 项目概况
 
 - 项目名称：西门子OEM南京区域 · 个人销售CRM
-- 当前版本：V26.06.08
+- 当前版本：V26.06.09
 - 公网地址：http://39.96.40.142
 - 服务器：阿里云轻量服务器 Ubuntu 24.04 + Nginx + Node.js 20
 - 技术栈：React 19 + TypeScript 6.0 + TailwindCSS v4 + Vite 8 / Express 4 + better-sqlite3 / SQLite
 
 ## 版本号规范
 
-- 格式：`V{年}.{月}.{序号}`，如 V26.06.08
+- 格式：`V{年}.{月}.{序号}`，如 V26.06.09
 - 月份必须为实际日历月（6月只能用 V26.06.xx，禁止 V26.07.xx）
 - 序号递增，同一月内不允许跳号
 - 版本号需同步更新到：VERSION.md、server/index.js（2处）、ARCHITECTURE.md

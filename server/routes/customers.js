@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
+const validate = require('../middleware/validate');
 
 // ─── GET /api/customers ──────────────────────────────────────
 // List all customers with optional search and sort
@@ -161,7 +162,7 @@ router.get('/:id', (req, res) => {
 
 // ─── POST /api/customers ─────────────────────────────────────
 // Create new customer
-router.post('/', (req, res) => {
+router.post('/', validate({ name: { required: true, maxLength: 200 } }), (req, res) => {
   try {
     const {
       name, color = 'gray', industry = '', revenue = '0', nextYear = '',
@@ -261,7 +262,7 @@ router.delete('/:id', (req, res) => {
 
 // ─── POST /api/customers/:id/contacts ─────────────────────────
 // Add a contact to a customer
-router.post('/:id/contacts', (req, res) => {
+router.post('/:id/contacts', validate({ name: { required: true, maxLength: 100 } }), (req, res) => {
   try {
     const { id } = req.params;
     const customer = db.prepare('SELECT id FROM customers WHERE id = ?').get(id);
