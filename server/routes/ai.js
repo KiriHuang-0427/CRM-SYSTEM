@@ -234,4 +234,43 @@ router.post('/memory', (req, res) => {
   }
 });
 
+// ─── GET /api/ai/audit ──────────────────────────────────────
+router.get('/audit', (req, res) => {
+  try {
+    const { audit } = require('../services/ai/memoryAudit');
+    const result = audit();
+    res.json({ data: result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/ai/agent/report ──────────────────────────────
+router.post('/agent/report', (req, res) => {
+  try {
+    const { audit } = require('../services/ai/memoryAudit');
+    const { getProvider } = require('../services/ai/aiProvider');
+    const provider = getProvider();
+    if (!provider.apiKey) return res.status(400).json({ error: '未配置 AI Key' });
+
+    const data = audit();
+    const prompt = `基于以下四域审计数据，生成一份简短的战术报告（100字内）：
+总记忆: ${data.totalMemories}
+各域: ${JSON.stringify(data.domains)}
+7天增长: ${JSON.stringify(data.weekGrowth)}
+反馈采纳率: ${data.feedback.adoptionRate || 0}%`;
+
+    (async () => {
+      try {
+        const result = await provider.generate(prompt, '你是CRM数据分析师，给出简洁洞察。');
+        res.json({ success: true, data: { report: result.content, audit: data } });
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    })();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

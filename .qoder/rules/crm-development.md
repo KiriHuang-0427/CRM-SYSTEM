@@ -8,24 +8,25 @@ trigger: always_on
 ## 项目概况
 
 - 项目名称：西门子OEM南京区域 · 个人销售CRM
-- 当前版本：V26.06.10
+- 当前版本：V26.06.12
 - 公网地址：http://39.96.40.142
 - 服务器：阿里云轻量服务器 Ubuntu 24.04 + Nginx + Node.js 20
 - 技术栈：React 19 + TypeScript 6.0 + TailwindCSS v4 + Vite 8 / Express 4 + better-sqlite3 / SQLite
 
 ## 版本号规范
 
-- 格式：`V{年}.{月}.{序号}`，如 V26.06.10
+- 格式：`V{年}.{月}.{序号}`，如 V26.06.12
 - 月份必须为实际日历月（6月只能用 V26.06.xx，禁止 V26.07.xx）
 - 序号递增，同一月内不允许跳号
 - 版本号需同步更新到：VERSION.md、server/index.js（2处）、ARCHITECTURE.md
 
 ## 禁止行为
 
-- 禁止接入真实 AI 模型（AI Provider 目录已预留但使用 disabledProvider）
+- 禁止接入真实 AI 模型（**已过时** — V26.06.11 起已正式接入 DeepSeek/OpenAI）
 - 禁止覆盖服务器数据库（只能通过 API 或迁移脚本修改）
 - 禁止物理删除数据（仅允许 is_archived=1 软归档）
 - 禁止重构现有业务功能（仅允许增量开发）
+- **四域自动摘要原则：** 任何业务路由的 POST/PUT 操作成功后，必须调用 `memoryLogger` 写入一条摘要到 `ai_memories`。类型映射：客户→customer_profile、联系人→relationship、商机→project、待办→todo_context、速记→meeting、周报→weekly
 - 禁止修改服务器 SSH 认证方式（复用现有 deploy_server.py）
 
 ## 部署规范

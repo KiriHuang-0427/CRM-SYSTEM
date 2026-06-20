@@ -4,7 +4,7 @@
 
 ## 当前版本
 
-**V26.06.12** — 四域闭环：memoryLogger自动摘要(16处钩子) + AI教练反馈闭环(👍👎→insight) + 手动「写入记忆域」卡片(5类型×3域) + 待办/速记/周报全联动
+**V26.06.13** — 工程化沉淀：fullstack-scaffold v2(含memoryLogger模板+Vite代理) + crm-development规则更新(四域自动摘要原则) + memoryAudit域审计服务 + salesMemoryAgent战术报告端点
 
 ## 版本命名规范
 
@@ -22,7 +22,8 @@
 
 | 版本号 | 日期 | 变更摘要 | 备注 |
 |--------|------|----------|------|
-| V26.06.12 | 2026-06-20 | 四域闭环：memoryLogger自动摘要(16处钩子→5路由) + AI教练反馈闭环(👍👎→insight) + 手动写入记忆域卡片 + 待办/速记/周报全联动 + AI中枢Vite代理修复 | 四域闭环版 |
+| V26.06.13 | 2026-06-20 | 工程化沉淀：fullstack-scaffold v2(含memoryLogger模板+Vite代理) + crm-development规则更新(四域自动摘要) + memoryAudit域审计服务 + salesMemoryAgent战术报告 | 工程化沉淀版 |
+| V26.06.12 | 2026-06-20 | 四域闭环：memoryLogger自动摘要(16处钩子) + AI教练反馈闭环 + 手动写入记忆域卡片 + 待办/速记/周报全联动 | 四域闭环版 |
 | V26.06.11 | 2026-06-20 | AI全面接入：openaiProvider.js(多模型) + AI销售教练7卡片(10数据源) + AI周报智能总结 + 历史周报导入(7周/37重点/96行动) + AI中枢UI统一 | AI全面接入版 |
 | V26.06.10 | 2026-06-16 | AI记忆四层架构升级：memoryRouter.js关键词智能路由、17种类型×4域体系(memoryTypes.js+memory_domains表)、L3 insight/L4 strategy_plan分层、统一/api/context/query入口(4端点)、contextBuilder.js重构接入Router+TopK、Phase3-7框架预留(6新表+4服务骨架)、AI中枢前端页面 | AI记忆架构升级版 |
 | V26.06.09 | 2026-06-16 | 架构分层重构：database.js 953→27行、index.js 207→85行；新增db/migrations/目录(10个版本化迁移脚本)、middleware/目录(validate.js+errorHandler.js)、config/目录(config/index.js)、routes/notes.js+investItems.js提取；11处写操作添加参数校验 | 架构稳定性重构版 |
