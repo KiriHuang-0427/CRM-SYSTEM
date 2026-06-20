@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const validate = require('../middleware/validate');
+const { note: logNote } = require('../services/memoryLogger');
 
 // ─── GET /api/notes ───────────────────────────────────────────
 
@@ -39,6 +40,7 @@ router.post('/', validate({ customerId: { required: true, maxLength: 100 }, cont
       'INSERT INTO notes (customer_id, content) VALUES (?, ?)'
     ).run(customerId, content);
     const note = db.prepare('SELECT id, customer_id as customerId, content, created_at as createdAt FROM notes WHERE id = ?').get(result.lastInsertRowid);
+    logNote('add', customerId, '', content);
     res.status(201).json({ data: note });
   } catch (err) {
     res.status(500).json({ error: err.message });

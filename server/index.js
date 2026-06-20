@@ -53,7 +53,7 @@ app.get('/api/health', (req, res) => {
   const uptime = `${Math.floor(uptimeSeconds / 86400)}d ${Math.floor((uptimeSeconds % 86400) / 3600)}h ${Math.floor((uptimeSeconds % 3600) / 60)}m ${uptimeSeconds % 60}s`;
   res.json({
     status: 'ok',
-    version: 'V26.06.11',
+    version: 'V26.06.12',
     customers: custCount.cnt,
     todos: todoCount.cnt,
     pipeline: pipeCount.cnt,
@@ -79,7 +79,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[CRM API] Server running on http://0.0.0.0:${PORT}`);
-  console.log(`[CRM API] Version: V26.06.11`);
+  console.log(`[CRM API] Version: V26.06.12`);
   console.log(`[CRM API] Database: ${config.DB_PATH}`);
   // Auto-create current week report if missing
   const { ensureCurrentWeek } = require('./routes/weekly');

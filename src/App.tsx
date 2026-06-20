@@ -7,6 +7,7 @@ import {
   CheckSquare, Square, Megaphone, Shield, ArrowUpCircle,
   Clock, Calendar, Menu, Plus, Trash2, Loader2, RefreshCw, Edit3,
   Brain, Database, Filter, ClipboardCheck, Link2, Archive, Copy, Layers, Network, Zap as ZapIcon,
+  ThumbsUp, ThumbsDown, MessageSquare,
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
@@ -18,7 +19,7 @@ import {
 } from '@/lib/data'
 import * as api from '@/lib/api'
 import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary, Memory, MemoryStats, MemoryPoolSummary, MemoryTypeDef, AIConfig } from '@/lib/api'
-import { getUnlinkedMemories, linkMemoryToCustomer, markMemoryUnlinkedReviewed, archiveMemoryWithReason, batchMemoryOperation, getMemoryStats, getContextPools, getContextTypes, getAIConfig, saveAIConfig, testAIConnection, generateCoachAdvice, generateWeeklySummary } from '@/lib/api'
+import { getUnlinkedMemories, linkMemoryToCustomer, markMemoryUnlinkedReviewed, archiveMemoryWithReason, batchMemoryOperation, getMemoryStats, getContextPools, getContextTypes, getAIConfig, saveAIConfig, testAIConnection, generateCoachAdvice, generateWeeklySummary, submitCoachFeedback, saveAIMemory } from '@/lib/api'
 import { cn, fmtK, daysSince, colorHex, priorityLabel } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -470,6 +471,36 @@ function AIHubPage() {
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // ─── 写入域状态 ──────────────────────────
+  const [memoryText, setMemoryText] = useState('');
+  const [memoryType, setMemoryType] = useState('learning');
+  const [memorySaving, setMemorySaving] = useState(false);
+  const [memorySaved, setMemorySaved] = useState(false);
+
+  const MEMORY_WRITE_TYPES = [
+    { value: 'learning', label: '经验学习', domain: '成长域', desc: '失败教训/成功经验' },
+    { value: 'insight', label: '洞察', domain: '成长域', desc: 'AI总结的认知推断' },
+    { value: 'decision', label: '决策记录', domain: '销售域', desc: '关键决策/报价/方案选择' },
+    { value: 'strategy', label: '销售策略', domain: '销售域', desc: '推进计划/谈判思路' },
+    { value: 'system_memory', label: '系统记忆', domain: 'AI域', desc: 'AI行为准则/改进点' },
+  ];
+
+  async function handleWriteMemory() {
+    if (!memoryText.trim()) return;
+    setMemorySaving(true);
+    try {
+      await saveAIMemory({ memoryType, content: memoryText.trim() });
+      setMemoryText('');
+      setMemorySaved(true);
+      setTimeout(() => setMemorySaved(false), 2000);
+      // 刷新池数据
+      const res = await getContextPools();
+      setPools(res.data);
+      localStorage.setItem('crm-aihub-pools', JSON.stringify(res.data));
+    } catch (e) { console.error(e); }
+    finally { setMemorySaving(false); }
+  }
+
   const PRESETS = [
     { label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
     { label: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' },
@@ -569,6 +600,32 @@ function AIHubPage() {
       <p style={{ fontSize: 13, color: 'var(--fg-tertiary)', marginTop: 4 }}>
         四层记忆架构 · 七阶段演进路线 · AI 接入统一入口
       </p>
+
+      {/* ── 写入域（决策日志入口） ── */}
+      <div className="card" style={{ marginTop: 20, padding: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <Edit3 size={16} style={{ color: 'var(--accent)' }} />
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>写入记忆域</span>
+          <span style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>感悟 → 成长域 · 决策 → 销售域 · AI准则 → AI域</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <select value={memoryType} onChange={e => setMemoryType(e.target.value)}
+            style={{ padding: '7px 10px', borderRadius: 6, fontSize: 13, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--fg-primary)', minWidth: 120 }}>
+            {MEMORY_WRITE_TYPES.map(t => <option key={t.value} value={t.value}>[{t.domain}] {t.label} — {t.desc}</option>)}
+          </select>
+          <input
+            value={memoryText}
+            onChange={e => setMemoryText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleWriteMemory(); } }}
+            placeholder="写下你的经验感悟、决策思考、或者告诉AI下次怎么改进..."
+            className="search-input" style={{ flex: 1, minWidth: 200, boxSizing: 'border-box' }}
+          />
+          <Button variant="default" size="sm" onClick={handleWriteMemory} disabled={memorySaving || !memoryText.trim()}>
+            {memorySaving ? <Loader2 size={14} className="animate-spin" /> : memorySaved ? <CheckSquare size={14} /> : <Plus size={14} />}
+            {memorySaving ? '保存中' : memorySaved ? '已保存' : '写入'}
+          </Button>
+        </div>
+      </div>
 
       {/* ── AI 接入设置 ── */}
       <div style={{ marginTop: 24 }}>
@@ -2329,6 +2386,25 @@ function CoachPage() {
   const [coachError, setCoachError] = useState<string | null>(null);
   const [coachTime, setCoachTime] = useState<string | null>(null);
 
+  // ─── 反馈状态 ──────────────────────────
+  const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down' | null>>({});
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackTarget, setFeedbackTarget] = useState<string | null>(null);
+
+  const handleFeedback = async (catKey: string, idx: number, rating: number, note?: string) => {
+    const key = `${catKey}_${idx}`;
+    setFeedbackState(prev => ({ ...prev, [key]: rating >= 4 ? 'up' : 'down' }));
+    try {
+      await submitCoachFeedback({
+        category: catKey,
+        itemIndex: idx,
+        rating,
+        note,
+        coachContext: JSON.stringify(coachData?.[catKey] || {}),
+      });
+    } catch (e) { console.error('Feedback error:', e); }
+  };
+
   const CATEGORIES = [
     { key: 'suggestions', label: '📋 当前建议', icon: <Target size={18} />, color: '#009999' },
     { key: 'scripts', label: '🎯 话术训练', icon: <Megaphone size={18} />, color: '#27AE60' },
@@ -2430,6 +2506,25 @@ function CoachPage() {
                       {item.reason && <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 2 }}>{item.reason}</div>}
                       {item.strategy && <div>{item.strategy}</div>}
                       {typeof item === 'string' && <div>{item}</div>}
+                      {/* ── 反馈按钮 ── */}
+                      <div style={{ display: 'flex', gap: 6, marginTop: 6, justifyContent: 'flex-end' }}>
+                        {feedbackState[`${cat.key}_${i}`] !== 'up' && feedbackState[`${cat.key}_${i}`] !== 'down' ? (
+                          <>
+                            <button onClick={() => handleFeedback(cat.key, i, 5)} title="有帮助"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }}>
+                              <ThumbsUp size={13} />
+                            </button>
+                            <button onClick={() => handleFeedback(cat.key, i, 2)} title="不适用"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }}>
+                              <ThumbsDown size={13} />
+                            </button>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: 10, color: feedbackState[`${cat.key}_${i}`] === 'up' ? '#27AE60' : '#E74C3C' }}>
+                            {feedbackState[`${cat.key}_${i}`] === 'up' ? '✓ 已采纳' : '✗ 已标记'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

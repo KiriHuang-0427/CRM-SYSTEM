@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const validate = require('../middleware/validate');
+const { customer: logCust, contact: logContact } = require('../services/memoryLogger');
 
 // ─── GET /api/customers ──────────────────────────────────────
 // List all customers with optional search and sort
@@ -191,6 +192,7 @@ router.post('/', validate({ name: { required: true, maxLength: 200 } }), (req, r
     `).run(id, name, color, industry, revenue, nextYear, comp, lastVisit, aiCoach, risk, talkStrategy);
 
     const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(id);
+    logCust('create', id, name);
     res.status(201).json({ data: customer });
   } catch (err) {
     console.error('[customers] POST error:', err.message);
@@ -235,6 +237,7 @@ router.put('/:id', (req, res) => {
     );
 
     const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(id);
+    logCust('update', id, customer.name);
     res.json({ data: customer });
   } catch (err) {
     console.error('[customers] PUT error:', err.message);
@@ -277,6 +280,7 @@ router.post('/:id/contacts', validate({ name: { required: true, maxLength: 100 }
     `).run(id, name, role, tag, stars, phone, email);
 
     const contact = db.prepare('SELECT * FROM contacts WHERE id = ?').get(result.lastInsertRowid);
+    logContact('add', req.params.id, '', name || '新联系人');
     res.status(201).json({ data: contact });
   } catch (err) {
     console.error('[contacts] POST error:', err.message);
@@ -306,6 +310,7 @@ router.put('/:id/contacts/:contactId', (req, res) => {
     `).run(name ?? null, role ?? null, tag ?? null, stars ?? null, phone ?? null, email ?? null, contactId);
 
     const contact = db.prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
+    logContact('update', req.params.id, '', '');
     res.json({ data: contact });
   } catch (err) {
     console.error('[contacts] PUT error:', err.message);

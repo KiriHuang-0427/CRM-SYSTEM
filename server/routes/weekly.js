@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const validate = require('../middleware/validate');
+const { weekly: logWeekly } = require('../services/memoryLogger');
 
 // Helper: get ISO week ID (YYYY-WNN) from a date
 function getISOWeekId(date) {
@@ -74,6 +75,7 @@ router.post('/', validate({ weekId: { required: true, maxLength: 20 } }), (req, 
     const report = db.prepare(
       'SELECT id, week_id as weekId, label, is_current as isCurrent, created_at as createdAt FROM weekly_reports WHERE id = ?'
     ).get(result.lastInsertRowid);
+    logWeekly('create', weekId, label);
     res.status(201).json({ data: report });
   } catch (err) {
     if (err.message.includes('UNIQUE')) {

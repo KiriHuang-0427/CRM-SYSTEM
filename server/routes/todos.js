@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const validate = require('../middleware/validate');
+const { todo: logTodo } = require('../services/memoryLogger');
 
 // ─── GET /api/todos ──────────────────────────────────────────
 // List todos, optionally filtered by status

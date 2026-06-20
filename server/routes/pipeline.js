@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 const validate = require('../middleware/validate');
+const ml = require('../services/memoryLogger');
 
 // ─── GET /api/pipeline ───────────────────────────────────────
 // Pipeline summary — count and total per stage (only active items)
@@ -187,6 +188,7 @@ router.post('/', validate({ customerId: { required: true }, name: { required: tr
     `).run(customerId, name, stage || '', amount || '', pipeStage || 1, note || '', expectedCloseDate || '', statusDescription || '');
 
     const item = db.prepare('SELECT * FROM pipeline_stages WHERE id = ?').get(result.lastInsertRowid);
+    ml.pipeline('create', customerId, '', name);
     res.status(201).json({
       data: {
         id: item.id,
@@ -271,6 +273,7 @@ router.put('/:id/stage', (req, res) => {
     db.prepare('UPDATE pipeline_stages SET pipe_stage = ?, updated_at = datetime(\'now\') WHERE id = ?').run(stage, req.params.id);
 
     const updated = db.prepare('SELECT * FROM pipeline_stages WHERE id = ?').get(req.params.id);
+    ml.pipeline('stage', existing.customer_id, '', existing.name, `推进到阶段 ${stage}`);
     res.json({
       data: {
         id: updated.id,
@@ -305,6 +308,7 @@ router.put('/:id/lost', (req, res) => {
     `).run(reason || '', req.params.id);
 
     const updated = db.prepare('SELECT * FROM pipeline_stages WHERE id = ?').get(req.params.id);
+    ml.pipeline('lost', existing.customer_id, '', existing.name, reason || '');
     res.json({
       data: {
         id: updated.id,
@@ -335,6 +339,7 @@ router.put('/:id/win', (req, res) => {
     `).run(req.params.id);
 
     const updated = db.prepare('SELECT * FROM pipeline_stages WHERE id = ?').get(req.params.id);
+    ml.pipeline('win', existing.customer_id, '', existing.name);
     res.json({
       data: {
         id: updated.id,
@@ -388,6 +393,8 @@ router.delete('/:id', (req, res) => {
     }
 
     db.prepare('DELETE FROM pipeline_stages WHERE id = ?').run(req.params.id);
+    const item = formatItem(db.prepare('SELECT i.*, c.name as customer_name, c.color as customer_color FROM pipeline_stages i JOIN customers c ON c.id = i.customer_id WHERE i.id = ?').get(id));
+    ml.pipeline('delete', item?.customerId || '', item?.customerName || '', item?.name || '');
     res.json({ success: true });
   } catch (err) {
     console.error('[pipeline] DELETE error:', err.message);

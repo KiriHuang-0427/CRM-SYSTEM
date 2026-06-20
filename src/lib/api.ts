@@ -699,3 +699,17 @@ export async function generateWeeklySummary(weekId: string) {
     body: JSON.stringify({ weekId }),
   });
 }
+
+export async function submitCoachFeedback(data: { category: string; itemIndex: number; rating: number; note?: string; coachContext?: string }) {
+  return fetchApi<{ success: boolean; id: number }>('/ai/coach/feedback', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function saveAIMemory(data: { memoryType: string; title?: string; content: string; importance?: number }) {
+  return fetchApi<{ success: boolean; id: number }>('/ai/memory', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}

@@ -116,12 +116,23 @@ async function generateCoachAdvice(categories) {
   }
 
   const overview = buildOverview();
+
+  // ─── 读取最近30条反馈作为上下文 ──────────
+  const recentFeedback = db.prepare(`
+    SELECT title, content, summary FROM ai_memories
+    WHERE memory_type = 'insight' AND source_kind = 'system_feedback'
+    ORDER BY occurred_at DESC LIMIT 30
+  `).all();
+  const feedbackCtx = recentFeedback.length > 0
+    ? '最近用户反馈：\n' + recentFeedback.map(f => `- ${f.title}: ${f.summary || f.content?.slice(0, 120)}`).join('\n')
+    : '';
+
   const results = {};
 
   for (const cat of categories || ['suggestions', 'scripts', 'objections', 'upward', 'competitor', 'risks', 'checklist']) {
     const prompt = buildPrompt(cat, overview);
     try {
-      const res = await provider.generate(prompt, '你是西门子OEM南京区域销售教练，用户是外勤销售。基于真实CRM数据给出精准、可执行的建议。每条建议控制在80字以内。');
+      const res = await provider.generate(prompt, '你是西门子OEM南京区域销售教练，用户是外勤销售。基于真实CRM数据给出精准、可执行的建议。每条建议控制在80字以内。' + (feedbackCtx ? '参考用户的反馈历史，避免重复之前的无效建议：' + feedbackCtx : ''));
       results[cat] = {
         title: CATEGORY_LABELS[cat],
         content: parseAIResponse(res.content),
