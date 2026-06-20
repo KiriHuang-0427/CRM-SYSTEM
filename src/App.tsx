@@ -17,8 +17,8 @@ import {
   COACH_SCENARIOS, INVESTMENT_ITEMS, INVESTMENT_DIMS,
 } from '@/lib/data'
 import * as api from '@/lib/api'
-import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary, Memory, MemoryStats, MemoryPoolSummary, MemoryTypeDef } from '@/lib/api'
-import { getUnlinkedMemories, linkMemoryToCustomer, markMemoryUnlinkedReviewed, archiveMemoryWithReason, batchMemoryOperation, getMemoryStats, getContextPools, getContextTypes } from '@/lib/api'
+import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary, Memory, MemoryStats, MemoryPoolSummary, MemoryTypeDef, AIConfig } from '@/lib/api'
+import { getUnlinkedMemories, linkMemoryToCustomer, markMemoryUnlinkedReviewed, archiveMemoryWithReason, batchMemoryOperation, getMemoryStats, getContextPools, getContextTypes, getAIConfig, saveAIConfig, testAIConnection, generateCoachAdvice, generateWeeklySummary } from '@/lib/api'
 import { cn, fmtK, daysSince, colorHex, priorityLabel } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -460,24 +460,97 @@ function AIHubPage() {
   const [domains, setDomains] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
 
+  // ─── AI 配置状态 ──────────────────────────
+  const [aiConfig, setAiConfig] = useState<AIConfig | null>(null);
+  const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1');
+  const [model, setModel] = useState('deepseek-chat');
+  const [providerLabel, setProviderLabel] = useState('DeepSeek');
+  const [testResult, setTestResult] = useState<{ success: boolean; latency?: number; model?: string; response?: string; error?: string } | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const PRESETS = [
+    { label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
+    { label: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' },
+    { label: '自定义', baseUrl: '', model: '' },
+  ];
+
+  const OPENAI_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'];
+
   useEffect(() => {
     async function load() {
       try {
-        const [poolsRes, typesRes] = await Promise.all([
+        const [poolsRes, typesRes, configRes] = await Promise.all([
           getContextPools(),
           getContextTypes(),
+          getAIConfig().catch(() => null),
         ]);
         setPools(poolsRes.data);
         setTypes(typesRes.data.types);
         setDomains(typesRes.data.domains);
+        localStorage.setItem('crm-aihub-pools', JSON.stringify(poolsRes.data));
+        localStorage.setItem('crm-aihub-types', JSON.stringify(typesRes.data));
+        if (configRes) {
+          setAiConfig(configRes.data);
+          setBaseUrl(configRes.data.baseUrl);
+          setModel(configRes.data.model);
+          setProviderLabel(configRes.data.provider || 'DeepSeek');
+        }
       } catch (e) {
         console.error('AIHub load error:', e);
       } finally {
         setLoading(false);
       }
     }
+    // 先加载缓存
+    try {
+      const cachedPools = localStorage.getItem('crm-aihub-pools');
+      const cachedTypes = localStorage.getItem('crm-aihub-types');
+      if (cachedPools) setPools(JSON.parse(cachedPools));
+      if (cachedTypes) {
+        const parsed = JSON.parse(cachedTypes);
+        setTypes(parsed.types);
+        setDomains(parsed.domains);
+      }
+    } catch {}
     load();
   }, []);
+
+  async function handleSaveConfig() {
+    // 已存 Key 时允许只更新模型
+    if (!apiKey.trim() && !aiConfig?.hasApiKey) return;
+    setSaving(true);
+    try {
+      await saveAIConfig({ provider: providerLabel, apiKey: apiKey.trim(), baseUrl, model });
+      const configRes = await getAIConfig();
+      setAiConfig(configRes.data);
+      setApiKey(''); // 清空输入框
+    } catch (e: any) {
+      alert('保存失败: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleTestConnection() {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const result = await testAIConnection();
+      setTestResult(result);
+    } catch (e: any) {
+      setTestResult({ success: false, error: e.message });
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  function handlePreset(p: typeof PRESETS[number]) {
+    setProviderLabel(p.label);
+    setBaseUrl(p.baseUrl);
+    setModel(p.model);
+  }
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, color: 'var(--fg-tertiary)' }}>
@@ -489,14 +562,151 @@ function AIHubPage() {
 
   return (
     <div style={{ padding: 24, maxWidth: 960, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>🧠 AI 中枢</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Brain size={24} style={{ color: 'var(--accent)' }} />
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>AI 中枢</h1>
+      </div>
       <p style={{ fontSize: 13, color: 'var(--fg-tertiary)', marginTop: 4 }}>
         四层记忆架构 · 七阶段演进路线 · AI 接入统一入口
       </p>
 
+      {/* ── AI 接入设置 ── */}
+      <div style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <ZapIcon size={16} style={{ color: 'var(--status-warning)' }} />
+          AI 接入配置
+        </h2>
+        <div className="card" style={{ padding: 20 }}>
+          {/* 预设选择 */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 6 }}>API 提供商</label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {PRESETS.map((p) => (
+                <button key={p.label} onClick={() => handlePreset(p)} style={{
+                  padding: '6px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
+                  border: `1px solid ${providerLabel === p.label ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                  background: providerLabel === p.label ? 'var(--alpha-teal-06)' : 'var(--bg-surface)',
+                  color: providerLabel === p.label ? 'var(--accent)' : 'var(--fg-secondary)',
+                }}>{p.label}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* 模型选择 — DeepSeek 预置 */}
+          {providerLabel === 'DeepSeek' && (
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>模型</label>
+              <select value={model} onChange={(e) => setModel(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, fontSize: 13, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--fg-primary)', boxSizing: 'border-box' }}>
+                <option value="deepseek-chat">deepseek-chat (最新通用对话)</option>
+                <option value="deepseek-reasoner">deepseek-reasoner (R1 深度推理)</option>
+              </select>
+            </div>
+          )}
+
+          {/* 模型选择 — OpenAI 预置 */}
+          {providerLabel === 'OpenAI' && (
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>模型</label>
+              <select value={model} onChange={(e) => setModel(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, fontSize: 13, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--fg-primary)', boxSizing: 'border-box' }}>
+                {OPENAI_MODELS.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+          )}
+
+          {/* Base URL + Model — 自定义 */}
+          {providerLabel === '自定义' && (
+            <>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>Base URL</label>
+                <input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="https://api.xxx.com/v1"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, fontSize: 13, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--fg-primary)', boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>Model</label>
+                <input value={model} onChange={(e) => setModel(e.target.value)} placeholder="gpt-4o"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, fontSize: 13, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', color: 'var(--fg-primary)', boxSizing: 'border-box' }} />
+              </div>
+            </>
+          )}
+
+          {/* API Key */}
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>
+              API Key {aiConfig?.hasApiKey && <span style={{ color: 'var(--status-success)' }}>(已保存: {aiConfig.apiKeyMasked})</span>}
+            </label>
+            <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
+              placeholder={aiConfig?.hasApiKey ? '留空则使用已保存的 Key' : 'sk-xxxxxxxxxxxxxxxx'}
+              className="search-input" style={{ width: '100%', boxSizing: 'border-box' }} />
+          </div>
+
+          {/* 当前运行状态 */}
+          {aiConfig?.hasApiKey && (
+            <div style={{
+              marginBottom: 14, padding: '10px 14px', borderRadius: 8,
+              background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+              display: 'flex', flexWrap: 'wrap', gap: 20, fontSize: 12,
+            }}>
+              <div>
+                <span style={{ color: 'var(--fg-tertiary)' }}>当前模型：</span>
+                <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{aiConfig.model}</span>
+              </div>
+              <div>
+                <span style={{ color: 'var(--fg-tertiary)' }}>调用次数：</span>
+                <span style={{ fontWeight: 600 }}>{aiConfig.usage?.calls || 0}</span>
+              </div>
+              <div>
+                <span style={{ color: 'var(--fg-tertiary)' }}>Token 用量：</span>
+                <span style={{ fontWeight: 600 }}>{((aiConfig.usage?.totalTokens || 0) / 1000).toFixed(1)}K</span>
+              </div>
+            </div>
+          )}
+
+          {/* 按钮行 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button variant="default" size="sm" onClick={handleSaveConfig} disabled={saving || !apiKey.trim()}>
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+              {saving ? '保存中...' : '保存配置'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleTestConnection} disabled={testing || !aiConfig?.hasApiKey && !apiKey.trim()}>
+              {testing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+              {testing ? '测试中...' : '测试连接'}
+            </Button>
+          </div>
+
+          {/* 测试结果 */}
+          {testResult && (
+            <div style={{
+              marginTop: 12, padding: 12, borderRadius: 8,
+              background: testResult.success ? '#27ae6010' : '#e74c3c10',
+              border: `1px solid ${testResult.success ? '#27ae6040' : '#e74c3c40'}`,
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: testResult.success ? '#27AE60' : '#E74C3C' }}>
+                {testResult.success ? '✅ 连接成功' : '❌ 连接失败'}
+              </div>
+              {testResult.success ? (
+                <>
+                  <div style={{ fontSize: 12, color: 'var(--fg-secondary)', marginTop: 4 }}>模型: {testResult.model}</div>
+                  <div style={{ fontSize: 12, color: 'var(--fg-secondary)' }}>延迟: {testResult.latency}ms</div>
+                  <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginTop: 4, fontStyle: 'italic' }}>
+                    "{testResult.response}"
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--fg-secondary)', marginTop: 4 }}>{testResult.error}</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* ── 演进路线 ── */}
       <div style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>📋 七阶段演进路线</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Layers size={16} style={{ color: 'var(--accent)' }} />
+          七阶段演进路线
+        </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
           {[
             { phase: 'Phase 1', label: 'Memory Router', status: '✅ 完成', desc: '智能关键词路由' },
@@ -524,7 +734,10 @@ function AIHubPage() {
 
       {/* ── 四域记忆池 ── */}
       <div style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>🗂️ 四域记忆池</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Database size={16} style={{ color: 'var(--accent)' }} />
+          四域记忆池
+        </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
           {domainList.map(([key, domain]) => {
             const poolInfo = pools?.[key];
@@ -567,7 +780,10 @@ function AIHubPage() {
 
       {/* ── 四层架构图 ── */}
       <div style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>🏗️ 四层记忆架构</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Network size={16} style={{ color: 'var(--accent)' }} />
+          四层记忆架构
+        </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
             { layer: 'L4', name: '战略层', desc: '战略规划、销售哲学（strategy_plan）', color: '#8E44AD', icon: '🏛️' },
@@ -599,7 +815,10 @@ function AIHubPage() {
 
       {/* ── 统一入口 ── */}
       <div style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>🔌 AI 统一入口</h2>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Link2 size={16} style={{ color: 'var(--accent)' }} />
+          AI 统一入口
+        </h2>
         <div style={{
           padding: 16, borderRadius: 'var(--radius-md)',
           background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
@@ -716,7 +935,7 @@ export default function App(qoderProps: Record<string, any>) {
             {tab === 'pipeline' && <PipelinePage customers={custData.customers} custLoading={custData.loading} custError={custData.error} onRetry={custData.reload} pipeData={pipeData} onCustClick={setCustModal} data-qoder-id="qel-pipelinepage-66b940b9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-pipelinepage-66b940b9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;pipelinepage&quot;,&quot;loc&quot;:{&quot;line&quot;:209,&quot;column&quot;:36}}"/>}
             {tab === 'competitive' && <CompetitivePage customers={custData.customers} custLoading={custData.loading} custError={custData.error} onRetry={custData.reload} data-qoder-id="qel-competitivepage-f61ccfe0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-competitivepage-f61ccfe0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;competitivepage&quot;,&quot;loc&quot;:{&quot;line&quot;:210,&quot;column&quot;:39}}"/>}
             {tab === 'energy' && <EnergyPage customers={custData.customers} custLoading={custData.loading} custError={custData.error} onRetry={custData.reload} data-qoder-id="qel-energypage-92084237" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-energypage-92084237&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;energypage&quot;,&quot;loc&quot;:{&quot;line&quot;:211,&quot;column&quot;:34}}"/>}
-            {tab === 'coach' && <CoachPage customers={custData.customers} data-qoder-id="qel-coachpage-77587252" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-coachpage-77587252&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;coachpage&quot;,&quot;loc&quot;:{&quot;line&quot;:212,&quot;column&quot;:33}}"/>}
+            {tab === 'coach' && <CoachPage />}
             {tab === 'weekly' && <WeeklyPage data-qoder-id="qel-weeklypage-802c936f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-weeklypage-802c936f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;weeklypage&quot;,&quot;loc&quot;:{&quot;line&quot;:213,&quot;column&quot;:34}}"/>}
             {tab === 'review' && <MemoryReviewPage customers={custData.customers} />}
             {tab === 'aihub' && <AIHubPage />}
@@ -2103,228 +2322,131 @@ function EnergyPage({ customers, custLoading, custError, onRetry }: {
 }
 
 /* ═══════════════════════ PAGE 6: AI COACH ═════════════════════ */
-function CoachPage({ customers }: { customers: Customer[] }) {
-  // Investment scoring state: { [itemKey]: { [dimIndex]: score } }
-  const [scores, setScores] = useState<Record<string, Record<number, number>>>(() => {
-    try {
-      const saved = localStorage.getItem('crm-invest-scores')
-      return saved ? JSON.parse(saved) : {}
-    } catch { return {} }
-  })
-  // Dynamic investment items (persisted to DB)
-  const [investItems, setInvestItems] = useState<{ name: string; key: string; customerId?: string; customerName?: string }[]>([])
-  const [newItemName, setNewItemName] = useState('')
-  const [newItemCustId, setNewItemCustId] = useState('')
-  const [editingInvestKey, setEditingInvestKey] = useState<string | null>(null)
-  const [editingInvestName, setEditingInvestName] = useState('')
+function CoachPage() {
+  // ─── AI 教练状态 ──────────────────────────
+  const [coachData, setCoachData] = useState<Record<string, { title: string; content: any[] }> | null>(null);
+  const [coaching, setCoaching] = useState(false);
+  const [coachError, setCoachError] = useState<string | null>(null);
+  const [coachTime, setCoachTime] = useState<string | null>(null);
 
-  // Load invest items from API on mount
+  const CATEGORIES = [
+    { key: 'suggestions', label: '📋 当前建议', icon: <Target size={18} />, color: '#009999' },
+    { key: 'scripts', label: '🎯 话术训练', icon: <Megaphone size={18} />, color: '#27AE60' },
+    { key: 'objections', label: '🛡️ 拒绝应对', icon: <Shield size={18} />, color: '#E74C3C' },
+    { key: 'upward', label: '📈 向上管理', icon: <ArrowUpCircle size={18} />, color: '#2980B9' },
+    { key: 'competitor', label: '⚔️ 竞品对抗', icon: <Swords size={18} />, color: '#E67E22' },
+    { key: 'risks', label: '⚠️ 风险预警', icon: <AlertTriangle size={18} />, color: '#F39C12' },
+    { key: 'checklist', label: '✅ 拜访检查', icon: <CheckSquare size={18} />, color: '#8E44AD' },
+  ];
+
+  async function handleGenerate() {
+    setCoaching(true);
+    setCoachError(null);
+    try {
+      const res = await generateCoachAdvice();
+      setCoachData(res.data);
+      localStorage.setItem('crm-coach-cache', JSON.stringify(res.data));
+      const now = new Date().toLocaleString('zh-CN');
+      localStorage.setItem('crm-coach-time', now);
+      setCoachTime(now);
+    } catch (e: any) {
+      setCoachError(e.message);
+      setCoachData({
+        suggestions: { title: '当前建议', content: [{ action: '请先配置 AI API Key', reason: '在 AI 中枢页面设置' }] },
+      });
+    } finally {
+      setCoaching(false);
+    }
+  }
+
+  // 加载缓存
   useEffect(() => {
-    api.getInvestItems().then(res => {
-      setInvestItems(res.data.map(i => ({ name: i.name, key: i.key, customerId: i.customerId, customerName: i.customerName })))
-    }).catch(() => {
-      // Fallback to static data if API fails
-      setInvestItems([...INVESTMENT_ITEMS])
-    })
-  }, [])
-
-  const handleScore = (itemKey: string, dimIdx: number, value: number) => {
-    setScores(prev => {
-      const itemScores = { ...(prev[itemKey] || {}) }
-      // Toggle off if clicking same value
-      if (itemScores[dimIdx] === value) {
-        delete itemScores[dimIdx]
-      } else {
-        itemScores[dimIdx] = value
-      }
-      const next = { ...prev, [itemKey]: itemScores }
-      try { localStorage.setItem('crm-invest-scores', JSON.stringify(next)) } catch {}
-      return next
-    })
-  }
-
-  const handleAddItem = async () => {
-    if (!newItemName.trim()) return
     try {
-      const res = await api.createInvestItem({ name: newItemName.trim(), customerId: newItemCustId || undefined })
-      setInvestItems(prev => [...prev, { name: res.data.name, key: res.data.key, customerId: res.data.customerId, customerName: res.data.customerName }])
-      setNewItemName('')
-      setNewItemCustId('')
-    } catch (err) {
-      console.error('Failed to add invest item:', err)
-    }
-  }
-
-  const handleSaveInvestName = async (key: string) => {
-    if (!editingInvestName.trim()) return
-    try {
-      await api.updateInvestItem(key, { name: editingInvestName.trim() })
-      setInvestItems(prev => prev.map(i => i.key === key ? { ...i, name: editingInvestName.trim() } : i))
-      setEditingInvestKey(null)
-    } catch (err) { console.error('Failed to update invest name:', err) }
-  }
-
-  const handleUpdateInvestCust = async (key: string, customerId: string) => {
-    try {
-      const res = await api.updateInvestItem(key, { customerId })
-      setInvestItems(prev => prev.map(i => i.key === key ? { ...i, customerId: res.data.customerId, customerName: res.data.customerName } : i))
-    } catch (err) { console.error('Failed to update invest customer:', err) }
-  }
-
-  const handleDeleteItem = async (key: string) => {
-    try {
-      await api.deleteInvestItem(key)
-      setInvestItems(prev => prev.filter(i => i.key !== key))
-      setScores(prev => {
-        const next = { ...prev }
-        delete next[key]
-        try { localStorage.setItem('crm-invest-scores', JSON.stringify(next)) } catch {}
-        return next
-      })
-    } catch (err) {
-      console.error('Failed to delete invest item:', err)
-    }
-  }
-
-  const iconMap: Record<string, React.ReactNode> = {
-    megaphone: <Megaphone size={18} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-megaphone-1d6a1e04" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-megaphone-1d6a1e04&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;megaphone&quot;,&quot;loc&quot;:{&quot;line&quot;:1490,&quot;column&quot;:16}}"/>,
-    shield: <Shield size={18} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-shield-ed481e99" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-shield-ed481e99&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;shield&quot;,&quot;loc&quot;:{&quot;line&quot;:1491,&quot;column&quot;:13}}"/>,
-    'arrow-up-circle': <ArrowUpCircle size={18} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-arrowupcircle-f812c4aa" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-arrowupcircle-f812c4aa&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;arrowupcircle&quot;,&quot;loc&quot;:{&quot;line&quot;:1492,&quot;column&quot;:24}}"/>,
-  }
+      const cached = localStorage.getItem('crm-coach-cache');
+      if (cached) setCoachData(JSON.parse(cached));
+      const t = localStorage.getItem('crm-coach-time');
+      if (t) setCoachTime(t);
+    } catch {}
+  }, []);
 
   return (
     <>
-      <div className="page-header" data-qoder-id="qel-page-header-60974e32" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-header-60974e32&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;page-header&quot;,&quot;loc&quot;:{&quot;line&quot;:656,&quot;column&quot;:7}}">
-        <h1 className="page-title" data-qoder-id="qel-page-title-ec1dde6c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-title-ec1dde6c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;page-title&quot;,&quot;loc&quot;:{&quot;line&quot;:657,&quot;column&quot;:9}}">AI 教练</h1>
-        <p className="page-subtitle" data-qoder-id="qel-page-subtitle-c552c80a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-subtitle-c552c80a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;page-subtitle&quot;,&quot;loc&quot;:{&quot;line&quot;:658,&quot;column&quot;:9}}">销售场景话术训练 · 投资策略评估</p>
-      </div>
-      <div className="page-body" data-qoder-id="qel-page-body-01d1739e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-body-01d1739e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;page-body&quot;,&quot;loc&quot;:{&quot;line&quot;:660,&quot;column&quot;:7}}">
-        {/* Scenarios */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 20, marginBottom: 32 }} data-qoder-id="qel-div-9d355fa2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-9d355fa2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:662,&quot;column&quot;:9}}">
-          {COACH_SCENARIOS.map(sc => (
-            <div key={sc.title} className="coach-card" data-qoder-id="qel-coach-card-d4380cbb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-coach-card-d4380cbb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;coach-card&quot;,&quot;loc&quot;:{&quot;line&quot;:664,&quot;column&quot;:13}}">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }} data-qoder-id="qel-div-0b384b63" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-0b384b63&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:665,&quot;column&quot;:15}}">
-                {iconMap[sc.icon]}
-                <span style={{ fontSize: 15, fontWeight: 600 }} data-qoder-id="qel-span-a790a074" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-a790a074&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:667,&quot;column&quot;:17}}">{sc.title}</span>
-              </div>
-              {sc.levels.map((lv, i) => (
-                <div key={i} className="coach-level" style={{ '--level-color': lv.color, '--level-bg': lv.bg } as React.CSSProperties} data-qoder-id="qel-coach-level-ed0e7d3b" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-coach-level-ed0e7d3b&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;coach-level&quot;,&quot;loc&quot;:{&quot;line&quot;:670,&quot;column&quot;:17}}">
-                  <div className="coach-level-label" style={{ color: lv.color }} data-qoder-id="qel-coach-level-label-ef31d2c7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-coach-level-label-ef31d2c7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;coach-level-label&quot;,&quot;loc&quot;:{&quot;line&quot;:671,&quot;column&quot;:19}}">{lv.label}</div>
-                  <div className="coach-level-text" data-qoder-id="qel-coach-level-text-119217b1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-coach-level-text-119217b1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;coach-level-text&quot;,&quot;loc&quot;:{&quot;line&quot;:672,&quot;column&quot;:19}}">{lv.text}</div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        {/* Investment Scoring */}
-        <div className="card" data-qoder-id="qel-card-b0a1361f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-card-b0a1361f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;card&quot;,&quot;loc&quot;:{&quot;line&quot;:680,&quot;column&quot;:9}}">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }} data-qoder-id="qel-div-113854d5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-113854d5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:681,&quot;column&quot;:11}}">
-            <Target size={16} style={{ color: 'var(--accent)' }}  data-qoder-id="qel-target-8a4a6024" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-target-8a4a6024&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;target&quot;,&quot;loc&quot;:{&quot;line&quot;:682,&quot;column&quot;:13}}"/>
-            <span style={{ fontSize: 15, fontWeight: 600 }} data-qoder-id="qel-span-a090956f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-a090956f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:683,&quot;column&quot;:13}}">投资评分矩阵</span>
+      <div className="page-header">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 className="page-title">AI 教练</h1>
+            <p className="page-subtitle">基于真实CRM数据的AI销售教练 · 点击刷新获取最新建议</p>
           </div>
-          <div className="invest-matrix" data-qoder-id="qel-invest-matrix-282dd965" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-matrix-282dd965&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-matrix&quot;,&quot;loc&quot;:{&quot;line&quot;:1701,&quot;column&quot;:11}}">
-            <div className="invest-matrix-header" data-qoder-id="qel-invest-matrix-header-b703b536" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-matrix-header-b703b536&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-matrix-header&quot;,&quot;loc&quot;:{&quot;line&quot;:1702,&quot;column&quot;:13}}">
-              <div className="invest-col-name" data-qoder-id="qel-invest-col-name-638a501c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-name-638a501c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-name&quot;,&quot;loc&quot;:{&quot;line&quot;:1703,&quot;column&quot;:15}}">项目</div>
-              <div className="invest-col-cust" data-qoder-id="qel-invest-col-cust-22f4132d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-cust-22f4132d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-cust&quot;,&quot;loc&quot;:{&quot;line&quot;:1704,&quot;column&quot;:15}}">客户</div>
-              {INVESTMENT_DIMS.map(d => <div key={d} className="invest-col-dim" data-qoder-id="qel-invest-col-dim-09879b7f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-dim-09879b7f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-dim&quot;,&quot;loc&quot;:{&quot;line&quot;:1705,&quot;column&quot;:41}}">{d}</div>)}
-            </div>
-            {investItems.map(item => {
-              const itemScores = scores[item.key] || {}
-              const totalScore = Object.values(itemScores).reduce((s, v) => s + v, 0)
-              const scoredDims = Object.keys(itemScores).length
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {coachTime && <span style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>上次刷新: {coachTime}</span>}
+            <button onClick={handleGenerate} disabled={coaching} style={{
+            padding: '10px 24px', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            background: coaching ? 'var(--bg-surface)' : 'linear-gradient(135deg, #009999, #8E44AD)',
+            color: coaching ? 'var(--fg-tertiary)' : '#fff', border: 'none',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            {coaching ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+            {coaching ? 'AI 分析中...' : '刷新教练建议'}
+          </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="page-body">
+        {/* ── 卡片网格 ── */}
+        {coachData ? (
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16,
+          }}>
+            {CATEGORIES.map(cat => {
+              const data = coachData[cat.key];
+              if (!data || !data.content || data.content.length === 0) return null;
               return (
-              <div key={item.key} className="invest-matrix-row" data-qoder-id="qel-invest-matrix-row-77032d6e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-matrix-row-77032d6e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-matrix-row&quot;,&quot;loc&quot;:{&quot;line&quot;:1712,&quot;column&quot;:15}}">
-                <div className="invest-col-name" style={{ display: 'flex', alignItems: 'center', gap: 4 }} data-qoder-id="qel-invest-col-name-dd873e93" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-name-dd873e93&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-name&quot;,&quot;loc&quot;:{&quot;line&quot;:1713,&quot;column&quot;:17}}">
-                  {editingInvestKey === item.key ? (
-                    <input
-                      className="search-input"
-                      style={{ padding: '2px 6px', fontSize: 13, width: '100%' }}
-                      value={editingInvestName}
-                      onChange={e => setEditingInvestName(e.target.value)}
-                      onBlur={() => handleSaveInvestName(item.key)}
-                      onKeyDown={e => { if (e.key === 'Enter') handleSaveInvestName(item.key); if (e.key === 'Escape') setEditingInvestKey(null) }}
-                      autoFocus
-                     data-qoder-id="qel-search-input-19b1d542" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-19b1d542&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1715,&quot;column&quot;:21}}"/>
-                  ) : (
-                    <span
-                      style={{ cursor: 'pointer', fontWeight: 500, fontSize: 13 }}
-                      onDoubleClick={() => { setEditingInvestKey(item.key); setEditingInvestName(item.name) }}
-                     data-qoder-id="qel-span-83bb2d20" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-83bb2d20&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1725,&quot;column&quot;:21}}">
-                      {item.name}{scoredDims > 0 && <span style={{ marginLeft: 4, fontSize: 11, color: 'var(--accent)' }} data-qoder-id="qel-span-8abb3825" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-8abb3825&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:1729,&quot;column&quot;:53}}">({totalScore})</span>}
-                    </span>
-                  )}
-                  <button onClick={() => handleDeleteItem(item.key)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', padding: 2, flexShrink: 0 }} title="删除项目" data-qoder-id="qel-button-40ed2aa2" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-40ed2aa2&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1732,&quot;column&quot;:19}}">
-                    <Trash2 size={11}  data-qoder-id="qel-trash2-4a4952ff" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-trash2-4a4952ff&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;trash2&quot;,&quot;loc&quot;:{&quot;line&quot;:1733,&quot;column&quot;:21}}"/>
-                  </button>
-                </div>
-                <div className="invest-col-cust" data-qoder-id="qel-invest-col-cust-93f0f379" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-cust-93f0f379&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-cust&quot;,&quot;loc&quot;:{&quot;line&quot;:1736,&quot;column&quot;:17}}">
-                  <select
-                    className="search-input"
-                    style={{ padding: '3px 6px', fontSize: 12, width: '100%' }}
-                    value={item.customerId || ''}
-                    onChange={e => handleUpdateInvestCust(item.key, e.target.value)}
-                   data-qoder-id="qel-search-input-8282aa20" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-8282aa20&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1737,&quot;column&quot;:19}}">
-                    <option value="" data-qoder-id="qel-option-8d04ade4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-8d04ade4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1743,&quot;column&quot;:21}}">未关联</option>
-                    {customers.filter(c => !c.isGroup).map(c => <option key={c.id} value={c.id} data-qoder-id="qel-option-6f9b7ba9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-6f9b7ba9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1744,&quot;column&quot;:65}}">{c.name}</option>)}
-                  </select>
-                </div>
-                {INVESTMENT_DIMS.map((_, di) => (
-                  <div key={di} className="invest-col-dim" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 3 }} data-qoder-id="qel-invest-col-dim-7e3279a4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-invest-col-dim-7e3279a4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;invest-col-dim&quot;,&quot;loc&quot;:{&quot;line&quot;:1748,&quot;column&quot;:19}}">
-                    {[1, 2, 3, 4, 5].map(v => {
-                      const selected = itemScores[di] === v
-                      const filled = itemScores[di] != null && v <= itemScores[di]!
-                      return (
-                      <div
-                        key={v}
-                        onClick={() => handleScore(item.key, di, v)}
-                        style={{
-                          width: 26, height: 26, borderRadius: 'var(--radius-xs)',
-                          background: selected ? 'var(--accent)' : filled ? 'var(--accent-bg)' : 'var(--bg-elevated)',
-                          border: `1px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
-                          cursor: 'pointer', fontSize: 11, fontWeight: selected ? 600 : 400,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: selected ? '#fff' : filled ? 'var(--accent)' : 'var(--fg-muted)',
-                          transition: 'all 0.15s ease',
-                        }}
-                       data-qoder-id="qel-div-dbf34085" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-dbf34085&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1753,&quot;column&quot;:23}}">
-                        {v}
-                      </div>
-                      )
-                    })}
+                <div key={cat.key} className="card" style={{ padding: 20, borderColor: `${cat.color}30` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, color: cat.color }}>
+                    {cat.icon}
+                    <span style={{ fontSize: 15, fontWeight: 700 }}>{data.title}</span>
                   </div>
-                ))}
-              </div>
-              )
+                  {data.content.map((item: any, i: number) => (
+                    <div key={i} style={{
+                      padding: '10px 12px', marginBottom: 8, borderRadius: 8,
+                      background: `${cat.color}08`, border: `1px solid ${cat.color}15`,
+                      fontSize: 12, lineHeight: 1.7,
+                    }}>
+                      {/* 不同格式渲染 */}
+                      {item.level && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 6,
+                          marginRight: 6,
+                          background: item.level === '轻度' ? '#27ae6020' : item.level === '中度' ? '#f39c1220' : '#e74c3c20',
+                          color: item.level === '轻度' ? '#27AE60' : item.level === '中度' ? '#F39C12' : '#E74C3C',
+                        }}>{item.level}</span>
+                      )}
+                      {item.scenario && <div style={{ fontWeight: 600, fontSize: 11, color: 'var(--fg-tertiary)', marginBottom: 3 }}>{item.scenario}</div>}
+                      {item.competitor && <div style={{ fontWeight: 600, fontSize: 11, color: cat.color, marginBottom: 3 }}>{item.competitor}</div>}
+                      {item.risk && <div style={{ fontWeight: 600, fontSize: 11, color: '#E74C3C', marginBottom: 3 }}>{item.risk}</div>}
+                      {item.text && <div>{item.text}</div>}
+                      {item.action && !item.text && <div style={{ fontWeight: 600 }}>{item.action}</div>}
+                      {item.reason && <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 2 }}>{item.reason}</div>}
+                      {item.strategy && <div>{item.strategy}</div>}
+                      {typeof item === 'string' && <div>{item}</div>}
+                    </div>
+                  ))}
+                </div>
+              );
             })}
           </div>
-          {/* Add new investment item */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 16 }} data-qoder-id="qel-div-6c59b360" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-6c59b360&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1608,&quot;column&quot;:11}}">
-            <select
-              className="search-input"
-              style={{ width: 140 }}
-              value={newItemCustId}
-              onChange={e => setNewItemCustId(e.target.value)}
-             data-qoder-id="qel-search-input-9084fec1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-9084fec1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1609,&quot;column&quot;:13}}">
-              <option value="" data-qoder-id="qel-option-81025c69" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-81025c69&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1615,&quot;column&quot;:15}}">选择客户（可选）</option>
-              {customers.filter(c => !c.isGroup).map(c => <option key={c.id} value={c.id} data-qoder-id="qel-option-7e0257b0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-option-7e0257b0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;option&quot;,&quot;loc&quot;:{&quot;line&quot;:1616,&quot;column&quot;:59}}">{c.name}</option>)}
-            </select>
-            <input
-              className="search-input"
-              style={{ flex: 1 }}
-              placeholder="输入样机/项目名称..."
-              value={newItemName}
-              onChange={e => setNewItemName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleAddItem() }}
-             data-qoder-id="qel-search-input-1ab4156c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-search-input-1ab4156c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;search-input&quot;,&quot;loc&quot;:{&quot;line&quot;:1618,&quot;column&quot;:13}}"/>
-            <Button variant="outline" size="sm" onClick={handleAddItem} disabled={!newItemName.trim()} data-qoder-id="qel-button-c948958c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-c948958c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1626,&quot;column&quot;:13}}">
-              <Plus size={14}  data-qoder-id="qel-plus-67a06e67" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-plus-67a06e67&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;CoachPage&quot;,&quot;elementRole&quot;:&quot;plus&quot;,&quot;loc&quot;:{&quot;line&quot;:1627,&quot;column&quot;:15}}"/> 添加
-            </Button>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--fg-tertiary)' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>🤖</div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>AI 教练就绪</div>
+            <div style={{ fontSize: 13 }}>点击右上角「刷新教练建议」获取基于当前CRM数据的AI销售建议</div>
+            {coachError && <div style={{ marginTop: 12, fontSize: 12, color: '#E74C3C' }}>{coachError}</div>}
           </div>
-        </div>
+        )}
       </div>
     </>
-  )
+  );
 }
 
 /* ═══════════════════════ PAGE 7: WEEKLY ═══════════════════════ */
@@ -2338,6 +2460,11 @@ function WeeklyPage(qoderProps: Record<string, any>) {
   const [newFocusText, setNewFocusText] = useState('')
   const [newFocusWeek, setNewFocusWeek] = useState('')
   const [dailyNotes, setDailyNotes] = useState<Record<string, string>>({})
+
+  // ─── AI 总结状态 ──────────────────────────
+  const [aiSummary, setAiSummary] = useState<{ highlights: string[]; completion: string; suggestions: string[] } | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryWeek, setSummaryWeek] = useState<string | null>(null);
 
   const DAYS = [
     { key: 'mon', label: '周一' },
@@ -2434,6 +2561,35 @@ function WeeklyPage(qoderProps: Record<string, any>) {
     }
   }
 
+  // ─── AI 周报总结 ──────────────────────────
+  const handleGenerateSummary = async () => {
+    const current = reports.find(r => r.isCurrent) || reports[0];
+    if (!current) return;
+    setSummaryLoading(true);
+    setSummaryWeek(current.weekId);
+    try {
+      const res = await generateWeeklySummary(current.weekId);
+      setAiSummary(res.data);
+      localStorage.setItem('crm-weekly-summary', JSON.stringify({ weekId: current.weekId, data: res.data }));
+    } catch (e: any) {
+      setAiSummary({ highlights: [], completion: e.message, suggestions: [] });
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  // 加载缓存
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem('crm-weekly-summary');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setAiSummary(parsed.data);
+        setSummaryWeek(parsed.weekId);
+      }
+    } catch {}
+  }, []);
+
   // Daily note change (debounced save)
   const noteTimers = {} as Record<string, ReturnType<typeof setTimeout>>
   const handleDailyNoteChange = (weekId: string, dayKey: string, value: string) => {
@@ -2459,12 +2615,49 @@ function WeeklyPage(qoderProps: Record<string, any>) {
 
   return (
     <>
-      <div className="page-header" data-qoder-id="qel-page-header-d895e1b7" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-header-d895e1b7&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;page-header&quot;,&quot;loc&quot;:{&quot;line&quot;:1768,&quot;column&quot;:7}}">
-        <h1 className="page-title" data-qoder-id="qel-page-title-418393e5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-title-418393e5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;page-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1769,&quot;column&quot;:9}}">周报</h1>
-        <p className="page-subtitle" data-qoder-id="qel-page-subtitle-7ebe9c00" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-subtitle-7ebe9c00&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;page-subtitle&quot;,&quot;loc&quot;:{&quot;line&quot;:1770,&quot;column&quot;:9}}">工作记录与回顾</p>
+      <div className="page-header">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 className="page-title">周报</h1>
+            <p className="page-subtitle">工作记录与回顾</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleGenerateSummary} disabled={summaryLoading || reports.length === 0}>
+            {summaryLoading ? <Loader2 size={14} className="animate-spin" /> : <Brain size={14} />}
+            {summaryLoading ? 'AI 分析中...' : 'AI 智能总结'}
+          </Button>
+        </div>
       </div>
-      <div className="page-body" data-qoder-id="qel-page-body-55d5dac0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-body-55d5dac0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;page-body&quot;,&quot;loc&quot;:{&quot;line&quot;:1772,&quot;column&quot;:7}}">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-qoder-id="qel-div-838711e0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-838711e0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1773,&quot;column&quot;:9}}">
+      <div className="page-body">
+        {/* ── AI 总结卡片 ── */}
+        {aiSummary && (
+          <div className="card" style={{ marginBottom: 16, padding: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <Brain size={16} style={{ color: 'var(--accent)' }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>AI 周报智能总结</span>
+              {summaryWeek && <span style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>{reports.find(r => r.weekId === summaryWeek)?.label}</span>}
+            </div>
+            {aiSummary.highlights?.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-secondary)', marginBottom: 6 }}>✨ 本周亮点</div>
+                {aiSummary.highlights.map((h, i) => (
+                  <div key={i} style={{ fontSize: 13, lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid var(--accent)', marginBottom: 4, color: 'var(--fg-secondary)' }}>{h}</div>
+                ))}
+              </div>
+            )}
+            {aiSummary.completion && !aiSummary.highlights?.length && (
+              <div style={{ fontSize: 13, color: '#E74C3C' }}>{aiSummary.completion}</div>
+            )}
+            {aiSummary.suggestions?.length > 0 && (
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-secondary)', marginBottom: 4 }}>💡 下周建议</div>
+                {aiSummary.suggestions.map((s, i) => (
+                  <div key={i} style={{ fontSize: 12, color: 'var(--fg-secondary)', lineHeight: 1.6, paddingLeft: 12 }}>{i + 1}. {s}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {reports.map(r => {
             const isOpen = openWeek === r.weekId
             return (

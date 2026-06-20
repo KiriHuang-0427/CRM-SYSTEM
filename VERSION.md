@@ -4,7 +4,7 @@
 
 ## 当前版本
 
-**V26.06.10** — AI记忆四层架构升级：Memory Router智能路由 + 17种类型×4域分类体系 + L3洞察层/L4战略层框架 + 统一Context Query入口(/api/context/query) + Phase 3-7框架预留(6张新表+4个服务骨架) + AI中枢前端页面
+**V26.06.11** — AI全面接入：DeepSeek/OpenAI多模型切换(用量追踪) + AI销售教练7张卡片(当前建议/话术训练/拒绝应对/向上管理/竞品对抗/风险预警/拜访检查) + AI周报智能总结 + 历史周报数据导入(7周/37重点/96行动) + AI中枢界面统一 + 模型选择优化
 
 ## 版本命名规范
 
@@ -22,6 +22,7 @@
 
 | 版本号 | 日期 | 变更摘要 | 备注 |
 |--------|------|----------|------|
+| V26.06.11 | 2026-06-20 | AI全面接入：openaiProvider.js(多模型) + AI销售教练7卡片(10数据源) + AI周报智能总结 + 历史周报导入(7周/37重点/96行动) + AI中枢UI统一 | AI全面接入版 |
 | V26.06.10 | 2026-06-16 | AI记忆四层架构升级：memoryRouter.js关键词智能路由、17种类型×4域体系(memoryTypes.js+memory_domains表)、L3 insight/L4 strategy_plan分层、统一/api/context/query入口(4端点)、contextBuilder.js重构接入Router+TopK、Phase3-7框架预留(6新表+4服务骨架)、AI中枢前端页面 | AI记忆架构升级版 |
 | V26.06.09 | 2026-06-16 | 架构分层重构：database.js 953→27行、index.js 207→85行；新增db/migrations/目录(10个版本化迁移脚本)、middleware/目录(validate.js+errorHandler.js)、config/目录(config/index.js)、routes/notes.js+investItems.js提取；11处写操作添加参数校验 | 架构稳定性重构版 |
 | V26.06.07 | 2026-06-14 | 本地历史资料上传服务器/opt/crm/imports/并导入257条记忆(184新增+73种子)，ai_memories新增review_status/review_note/reviewed_at三字段，新增5个审核API端点(unlinked/link-customer/mark-unlinked-reviewed/archive/batch)，新增第8导航页AI记忆审核(统计栏+筛选器+记忆卡片+关联/标记/归档+批量操作) | 服务器历史导入+记忆审核版 |

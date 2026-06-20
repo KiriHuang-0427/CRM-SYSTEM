@@ -648,3 +648,54 @@ export async function getContextPools() {
 export async function getContextTypes() {
   return fetchApi<{ data: { domains: any; types: MemoryTypeDef[] } }>('/context/types');
 }
+
+// ─── AI Provider API (V26.07.00) ────────────────────────────
+
+export interface AIConfig {
+  provider: string;
+  baseUrl: string;
+  model: string;
+  hasApiKey: boolean;
+  apiKeyMasked: string | null;
+  maxTokens: number;
+  temperature: number;
+  usage?: { totalTokens: number; calls: number };
+}
+
+export async function getAIConfig() {
+  return fetchApi<{ data: AIConfig }>('/ai/config');
+}
+
+export async function saveAIConfig(data: {
+  provider?: string;
+  apiKey: string;
+  baseUrl: string;
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+}) {
+  return fetchApi<{ success: boolean }>('/ai/config', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function testAIConnection() {
+  return fetchApi<{ success: boolean; latency?: number; model?: string; response?: string; error?: string }>('/ai/test', {
+    method: 'POST',
+  });
+}
+
+export async function generateCoachAdvice() {
+  return fetchApi<{ success: boolean; data: Record<string, { title: string; content: any[]; generatedAt: string }> }>('/ai/coach', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
+export async function generateWeeklySummary(weekId: string) {
+  return fetchApi<{ success: boolean; data: { highlights: string[]; completion: string; suggestions: string[] } }>('/ai/weekly-summary', {
+    method: 'POST',
+    body: JSON.stringify({ weekId }),
+  });
+}
