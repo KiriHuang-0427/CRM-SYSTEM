@@ -440,6 +440,10 @@ export interface Memory {
   customerId: string | null;
   customerName: string | null;
   memoryType: string;
+  memoryTypeLabel?: string;
+  domain?: string;
+  domainLabel?: string;
+  layer?: string;
   title: string;
   content: string;
   summary: string | null;
@@ -585,4 +589,62 @@ export interface CustomerContext {
 
 export async function getCustomerContext(customerId: string) {
   return fetchApi<{ data: CustomerContext }>(`/customers/${customerId}/context`);
+}
+
+// ─── Context Query API (V26.06.10) ───────────────────────────
+
+export interface ContextQueryResult {
+  facts: Record<string, any>;
+  memories: any[];
+  insights: any[];
+  strategy: any[];
+  meta: {
+    query?: string;
+    customerId?: string;
+    industry?: string;
+    matchedPools: string[];
+    matchedTypes: string[];
+    isAmbiguous: boolean;
+    generatedAt: string;
+  };
+}
+
+export interface MemoryPoolSummary {
+  [domainKey: string]: {
+    label: string;
+    count: number;
+    layer: string;
+  };
+}
+
+export interface MemoryTypeDef {
+  value: string;
+  label: string;
+  description: string;
+  domain: string;
+  domainLabel: string;
+  layer?: string;
+}
+
+export async function getContextQuery(params?: {
+  q?: string;
+  customerId?: string;
+  tags?: string;
+  topK?: number;
+}) {
+  const qs = new URLSearchParams();
+  if (params?.q) qs.set('q', params.q);
+  if (params?.customerId) qs.set('customerId', params.customerId);
+  if (params?.tags) qs.set('tags', params.tags);
+  if (params?.topK) qs.set('topK', String(params.topK));
+  const query = qs.toString();
+  return fetchApi<ContextQueryResult>(`/context/query${query ? `?${query}` : ''}`);
+}
+
+export async function getContextPools() {
+  return fetchApi<{ data: MemoryPoolSummary }>('/context/pools');
+}
+
+export async function getContextTypes() {
+  return fetchApi<{ data: { domains: any; types: MemoryTypeDef[] } }>('/context/types');
 }

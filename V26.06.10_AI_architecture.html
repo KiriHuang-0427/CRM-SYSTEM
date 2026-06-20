@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM V26.06.10 AI 框架架构图</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;padding:40px 20px;line-height:1.6}
+.container{max-width:1200px;margin:0 auto}
+h1{font-size:32px;font-weight:800;text-align:center;margin-bottom:4px;background:linear-gradient(135deg,#009999,#8E44AD);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{text-align:center;font-size:14px;color:#64748b;margin-bottom:40px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
+.card h2{font-size:18px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+/* Architecture Overview */
+.arch-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:20px}
+.arch-box{padding:20px;border-radius:10px;border:1px solid}
+.arch-box .layer-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px;margin-bottom:10px}
+.arch-box h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.arch-box p{font-size:13px;color:#94a3b8}
+/* API Flow */
+.flow-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:16px 0;font-family:monospace;font-size:13px}
+.flow-node{padding:10px 16px;border-radius:8px;font-weight:600;white-space:nowrap}
+.flow-arrow{font-size:20px;color:#64748b}
+/* Type Grid */
+.type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.type-chip{padding:8px 12px;border-radius:8px;font-size:12px;border:1px solid}
+.type-chip .name{font-weight:600}
+.type-chip .desc{font-size:10px;color:#94a3b8;margin-top:2px}
+.type-chip .layer-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;display:inline-block;margin-top:4px}
+/* Phase Grid */
+.phase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.phase-item{text-align:center;padding:14px 10px;border-radius:8px;border:1px solid #334155}
+.phase-item .num{font-size:11px;color:#64748b;margin-bottom:4px}
+.phase-item .label{font-size:13px;font-weight:600}
+.phase-item .stat{font-size:10px;margin-top:4px}
+.phase-item.done{background:rgba(39,174,96,0.1);border-color:#27ae6040}
+.phase-item.done .stat{color:#27AE60}
+.phase-item.reserved{background:rgba(230,126,34,0.1);border-color:#e67e2240}
+.phase-item.reserved .stat{color:#E67E22}
+/* Endpoints */
+.endpoint{font-family:monospace;font-size:13px;margin:6px 0;padding:8px 12px;background:#0f172a;border-radius:6px;display:flex;align-items:center;gap:10px}
+.endpoint .method{font-weight:700;font-size:11px;padding:2px 8px;border-radius:4px}
+.endpoint .method.GET{background:#27ae6020;color:#27AE60}
+/* Colors */
+.c-l4{background:linear-gradient(135deg,#8E44AD20,#1e293b);border-color:#8E44AD40}
+.c-l3{background:linear-gradient(135deg,#E67E2220,#1e293b);border-color:#e67e2240}
+.c-l2{background:linear-gradient(135deg,#2980B920,#1e293b);border-color:#2980b940}
+.c-l1{background:linear-gradient(135deg,#00999920,#1e293b);border-color:#00999940}
+.bg-customer{background:rgba(0,153,153,0.08);border-color:#00999940}
+.bg-sales{background:rgba(41,128,185,0.08);border-color:#2980b940}
+.bg-growth{background:rgba(142,68,173,0.08);border-color:#8E44AD40}
+.bg-ai{background:rgba(230,126,34,0.08);border-color:#e67e2240}
+.badge-customer{color:#009999;background:#00999920}
+.badge-sales{color:#2980B9;background:#2980B920}
+.badge-growth{color:#8E44AD;background:#8E44AD20}
+.badge-ai{color:#E67E22;background:#e67e2220}
+@media(max-width:600px){
+body{padding:16px 10px}
+.card{padding:14px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🧠 CRM AI 框架架构</h1>
+<p class="subtitle">V26.06.10 · 四层记忆模型 · Memory Router · 统一 Context Query · 七阶段演进</p>
+
+<!-- Architecture Overview -->
+<div class="card">
+<h2>🏗️ 四层记忆架构</h2>
+<div class="arch-overview">
+<div class="arch-box c-l4">
+<span class="layer-badge" style="color:#8E44AD;background:#8E44AD20">L4 战略层</span>
+<h3>Strategy</h3>
+<p>战略规划 · 销售哲学<br/>strategy_plan (0条)</p>
+</div>
+<div class="arch-box c-l3">
+<span class="layer-badge" style="color:#E67E22;background:#e67e2220">L3 洞察层</span>
+<h3>Insight</h3>
+<p>AI 推断认知（非事实）<br/>insight · coach · learning · market (0条)</p>
+</div>
+<div class="arch-box c-l2">
+<span class="layer-badge" style="color:#2980B9;background:#2980B920">L2 记忆层</span>
+<h3>Memory</h3>
+<p>长期结构化记忆 · 82条<br/>客户域6类 + 销售域5类</p>
+</div>
+<div class="arch-box c-l1">
+<span class="layer-badge" style="color:#009999;background:#00999920">L1 事实层</span>
+<h3>Facts</h3>
+<p>业务表原始数据（不可修改）<br/>customers · pipeline · todos · notes</p>
+</div>
+</div>
+</div>
+
+<!-- Data Flow -->
+<div class="card">
+<h2>🔗 AI 数据流（核心禁令：AI不直接读库）</h2>
+<div class="flow-row">
+<div class="flow-node" style="background:#E67E2220;color:#E67E22">AI / LLM</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-node" style="background:#2980B920;color:#2980B9">Context Builder</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-node" style="background:#8E44AD20;color:#8E44AD">Memory Router</div>
+<div class="flow-arrow">↓</div>
+<div class="flow-node" style="background:#00999920;color:#009999">SQLite crm.db</div>
+</div>
+<div style="text-align:center;font-size:12px;color:#ef4444;margin-top:8px">
+🚫 AI → 直接查 customers / pipeline / weekly → <strong>禁止！</strong>
+</div>
+<div style="text-align:center;font-size:12px;color:#27AE60;margin-top:4px">
+✅ AI → Context Builder → Memory Router (TopK) → 精准检索 → <strong>正确！</strong>
+</div>
+</div>
+
+<!-- Memory Router -->
+<div class="card">
+<h2>🎯 Memory Router 路由逻辑</h2>
+<div class="flow-row">
+<div class="flow-node" style="background:#1e293b;border:1px solid #334155;color:#e2e8f0">查询: "音飞现在怎么样"</div>
+<div class="flow-arrow">→</div>
+<div class="flow-node" style="background:#00999920;color:#009999;border:1px solid #00999940">检测客户名: 南京音飞储存</div>
+<div class="flow-arrow">→</div>
+<div class="flow-node" style="background:#2980B920;color:#2980B9;border:1px solid #2980b940">命中: Customer Pool + Sales Pool</div>
+<div class="flow-arrow">→</div>
+<div class="flow-node" style="background:#1e293b;border:1px solid #27ae6040;color:#27AE60">Top 20 条精准返回</div>
+</div>
+<div style="margin-top:12px;font-size:12px;color:#94a3b8;display:flex;gap:20px;flex-wrap:wrap;justify-content:center">
+<span>🔍 客户名 → Customer Pool</span>
+<span>🏭 行业词 → Industry Pool</span>
+<span>📊 策略词 → Strategy Pool</span>
+<span>📚 学习词 → Learning Pool</span>
+</div>
+</div>
+
+<!-- 4 Domains -->
+<div class="card">
+<h2>🗂️ 四域分类体系（17种类型）</h2>
+
+<div style="margin-bottom:16px"><strong style="color:#009999;font-size:14px">🏢 客户域 (L2)</strong><span style="font-size:12px;color:#94a3b8;margin-left:8px">56条</span></div>
+<div class="type-grid" style="margin-bottom:16px">
+<div class="type-chip bg-customer"><div class="name">customer_profile</div><div class="desc">客户画像</div></div>
+<div class="type-chip bg-customer"><div class="name">relationship</div><div class="desc">客户关系</div></div>
+<div class="type-chip bg-customer"><div class="name">project</div><div class="desc">项目</div></div>
+<div class="type-chip bg-customer"><div class="name">risk</div><div class="desc">风险</div></div>
+<div class="type-chip bg-customer"><div class="name">competitor</div><div class="desc">竞品</div></div>
+<div class="type-chip bg-customer"><div class="name">meeting</div><div class="desc">会议</div></div>
+</div>
+
+<div style="margin-bottom:16px"><strong style="color:#2980B9;font-size:14px">💼 销售域 (L2)</strong><span style="font-size:12px;color:#94a3b8;margin-left:8px">26条</span></div>
+<div class="type-grid" style="margin-bottom:16px">
+<div class="type-chip bg-sales"><div class="name">strategy</div><div class="desc">销售策略</div></div>
+<div class="type-chip bg-sales"><div class="name">decision</div><div class="desc">决策记录</div></div>
+<div class="type-chip bg-sales"><div class="name">sales_data</div><div class="desc">销售数据</div></div>
+<div class="type-chip bg-sales"><div class="name">todo_context</div><div class="desc">待办上下文</div></div>
+<div class="type-chip bg-sales"><div class="name">weekly</div><div class="desc">周报</div></div>
+</div>
+
+<div style="margin-bottom:16px"><strong style="color:#8E44AD;font-size:14px">🌱 成长域 (L3/L4)</strong><span style="font-size:12px;color:#94a3b8;margin-left:8px">0条（框架预留）</span></div>
+<div class="type-grid" style="margin-bottom:16px">
+<div class="type-chip bg-growth"><div class="name">insight</div><div class="desc">洞察</div><div class="layer-tag badge-growth">L3</div></div>
+<div class="type-chip bg-growth"><div class="name">strategy_plan</div><div class="desc">战略规划</div><div class="layer-tag badge-growth">L4</div></div>
+<div class="type-chip bg-growth"><div class="name">coach</div><div class="desc">销售教练</div><div class="layer-tag badge-growth">L3</div></div>
+<div class="type-chip bg-growth"><div class="name">learning</div><div class="desc">经验学习</div><div class="layer-tag badge-growth">L3</div></div>
+<div class="type-chip bg-growth"><div class="name">market</div><div class="desc">市场情报</div><div class="layer-tag badge-growth">L3</div></div>
+</div>
+
+<div style="margin-bottom:16px"><strong style="color:#E67E22;font-size:14px">🤖 AI域 (L2/L3)</strong><span style="font-size:12px;color:#94a3b8;margin-left:8px">0条</span></div>
+<div class="type-grid">
+<div class="type-chip bg-ai"><div class="name">archive_raw</div><div class="desc">原始归档</div><div class="layer-tag badge-ai">L2</div></div>
+<div class="type-chip bg-ai"><div class="name">system_memory</div><div class="desc">系统记忆</div><div class="layer-tag badge-ai">L3</div></div>
+</div>
+</div>
+
+<!-- API Endpoints -->
+<div class="card">
+<h2>🔌 统一 Context Query API（AI唯一入口）</h2>
+<div class="endpoint"><span class="method GET">GET</span>/api/context/query?q=音飞现在怎么样</div>
+<div class="endpoint"><span class="method GET">GET</span>/api/context/pools</div>
+<div class="endpoint"><span class="method GET">GET</span>/api/context/types</div>
+<div class="endpoint"><span class="method GET">GET</span>/api/context/customer/:id</div>
+<div style="margin-top:12px;padding:12px;background:#0f172a;border-radius:8px;font-family:monospace;font-size:12px;line-height:1.8">
+<span style="color:#64748b">// 响应结构</span><br/>
+{<br/>
+<span style="padding-left:16px;color:#009999">facts</span>: { customer, contacts, pipeline, todos, ... },<br/>
+<span style="padding-left:16px;color:#2980B9">memories</span>: [ Memory(Router→TopK) ... ],<br/>
+<span style="padding-left:16px;color:#E67E22">insights</span>: [ Insight(L3) ... ],<br/>
+<span style="padding-left:16px;color:#8E44AD">strategy</span>: [ StrategyPlan(L4) ... ],<br/>
+<span style="padding-left:16px;color:#64748b">meta</span>: { matchedPools, matchedTypes, ... }<br/>
+}
+</div>
+</div>
+
+<!-- Phase Roadmap -->
+<div class="card">
+<h2>📋 七阶段演进路线</h2>
+<div class="phase-grid">
+<div class="phase-item done"><div class="num">Phase 1</div><div class="label">Memory Router</div><div class="stat">✅ 完成</div></div>
+<div class="phase-item done"><div class="num">Phase 2</div><div class="label">Insight Layer</div><div class="stat">✅ 完成</div></div>
+<div class="phase-item reserved"><div class="num">Phase 3</div><div class="label">Customer Coach</div><div class="stat">🔧 框架预留</div></div>
+<div class="phase-item reserved"><div class="num">Phase 4</div><div class="label">Weekly AI</div><div class="stat">🔧 框架预留</div></div>
+<div class="phase-item reserved"><div class="num">Phase 5</div><div class="label">Strategy Center</div><div class="stat">🔧 框架预留</div></div>
+<div class="phase-item reserved"><div class="num">Phase 6</div><div class="label">AI Provider</div><div class="stat">🔧 框架预留</div></div>
+<div class="phase-item reserved"><div class="num">Phase 7</div><div class="label">Multi-Agent</div><div class="stat">🔧 框架预留</div></div>
+</div>
+</div>
+
+<!-- DB Tables -->
+<div class="card">
+<h2>🗄️ 数据库新增表（迁移011）</h2>
+<table style="width:100%;font-size:12px;border-collapse:collapse">
+<thead><tr style="color:#94a3b8;text-align:left"><th style="padding:8px">表名</th><th style="padding:8px">用途</th><th style="padding:8px">Phase</th></tr></thead>
+<tbody>
+<tr><td style="padding:8px;font-family:monospace">memory_domains</td><td style="padding:8px">四域配置（crm/sales/growth/ai）</td><td style="padding:8px">P1</td></tr>
+<tr><td style="padding:8px;font-family:monospace">memory_types_registry</td><td style="padding:8px">17种类型注册表</td><td style="padding:8px">P1</td></tr>
+<tr><td style="padding:8px;font-family:monospace">ai_query_log</td><td style="padding:8px">AI查询记录</td><td style="padding:8px">P6</td></tr>
+<tr><td style="padding:8px;font-family:monospace">ai_coach_sessions</td><td style="padding:8px">销售教练会话</td><td style="padding:8px">P3</td></tr>
+<tr><td style="padding:8px;font-family:monospace">ai_strategy_plans</td><td style="padding:8px">战略规划记录</td><td style="padding:8px">P5</td></tr>
+<tr><td style="padding:8px;font-family:monospace">ai_system_state</td><td style="padding:8px">AI系统状态（多Agent）</td><td style="padding:8px">P7</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- Files Changed -->
+<div class="card">
+<h2>📁 新增/修改文件清单</h2>
+<table style="width:100%;font-size:12px;border-collapse:collapse">
+<thead><tr style="color:#94a3b8;text-align:left"><th style="padding:6px">文件</th><th style="padding:6px">类型</th><th style="padding:6px">行数</th></tr></thead>
+<tbody>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">server/config/memoryTypes.js</td><td style="padding:6px;color:#27AE60">新建</td><td>113</td></tr>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">server/services/memoryRouter.js</td><td style="padding:6px;color:#27AE60">新建</td><td>203</td></tr>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">server/services/contextBuilder.js</td><td style="padding:6px;color:#2980B9">重构</td><td>318</td></tr>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">server/routes/context.js</td><td style="padding:6px;color:#27AE60">新建</td><td>72</td></tr>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">server/db/migrations/011_*.js</td><td style="padding:6px;color:#27AE60">新建</td><td>132</td></tr>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">server/services/ai/{customerCoach,weeklyAI,strategyCenter,aiProvider,multiAgent}.js</td><td style="padding:6px;color:#E67E22">骨架</td><td>110</td></tr>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">server/index.js</td><td style="padding:6px;color:#2980B9">修改</td><td>87</td></tr>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">src/lib/api.ts</td><td style="padding:6px;color:#2980B9">修改</td><td>+62</td></tr>
+<tr><td style="padding:6px;font-family:monospace;font-size:11px">src/App.tsx</td><td style="padding:6px;color:#2980B9">修改</td><td>+200</td></tr>
+</tbody>
+</table>
+</div>
+
+<p style="text-align:center;color:#64748b;font-size:12px;margin-top:40px">
+CRM V26.06.10 · AI Memory Layer Architecture · 生产就绪框架
+</p>
+</div>
+</body>
+</html>

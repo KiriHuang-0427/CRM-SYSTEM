@@ -6,7 +6,7 @@ import {
   Target, AlertTriangle, Star, BarChart3,
   CheckSquare, Square, Megaphone, Shield, ArrowUpCircle,
   Clock, Calendar, Menu, Plus, Trash2, Loader2, RefreshCw, Edit3,
-  Brain, Database, Filter, ClipboardCheck, Link2, Archive, Copy,
+  Brain, Database, Filter, ClipboardCheck, Link2, Archive, Copy, Layers, Network, Zap as ZapIcon,
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
@@ -17,8 +17,8 @@ import {
   COACH_SCENARIOS, INVESTMENT_ITEMS, INVESTMENT_DIMS,
 } from '@/lib/data'
 import * as api from '@/lib/api'
-import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary, Memory, MemoryStats } from '@/lib/api'
-import { getUnlinkedMemories, linkMemoryToCustomer, markMemoryUnlinkedReviewed, archiveMemoryWithReason, batchMemoryOperation, getMemoryStats } from '@/lib/api'
+import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary, Memory, MemoryStats, MemoryPoolSummary, MemoryTypeDef } from '@/lib/api'
+import { getUnlinkedMemories, linkMemoryToCustomer, markMemoryUnlinkedReviewed, archiveMemoryWithReason, batchMemoryOperation, getMemoryStats, getContextPools, getContextTypes } from '@/lib/api'
 import { cn, fmtK, daysSince, colorHex, priorityLabel } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -100,7 +100,7 @@ function EmptyState({ icon, message, hint, ...qoderProps }: { icon?: React.React
   )
 }
 
-type TabId = 'dashboard' | 'customers' | 'pipeline' | 'competitive' | 'energy' | 'coach' | 'weekly' | 'review'
+type TabId = 'dashboard' | 'customers' | 'pipeline' | 'competitive' | 'energy' | 'coach' | 'weekly' | 'review' | 'aihub'
 
 const NAV_ITEMS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', label: '仪表盘', icon: <LayoutDashboard size={18}  data-qoder-id="qel-layoutdashboard-2eed58a0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-layoutdashboard-2eed58a0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;layoutdashboard&quot;,&quot;loc&quot;:{&quot;line&quot;:24,&quot;column&quot;:42}}"/> },
@@ -111,6 +111,7 @@ const NAV_ITEMS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'coach', label: 'AI 教练', icon: <Bot size={18}  data-qoder-id="qel-bot-34694d61" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-bot-34694d61&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;bot&quot;,&quot;loc&quot;:{&quot;line&quot;:29,&quot;column&quot;:40}}"/> },
   { id: 'weekly', label: '周报', icon: <FileText size={18}  data-qoder-id="qel-filetext-b5c82248" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-filetext-b5c82248&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;filetext&quot;,&quot;loc&quot;:{&quot;line&quot;:30,&quot;column&quot;:38}}"/> },
   { id: 'review', label: 'AI记忆审核', icon: <ClipboardCheck size={18} /> },
+  { id: 'aihub', label: 'AI 中枢', icon: <Brain size={18} /> },
 ]
 
 /* ─────────────────────── MemoryReviewPage (V26.06.07) ──────── */
@@ -437,6 +438,202 @@ function MemoryReviewPage({ customers }: { customers: Customer[] }) {
   );
 }
 
+/* ─────────────────────── AIHubPage (V26.06.10) ────────── */
+
+const DOMAIN_COLORS: Record<string, string> = {
+  customer: '#009999',
+  sales: '#2980B9',
+  growth: '#8E44AD',
+  ai: '#E67E22',
+};
+
+const DOMAIN_ICONS: Record<string, React.ReactNode> = {
+  customer: <Users size={14} />,
+  sales: <BarChart3 size={14} />,
+  growth: <ZapIcon size={14} />,
+  ai: <Brain size={14} />,
+};
+
+function AIHubPage() {
+  const [pools, setPools] = useState<MemoryPoolSummary | null>(null);
+  const [types, setTypes] = useState<MemoryTypeDef[]>([]);
+  const [domains, setDomains] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [poolsRes, typesRes] = await Promise.all([
+          getContextPools(),
+          getContextTypes(),
+        ]);
+        setPools(poolsRes.data);
+        setTypes(typesRes.data.types);
+        setDomains(typesRes.data.domains);
+      } catch (e) {
+        console.error('AIHub load error:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, color: 'var(--fg-tertiary)' }}>
+      <Loader2 size={20} className="animate-spin" />
+    </div>
+  );
+
+  const domainList = Object.entries(domains);
+
+  return (
+    <div style={{ padding: 24, maxWidth: 960, margin: '0 auto' }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>🧠 AI 中枢</h1>
+      <p style={{ fontSize: 13, color: 'var(--fg-tertiary)', marginTop: 4 }}>
+        四层记忆架构 · 七阶段演进路线 · AI 接入统一入口
+      </p>
+
+      {/* ── 演进路线 ── */}
+      <div style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>📋 七阶段演进路线</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+          {[
+            { phase: 'Phase 1', label: 'Memory Router', status: '✅ 完成', desc: '智能关键词路由' },
+            { phase: 'Phase 2', label: 'Insight Layer', status: '✅ 完成', desc: 'L3+L4 分层框架' },
+            { phase: 'Phase 3', label: 'Customer Coach', status: '🔧 框架预留', desc: 'AI 销售教练' },
+            { phase: 'Phase 4', label: 'Weekly AI', status: '🔧 框架预留', desc: '周报智能总结' },
+            { phase: 'Phase 5', label: 'Strategy Center', status: '🔧 框架预留', desc: '战略规划中心' },
+            { phase: 'Phase 6', label: 'AI Provider', status: '🔧 框架预留', desc: '统一 AI 接入' },
+            { phase: 'Phase 7', label: 'Multi-Agent', status: '🔧 框架预留', desc: '多 Agent 协同' },
+          ].map((p, i) => (
+            <div key={i} style={{
+              padding: 12, borderRadius: 'var(--radius-md)', background: 'var(--bg-elevated)',
+              border: '1px solid var(--border-subtle)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-secondary)' }}>{p.phase}</span>
+                <span style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>{p.status}</span>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 500 }}>{p.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 2 }}>{p.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 四域记忆池 ── */}
+      <div style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>🗂️ 四域记忆池</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+          {domainList.map(([key, domain]) => {
+            const poolInfo = pools?.[key];
+            return (
+              <div key={key} style={{
+                padding: 16, borderRadius: 'var(--radius-md)',
+                background: `linear-gradient(135deg, ${DOMAIN_COLORS[key] || '#666'}15, var(--bg-elevated))`,
+                border: `1px solid ${DOMAIN_COLORS[key] || '#666'}30`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ color: DOMAIN_COLORS[key] || '#666' }}>{DOMAIN_ICONS[key]}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>{domain.label}</span>
+                  <span style={{
+                    fontSize: 10, padding: '1px 6px', borderRadius: 10,
+                    background: 'var(--bg-surface)', color: 'var(--fg-tertiary)',
+                  }}>{domain.layer}</span>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginBottom: 10 }}>
+                  {domain.description || ''}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontSize: 28, fontWeight: 700, color: DOMAIN_COLORS[key] || '#666' }}>
+                    {poolInfo?.count ?? '-'}
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>条记忆</span>
+                </div>
+                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {(domain.types || []).map((t: any) => (
+                    <span key={t.value} style={{
+                      fontSize: 10, padding: '2px 8px', borderRadius: 10,
+                      background: 'var(--bg-surface)', color: 'var(--fg-secondary)',
+                    }}>{t.label}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── 四层架构图 ── */}
+      <div style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>🏗️ 四层记忆架构</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[
+            { layer: 'L4', name: '战略层', desc: '战略规划、销售哲学（strategy_plan）', color: '#8E44AD', icon: '🏛️' },
+            { layer: 'L3', name: '洞察层', desc: 'AI 推断认知：insight · coach · learning · market', color: '#E67E22', icon: '💡' },
+            { layer: 'L2', name: '记忆层', desc: '客户域6类 + 销售域5类 = 长期结构化记忆', color: '#2980B9', icon: '🧠' },
+            { layer: 'L1', name: '事实层', desc: '业务表原始数据（不可修改 · 系统事实）', color: '#009999', icon: '📊' },
+          ].map((l) => (
+            <div key={l.layer} style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              padding: 16, borderRadius: 'var(--radius-md)',
+              background: `linear-gradient(135deg, ${l.color}10, var(--bg-elevated))`,
+              border: `1px solid ${l.color}25`,
+            }}>
+              <div style={{ fontSize: 28 }}>{l.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{
+                    fontSize: 11, padding: '2px 8px', borderRadius: 10,
+                    background: l.color + '20', color: l.color, fontWeight: 600,
+                  }}>{l.layer}</span>
+                  <span style={{ fontSize: 15, fontWeight: 600 }}>{l.name}</span>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>{l.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 统一入口 ── */}
+      <div style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>🔌 AI 统一入口</h2>
+        <div style={{
+          padding: 16, borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
+          fontFamily: 'monospace', fontSize: 12, lineHeight: 1.8,
+        }}>
+          <div style={{ color: 'var(--fg-tertiary)', marginBottom: 6 }}># 未来所有AI能力统一走此接口</div>
+          <div><span style={{ color: '#27AE60' }}>GET</span> /api/context/query?q=&lt;query&gt;&amp;customerId=&lt;id&gt;&amp;tags=&lt;tags&gt;</div>
+          <div style={{ color: 'var(--fg-tertiary)', marginTop: 4 }}># 返回</div>
+          <div>{'{'}</div>
+          <div style={{ paddingLeft: 20 }}>
+            <span style={{ color: '#E67E22' }}>facts</span>: L1 业务事实,</div>
+          <div style={{ paddingLeft: 20 }}>
+            <span style={{ color: '#2980B9' }}>memories</span>: L2 记忆 (Router → TopK),</div>
+          <div style={{ paddingLeft: 20 }}>
+            <span style={{ color: '#8E44AD' }}>insights</span>: L3 洞察,</div>
+          <div style={{ paddingLeft: 20 }}>
+            <span style={{ color: '#E74C3C' }}>strategy</span>: L4 战略</div>
+          <div>{'}'}</div>
+        </div>
+      </div>
+
+      {/* ── 设计原则 ── */}
+      <div style={{ marginTop: 24, padding: 16, borderRadius: 'var(--radius-md)', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>🚫 核心禁令</div>
+        <div style={{ fontSize: 12, color: 'var(--fg-secondary)', lineHeight: 1.8 }}>
+          · AI 不直接读取数据库 &nbsp;|&nbsp; · AI 不读取全部 Memory (prompt 爆炸)<br/>
+          · 统一走 Context Layer &nbsp;|&nbsp; · Memory Router 命中池 TopK 检索<br/>
+          · 向量数据库待 100+客户/5000+记忆后接入
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ────────────────────────── APP SHELL ────────────────────────── */
 export default function App(qoderProps: Record<string, any>) {
   const [tab, setTab] = useState<TabId>('dashboard')
@@ -522,6 +719,7 @@ export default function App(qoderProps: Record<string, any>) {
             {tab === 'coach' && <CoachPage customers={custData.customers} data-qoder-id="qel-coachpage-77587252" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-coachpage-77587252&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;coachpage&quot;,&quot;loc&quot;:{&quot;line&quot;:212,&quot;column&quot;:33}}"/>}
             {tab === 'weekly' && <WeeklyPage data-qoder-id="qel-weeklypage-802c936f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-weeklypage-802c936f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;weeklypage&quot;,&quot;loc&quot;:{&quot;line&quot;:213,&quot;column&quot;:34}}"/>}
             {tab === 'review' && <MemoryReviewPage customers={custData.customers} />}
+            {tab === 'aihub' && <AIHubPage />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -542,7 +740,7 @@ export default function App(qoderProps: Record<string, any>) {
           </button>
         ))}
         <button
-          className={cn('bottom-tab-item', ['competitive', 'energy', 'coach', 'weekly', 'review'].includes(tab) && 'active')}
+          className={cn('bottom-tab-item', ['competitive', 'energy', 'coach', 'weekly', 'review', 'aihub'].includes(tab) && 'active')}
           onClick={() => setMobileNav(true)}
          data-qoder-id="qel-button-554e864c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-554e864c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:145,&quot;column&quot;:9}}">
           <Menu size={18}  data-qoder-id="qel-menu-398f9e57" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-menu-398f9e57&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;menu&quot;,&quot;loc&quot;:{&quot;line&quot;:149,&quot;column&quot;:11}}"/>

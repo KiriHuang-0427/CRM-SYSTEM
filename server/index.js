@@ -22,6 +22,7 @@ const memoriesRouter = require('./routes/memories');
 const importsRouter = require('./routes/imports');
 const notesRouter = require('./routes/notes');
 const investItemsRouter = require('./routes/investItems');
+const contextRouter = require('./routes/context');
 
 app.use('/api/customers', customersRouter);
 app.use('/api/pipeline', pipelineRouter);
@@ -31,6 +32,7 @@ app.use('/api/memories', memoriesRouter);
 app.use('/api/imports', importsRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/invest-items', investItemsRouter);
+app.use('/api/context', contextRouter);
 
 // ─── Error Handler ───────────────────────────────────────────
 
@@ -50,7 +52,7 @@ app.get('/api/health', (req, res) => {
   const uptime = `${Math.floor(uptimeSeconds / 86400)}d ${Math.floor((uptimeSeconds % 86400) / 3600)}h ${Math.floor((uptimeSeconds % 3600) / 60)}m ${uptimeSeconds % 60}s`;
   res.json({
     status: 'ok',
-    version: 'V26.06.09',
+    version: 'V26.06.10',
     customers: custCount.cnt,
     todos: todoCount.cnt,
     pipeline: pipeCount.cnt,
@@ -76,7 +78,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[CRM API] Server running on http://0.0.0.0:${PORT}`);
-  console.log(`[CRM API] Version: V26.06.09`);
+  console.log(`[CRM API] Version: V26.06.10`);
   console.log(`[CRM API] Database: ${config.DB_PATH}`);
   // Auto-create current week report if missing
   const { ensureCurrentWeek } = require('./routes/weekly');
