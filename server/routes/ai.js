@@ -384,9 +384,12 @@ router.get('/memory-pool', (req, res) => {
     const { MEMORY_DOMAINS } = require('../config/memoryTypes');
 
     let typeFilter = '';
+    let totalTypeFilter = '';
     if (domain && MEMORY_DOMAINS[domain]) {
       const types = MEMORY_DOMAINS[domain].types.map(t => typeof t === 'string' ? t : t.value);
-      typeFilter = `AND m.memory_type IN (${types.map(t => `'${t}'`).join(',')})`;
+      const typeList = types.map(t => `'${t}'`).join(',');
+      typeFilter = `AND m.memory_type IN (${typeList})`;
+      totalTypeFilter = `AND memory_type IN (${typeList})`;
     }
 
     const rows = db.prepare(`
@@ -400,7 +403,7 @@ router.get('/memory-pool', (req, res) => {
       LIMIT ?
     `).all(limit);
 
-    const total = db.prepare('SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0').get();
+    const total = db.prepare(`SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0 ${totalTypeFilter}`).get();
     res.json({ data: rows, total: total.cnt, limit });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -182,18 +182,10 @@ function getPoolSummary() {
   const summary = {};
   for (const [key, domain] of Object.entries(MEMORY_DOMAINS)) {
     const types = domain.types.map(t => t.value);
-    const placeholders = [];
-    for (const t of types) {
-      if (t === 'archive_raw') continue; // 跳过原始归档
-      placeholders.push('?');
-    }
-    if (placeholders.length === 0) {
-      summary[key] = { label: domain.label, count: 0 };
-      continue;
-    }
+    const placeholders = types.map(() => '?').join(',');
     const row = db.prepare(
-      `SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0 AND memory_type IN (${placeholders.join(',')})`
-    ).get(...types.filter(t => t !== 'archive_raw'));
+      `SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0 AND memory_type IN (${placeholders})`
+    ).get(...types);
     summary[key] = { label: domain.label, count: row.cnt, layer: domain.layer };
   }
   return summary;
