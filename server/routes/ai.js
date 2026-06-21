@@ -136,8 +136,94 @@ router.post('/weekly-summary', (req, res) => {
   }
 });
 
+// ─── POST /api/ai/weekly-extract ──────────────────────────────
+// 每日记录智能提取 — 从每日记录 + CRM 数据中提取重点和行动项
+router.post('/weekly-extract', (req, res) => {
+  const { weekId, dayKey, content } = req.body;
+  if (!weekId || !dayKey) return res.status(400).json({ error: 'weekId and dayKey are required' });
+  (async () => {
+    try {
+      const { extractSuggestions } = require('../services/ai/weeklyExtractService');
+      const result = await extractSuggestions(weekId, dayKey, content);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  })();
+});
+
+// ─── POST /api/ai/weekly-reflection ──────────────────────────────
+// 周报多轮反思对话 — AI 引导用户反思本周工作
+router.post('/weekly-reflection', (req, res) => {
+  const { weekId, conversation } = req.body;
+  if (!weekId) return res.status(400).json({ error: 'weekId is required' });
+  (async () => {
+    try {
+      const { generateReflection } = require('../services/ai/weeklyReflectionService');
+      const result = await generateReflection(weekId, conversation || []);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  })();
+});
+
+// ─── POST /api/ai/weekly-reflection/conclude ──────────────────────
+// 结束反思 — 全面交付：客户关联写销售域 + 洞察写成长域 + 总结报告
+router.post('/weekly-reflection/conclude', (req, res) => {
+  const { weekId, conversation } = req.body;
+  if (!weekId) return res.status(400).json({ error: 'weekId is required' });
+  (async () => {
+    try {
+      const { concludeReflection } = require('../services/ai/weeklyReflectionService');
+      const result = await concludeReflection(weekId, conversation || []);
+      const db = require('../database');
+      const now = new Date().toISOString();
+
+      // ── 写入销售域：按客户拆分 ──────────────────
+      const salesWritten = [];
+      const customerMap = db.prepare('SELECT id, name FROM customers').all();
+      const nameToId = {};
+      customerMap.forEach(c => { nameToId[c.name] = c.id; });
+
+      for (const entry of (result.salesEntries || [])) {
+        const customerId = nameToId[entry.customerName] || null;
+        if (!entry.content || entry.content.trim().length < 3) continue;
+        const title = `${entry.customerName}：本周动态`;
+        db.prepare(`
+          INSERT INTO ai_memories (customer_id, memory_type, title, content, summary, importance, confidence, source_kind, occurred_at, tags, updated_at)
+          VALUES (?, 'meeting', ?, ?, ?, 5, 1.0, 'system_reflection', ?, ?, ?)
+        `).run(customerId, title, entry.content, entry.content.slice(0, 100), now, `weekly,${weekId}`, now);
+        salesWritten.push({ customerName: entry.customerName, customerId, title, content: entry.content });
+      }
+
+      // ── 写入成长域：反思洞察 ──────────────────
+      const growthWritten = [];
+      if ((result.insights || []).length > 0 || result.feeling) {
+        const insightContent = `反思洞察[${weekId}]\n${(result.insights || []).map((s, i) => `${i + 1}. ${s}`).join('\n')}\n核心感受：${result.feeling || '未记录'}`;
+        const insertResult = db.prepare(`
+          INSERT INTO ai_memories (customer_id, memory_type, title, content, summary, importance, confidence, source_kind, occurred_at, tags, updated_at)
+          VALUES (?, 'insight', ?, ?, ?, 7, 1.0, 'system_reflection', ?, ?, ?)
+        `).run(null, `周报复思 - ${weekId}`, insightContent, (result.insights || []).join('；').slice(0, 100), now, 'weekly,reflection,growth', now);
+        growthWritten.push({ type: 'insight', title: `周报复思 - ${weekId}`, memoryId: insertResult.lastInsertRowid });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          ...result,
+          salesWritten,
+          growthWritten,
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  })();
+});
+
 // ─── POST /api/ai/coach/feedback ──────────────────────────────
-// 教练建议反馈 — 写入 L3 洞察层
+// 教练建议反馈 — 写入 L3 成长域（coach类型）
 router.post('/coach/feedback', (req, res) => {
   try {
     const { category, itemIndex, rating, note, coachContext } = req.body;
@@ -147,22 +233,37 @@ router.post('/coach/feedback', (req, res) => {
 
     const db = require('../database');
     const now = new Date().toISOString();
+    const dir = rating >= 4 ? '采纳' : '拒绝';
+    const reason = note ? `原因：${note}` : '未填写原因';
 
-    // 写入 ai_memories 作为 insight
+    // 解析coachContext提取原始建议
+    let originalItem = '';
+    try {
+      const ctx = JSON.parse(coachContext || '{}');
+      originalItem = ctx.originalItem || '';
+    } catch {}
+
+    // 提取原始建议的简短描述（用于标题和摘要）
+    const briefDesc = originalItem ? originalItem.slice(0, 60) : '';
+    const titleStr = briefDesc
+      ? `教练反馈[${dir}]: ${briefDesc}`
+      : `教练反馈[${dir}]: ${category} #${itemIndex}`;
+
+    // 写入 ai_memories 作为 coach（成长域-销售教练，L3层）
     const result = db.prepare(`
       INSERT INTO ai_memories (
         customer_id, memory_type, title, content, summary,
         importance, confidence, source_kind, occurred_at, tags, updated_at
-      ) VALUES (?, 'insight', ?, ?, ?, ?, ?, 'system_feedback', ?, ?, ?)
+      ) VALUES (?, 'coach', ?, ?, ?, ?, ?, 'system_feedback', ?, ?, ?)
     `).run(
       null,
-      `反馈: ${category} #${itemIndex}`,
-      `评分: ${rating}/5 | 备注: ${note || '无'} | 上下文: ${coachContext || ''}`,
-      note || `用户对"${category}"建议评分${rating}/5`,
+      titleStr,
+      `类别: ${category} | 评分: ${rating}/5 | ${dir} | ${reason}${originalItem ? ' | 原始建议: ' + originalItem.slice(0, 200) : ''}`,
+      briefDesc || note || `用户对"${category}"建议${dir}`,
       rating >= 4 ? 5 : 3,
       1.0,
       now,
-      JSON.stringify(['coach_feedback', category]),
+      JSON.stringify(['coach_feedback', category, dir]),
       now
     );
 
@@ -171,7 +272,7 @@ router.post('/coach/feedback', (req, res) => {
       INSERT INTO ai_query_log (query, matched_pools, result_count, latency_ms, source, created_at)
       VALUES (?, ?, ?, 0, 'coach_feedback', ?)
     `).run(
-      `Feedback: ${category} rating=${rating}`,
+      `Feedback: ${category} rating=${rating} ${dir}${note ? ' reason=' + note : ''}`,
       'coach_feedback',
       1,
       now
@@ -192,7 +293,7 @@ router.get('/coach/feedback', (req, res) => {
     const rows = db.prepare(`
       SELECT id, title, content, summary, importance, occurred_at as occurredAt
       FROM ai_memories
-      WHERE memory_type = 'insight' AND source_kind = 'system_feedback'
+      WHERE (memory_type = 'coach' OR memory_type = 'insight') AND source_kind = 'system_feedback'
       ORDER BY occurred_at DESC LIMIT 30
     `).all();
     res.json({ data: rows });
@@ -268,6 +369,65 @@ router.post('/agent/report', (req, res) => {
         res.status(500).json({ error: e.message });
       }
     })();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/ai/memory-pool ──────────────────────────────
+// 记忆池管理：查询最新记忆条目
+router.get('/memory-pool', (req, res) => {
+  try {
+    const db = require('../database');
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+    const domain = req.query.domain;
+    const { MEMORY_DOMAINS } = require('../config/memoryTypes');
+
+    let typeFilter = '';
+    if (domain && MEMORY_DOMAINS[domain]) {
+      const types = MEMORY_DOMAINS[domain].types.map(t => typeof t === 'string' ? t : t.value);
+      typeFilter = `AND m.memory_type IN (${types.map(t => `'${t}'`).join(',')})`;
+    }
+
+    const rows = db.prepare(`
+      SELECT m.id, m.memory_type, m.title, m.content, m.summary,
+        m.importance, m.source_kind, m.source_table, m.occurred_at,
+        m.is_archived, c.name as customerName
+      FROM ai_memories m
+      LEFT JOIN customers c ON c.id = m.customer_id
+      WHERE 1=1 ${typeFilter}
+      ORDER BY m.created_at DESC
+      LIMIT ?
+    `).all(limit);
+
+    const total = db.prepare('SELECT COUNT(*) as cnt FROM ai_memories WHERE is_archived = 0').get();
+    res.json({ data: rows, total: total.cnt, limit });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── DELETE /api/ai/memory/:id ────────────────────────────
+router.delete('/memory/:id', (req, res) => {
+  try {
+    const db = require('../database');
+    const result = db.prepare('DELETE FROM ai_memories WHERE id = ?').run(req.params.id);
+    if (result.changes === 0) return res.status(404).json({ error: '未找到该记录' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── DELETE /api/ai/memory-pool/batch ────────────────────
+router.delete('/memory-pool/batch', (req, res) => {
+  try {
+    const db = require('../database');
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'ids数组不能为空' });
+    const placeholders = ids.map(() => '?').join(',');
+    const result = db.prepare(`DELETE FROM ai_memories WHERE id IN (${placeholders})`).run(...ids);
+    res.json({ success: true, deleted: result.changes });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

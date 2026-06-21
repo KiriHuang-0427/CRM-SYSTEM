@@ -117,29 +117,70 @@ async function generateCoachAdvice(categories) {
 
   const overview = buildOverview();
 
-  // ─── 读取最近30条反馈作为上下文 ──────────
+  // ─── 读取反馈：去重 + 原因上下文 ──────────
   const recentFeedback = db.prepare(`
-    SELECT title, content, summary FROM ai_memories
-    WHERE memory_type = 'insight' AND source_kind = 'system_feedback'
-    ORDER BY occurred_at DESC LIMIT 30
+    SELECT title, content, summary, importance FROM ai_memories
+    WHERE (memory_type = 'coach' OR memory_type = 'insight') AND source_kind = 'system_feedback'
+    ORDER BY occurred_at DESC LIMIT 50
   `).all();
-  const feedbackCtx = recentFeedback.length > 0
-    ? '最近用户反馈：\n' + recentFeedback.map(f => `- ${f.title}: ${f.summary || f.content?.slice(0, 120)}`).join('\n')
-    : '';
+  
+  // 提取已采纳的原始建议内容，用于去重
+  const adoptedItems = [];
+  const rejectedReasons = [];
+  const adoptedReasons = [];
+  for (const f of recentFeedback) {
+    const isAdopted = f.importance >= 5;
+    // 从 content 中提取“原始建议”部分
+    const origMatch = f.content?.match(/\|\s*原始建议:\s*(.+)/);
+    if (isAdopted) {
+      if (origMatch) adoptedItems.push(origMatch[1].trim().slice(0, 100));
+      if (f.summary) adoptedReasons.push(f.summary);
+    } else {
+      if (f.summary) rejectedReasons.push(f.summary);
+    }
+  }
 
+  // 构建反馈上下文
+  let feedbackCtx = '';
+  const parts = [];
+  if (adoptedItems.length > 0) {
+    parts.push('【以下建议用户已采纳，本次请勿重复生成相同或类似内容】\n' + adoptedItems.slice(0, 15).map(s => `- ${s}`).join('\n'));
+  }
+  if (adoptedReasons.length > 0) {
+    parts.push('【用户采纳原因（保持这类方向）】\n' + adoptedReasons.slice(0, 10).map(r => `- ${r}`).join('\n'));
+  }
+  if (rejectedReasons.length > 0) {
+    parts.push('【用户拒绝原因（避免类似方向）】\n' + rejectedReasons.slice(0, 10).map(r => `- ${r}`).join('\n'));
+  }
+  feedbackCtx = parts.join('\n\n');
+
+  const cats = categories || ['suggestions', 'scripts', 'objections', 'upward', 'competitor', 'risks', 'checklist'];
   const results = {};
 
-  for (const cat of categories || ['suggestions', 'scripts', 'objections', 'upward', 'competitor', 'risks', 'checklist']) {
+  // ─── 读取用户交互哲学（AI域核心记忆）──────
+  const philosophyRow = db.prepare(`
+    SELECT content FROM ai_memories WHERE title LIKE '%AI教练交互哲学%' AND is_archived = 0 ORDER BY id DESC LIMIT 1
+  `).get();
+  const philosophy = philosophyRow ? philosophyRow.content : '';
+
+  // 基础系统提示词
+  const baseSystemPrompt = '你是西门子OEM南京区域销售教练，用户是外勤销售。基于真实CRM数据给出精准、可执行的建议。每条建议控制在80字以内。';
+  const philosophyPrompt = philosophy ? '\n\n【核心交互原则 — 必须严格遵循】\n' + philosophy.slice(0, 600) : '';
+  const feedbackPrompt = feedbackCtx ? '\n\n' + feedbackCtx : '';
+  const systemPrompt = baseSystemPrompt + philosophyPrompt + feedbackPrompt;
+
+  for (const cat of cats) {
     const prompt = buildPrompt(cat, overview);
     try {
-      const res = await provider.generate(prompt, '你是西门子OEM南京区域销售教练，用户是外勤销售。基于真实CRM数据给出精准、可执行的建议。每条建议控制在80字以内。' + (feedbackCtx ? '参考用户的反馈历史，避免重复之前的无效建议：' + feedbackCtx : ''));
+      const res = await provider.generate(prompt, systemPrompt);
       results[cat] = {
         title: CATEGORY_LABELS[cat],
         content: parseAIResponse(res.content),
+        sources: CATEGORY_SOURCES[cat] || [],
         generatedAt: new Date().toISOString(),
       };
     } catch (e) {
-      results[cat] = { title: CATEGORY_LABELS[cat], content: [], error: e.message };
+      results[cat] = { title: CATEGORY_LABELS[cat], content: [], error: e.message, sources: [] };
     }
   }
 
@@ -154,6 +195,17 @@ const CATEGORY_LABELS = {
   competitor: '竞品对抗',
   risks: '风险预警',
   checklist: '拜访检查',
+};
+
+// 每个类别的数据源依据
+const CATEGORY_SOURCES = {
+  suggestions: ['客户总览', '活跃Pipeline', '风险记忆', '待办', '周报', '速记笔记'],
+  scripts: ['客户总览', '活跃Pipeline', '速记笔记'],
+  objections: ['竞品记忆', '风险记忆', 'L3洞察'],
+  upward: ['客户总览', '活跃Pipeline', 'L4战略'],
+  competitor: ['竞品记忆', '客户总览', 'L3洞察'],
+  risks: ['风险记忆', '活跃Pipeline', 'L4战略'],
+  checklist: ['待办', '最近记忆', '周报', '速记笔记'],
 };
 
 function buildPrompt(category, data) {

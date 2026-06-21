@@ -700,6 +700,38 @@ export async function generateWeeklySummary(weekId: string) {
   });
 }
 
+export async function extractWeeklySuggestions(weekId: string, dayKey: string, content: string) {
+  return fetchApi<{ success: boolean; data: { focuses: string[]; actions: string[] } }>('/ai/weekly-extract', {
+    method: 'POST',
+    body: JSON.stringify({ weekId, dayKey, content }),
+  });
+}
+
+export async function generateWeeklyReflection(weekId: string, conversation: { role: string; content: string }[]) {
+  return fetchApi<{ success: boolean; data: { question: string; userTurns: number; shouldConverge: boolean } }>('/ai/weekly-reflection', {
+    method: 'POST',
+    body: JSON.stringify({ weekId, conversation }),
+  });
+}
+
+export async function concludeWeeklyReflection(weekId: string, conversation: { role: string; content: string }[]) {
+  return fetchApi<{
+    success: boolean;
+    data: {
+      salesEntries: { customerName: string; content: string }[];
+      insights: string[];
+      feeling: string;
+      summary: string;
+      nextWeekSuggestions: string[];
+      salesWritten: { customerName: string; customerId: string | null; title: string; content: string }[];
+      growthWritten: { type: string; title: string; memoryId: number }[];
+    };
+  }>('/ai/weekly-reflection/conclude', {
+    method: 'POST',
+    body: JSON.stringify({ weekId, conversation }),
+  });
+}
+
 export async function submitCoachFeedback(data: { category: string; itemIndex: number; rating: number; note?: string; coachContext?: string }) {
   return fetchApi<{ success: boolean; id: number }>('/ai/coach/feedback', {
     method: 'POST',
@@ -711,5 +743,39 @@ export async function saveAIMemory(data: { memoryType: string; title?: string; c
   return fetchApi<{ success: boolean; id: number }>('/ai/memory', {
     method: 'POST',
     body: JSON.stringify(data),
+  });
+}
+
+// ─── 记忆池管理 ──────────────────────────────────────────
+
+export interface MemoryPoolItem {
+  id: number;
+  memory_type: string;
+  title: string;
+  content: string;
+  summary: string;
+  importance: number;
+  source_kind: string;
+  source_table: string | null;
+  occurred_at: string;
+  is_archived: number;
+  customerName: string | null;
+}
+
+export async function getMemoryPool(limit?: number, domain?: string) {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', String(limit));
+  if (domain) params.set('domain', domain);
+  return fetchApi<{ data: MemoryPoolItem[]; total: number; limit: number }>(`/ai/memory-pool?${params}`);
+}
+
+export async function deleteMemory(id: number) {
+  return fetchApi<{ success: boolean }>(`/ai/memory/${id}`, { method: 'DELETE' });
+}
+
+export async function batchDeleteMemories(ids: number[]) {
+  return fetchApi<{ success: boolean; deleted: number }>('/ai/memory-pool/batch', {
+    method: 'DELETE',
+    body: JSON.stringify({ ids }),
   });
 }

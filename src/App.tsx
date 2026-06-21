@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  LayoutDashboard, Users, GitBranch, Swords, Activity, Bot, FileText,
+  LayoutDashboard, Users, GitBranch, Swords, Bot, FileText,
   Zap, Sun, Moon, Search, X, ChevronDown, ChevronRight,
   Target, AlertTriangle, Star, BarChart3,
   CheckSquare, Square, Megaphone, Shield, ArrowUpCircle,
   Clock, Calendar, Menu, Plus, Trash2, Loader2, RefreshCw, Edit3,
-  Brain, Database, Filter, ClipboardCheck, Link2, Archive, Copy, Layers, Network, Zap as ZapIcon,
+  Brain, Database, Filter, Link2, Layers, Network, Zap as ZapIcon,
   ThumbsUp, ThumbsDown, MessageSquare,
 } from 'lucide-react'
 import {
@@ -18,8 +18,8 @@ import {
   COACH_SCENARIOS, INVESTMENT_ITEMS, INVESTMENT_DIMS,
 } from '@/lib/data'
 import * as api from '@/lib/api'
-import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary, Memory, MemoryStats, MemoryPoolSummary, MemoryTypeDef, AIConfig } from '@/lib/api'
-import { getUnlinkedMemories, linkMemoryToCustomer, markMemoryUnlinkedReviewed, archiveMemoryWithReason, batchMemoryOperation, getMemoryStats, getContextPools, getContextTypes, getAIConfig, saveAIConfig, testAIConnection, generateCoachAdvice, generateWeeklySummary, submitCoachFeedback, saveAIMemory } from '@/lib/api'
+import type { Customer, KeyPerson, Todo as TodoItem, PipelineStageSummary, MemoryPoolSummary, MemoryTypeDef, AIConfig, MemoryPoolItem } from '@/lib/api'
+import { getContextPools, getContextTypes, getAIConfig, saveAIConfig, testAIConnection, generateCoachAdvice, generateWeeklySummary, submitCoachFeedback, saveAIMemory, getMemoryPool, deleteMemory, batchDeleteMemories, extractWeeklySuggestions, generateWeeklyReflection, concludeWeeklyReflection } from '@/lib/api'
 import { cn, fmtK, daysSince, colorHex, priorityLabel } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -101,343 +101,18 @@ function EmptyState({ icon, message, hint, ...qoderProps }: { icon?: React.React
   )
 }
 
-type TabId = 'dashboard' | 'customers' | 'pipeline' | 'competitive' | 'energy' | 'coach' | 'weekly' | 'review' | 'aihub'
+type TabId = 'dashboard' | 'customers' | 'pipeline' | 'competitive' | 'coach' | 'weekly' | 'aihub'
 
 const NAV_ITEMS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'dashboard', label: '仪表盘', icon: <LayoutDashboard size={18}  data-qoder-id="qel-layoutdashboard-2eed58a0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-layoutdashboard-2eed58a0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;layoutdashboard&quot;,&quot;loc&quot;:{&quot;line&quot;:24,&quot;column&quot;:42}}"/> },
   { id: 'customers', label: '客户管理', icon: <Users size={18}  data-qoder-id="qel-users-3ac6a549" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-users-3ac6a549&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;users&quot;,&quot;loc&quot;:{&quot;line&quot;:25,&quot;column&quot;:43}}"/> },
   { id: 'pipeline', label: 'Pipeline 汇总', icon: <GitBranch size={18}  data-qoder-id="qel-gitbranch-6c16aae6" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-gitbranch-6c16aae6&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;gitbranch&quot;,&quot;loc&quot;:{&quot;line&quot;:26,&quot;column&quot;:42}}"/> },
   { id: 'competitive', label: '竞品分析', icon: <Swords size={18}  data-qoder-id="qel-swords-169f8ddf" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-swords-169f8ddf&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;swords&quot;,&quot;loc&quot;:{&quot;line&quot;:27,&quot;column&quot;:45}}"/> },
-  { id: 'energy', label: '精力分配', icon: <Activity size={18}  data-qoder-id="qel-activity-1de6a06e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-activity-1de6a06e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;activity&quot;,&quot;loc&quot;:{&quot;line&quot;:28,&quot;column&quot;:40}}"/> },
   { id: 'coach', label: 'AI 教练', icon: <Bot size={18}  data-qoder-id="qel-bot-34694d61" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-bot-34694d61&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;bot&quot;,&quot;loc&quot;:{&quot;line&quot;:29,&quot;column&quot;:40}}"/> },
   { id: 'weekly', label: '周报', icon: <FileText size={18}  data-qoder-id="qel-filetext-b5c82248" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-filetext-b5c82248&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;Unknown&quot;,&quot;elementRole&quot;:&quot;filetext&quot;,&quot;loc&quot;:{&quot;line&quot;:30,&quot;column&quot;:38}}"/> },
-  { id: 'review', label: 'AI记忆审核', icon: <ClipboardCheck size={18} /> },
   { id: 'aihub', label: 'AI 中枢', icon: <Brain size={18} /> },
 ]
 
-/* ─────────────────────── MemoryReviewPage (V26.06.07) ──────── */
-const MEMORY_TYPES = ['archive_raw','project','customer_profile','meeting','strategy','relationship','competitor','weekly','risk','decision','todo_context','sales_data'];
-const REVIEW_STATUSES = ['pending','linked','no_customer','archived'];
-
-function MemoryReviewPage({ customers }: { customers: Customer[] }) {
-  const [stats, setStats] = useState<any>(null);
-  const [memories, setMemories] = useState<Memory[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [keyword, setKeyword] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState('pending');
-  const [filterSource, setFilterSource] = useState('');
-  const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [linkModal, setLinkModal] = useState<Memory | null>(null);
-  const [noteModal, setNoteModal] = useState<{ id: number; action: 'mark' | 'archive' } | null>(null);
-  const [noteText, setNoteText] = useState('');
-  const [linkCustomer, setLinkCustomer] = useState('');
-  const [linkNote, setLinkNote] = useState('');
-  const [offset, setOffset] = useState(0);
-  const [toast, setToast] = useState('');
-  const LIMIT = 30;
-
-  const loadData = useCallback(async (reset = false) => {
-    setLoading(true);
-    try {
-      const newOffset = reset ? 0 : offset;
-      if (reset) setOffset(0);
-      const [memRes, statsRes] = await Promise.all([
-        getUnlinkedMemories({
-          keyword: keyword || undefined,
-          memoryType: filterType || undefined,
-          sourceFile: filterSource || undefined,
-          reviewStatus: filterStatus || undefined,
-          limit: LIMIT,
-          offset: newOffset,
-        }),
-        getMemoryStats(),
-      ]);
-      setMemories(memRes.data);
-      setTotal(memRes.pagination.total);
-      setStats(statsRes.data);
-    } catch (e) {
-      console.error('Load error:', e);
-    }
-    setLoading(false);
-  }, [keyword, filterType, filterStatus, filterSource, offset]);
-
-  useEffect(() => { loadData(true); }, [keyword, filterType, filterStatus, filterSource]);
-  useEffect(() => { if (toast) { const t = setTimeout(() => setToast(''), 2500); return () => clearTimeout(t); } }, [toast]);
-
-  const toggleSelect = (id: number) => {
-    setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  };
-  const selectAll = () => {
-    if (selected.size === memories.length) setSelected(new Set());
-    else setSelected(new Set(memories.map(m => m.id)));
-  };
-
-  const doLink = async () => {
-    if (!linkModal || !linkCustomer) return;
-    await linkMemoryToCustomer(linkModal.id, linkCustomer, linkNote || undefined);
-    setToast(`已关联到客户`);
-    setLinkModal(null); setLinkCustomer(''); setLinkNote('');
-    loadData(true);
-  };
-
-  const doNote = async () => {
-    if (!noteModal) return;
-    if (noteModal.action === 'mark') {
-      await markMemoryUnlinkedReviewed(noteModal.id, noteText || undefined);
-      setToast('已标记无需关联');
-    } else {
-      await archiveMemoryWithReason(noteModal.id, noteText || undefined);
-      setToast('已归档');
-    }
-    setNoteModal(null); setNoteText('');
-    loadData(true);
-  };
-
-  const doBatch = async (action: 'link_customer' | 'mark_unlinked_reviewed' | 'archive') => {
-    const ids = Array.from(selected);
-    if (ids.length === 0) return;
-    if (action === 'link_customer') {
-      // Use first selected to open link modal for batch
-      setLinkModal(memories.find(m => m.id === ids[0]) || null);
-      return;
-    }
-    await batchMemoryOperation(ids, action, undefined, '批量操作');
-    setToast(`批量${action === 'archive' ? '归档' : '标记'}: ${ids.length} 条`);
-    setSelected(new Set());
-    loadData(true);
-  };
-
-  const doBatchLink = async () => {
-    if (!linkCustomer) return;
-    const ids = Array.from(selected);
-    await batchMemoryOperation(ids, 'link_customer', linkCustomer, linkNote || undefined);
-    setToast(`批量关联: ${ids.length} 条`);
-    setLinkModal(null); setLinkCustomer(''); setLinkNote(''); setSelected(new Set());
-    loadData(true);
-  };
-
-  const loadMore = () => { setOffset(prev => prev + LIMIT); setTimeout(() => loadData(), 0); };
-
-  const reviewCounts = useMemo(() => {
-    if (!stats?.byReviewStatus) return { pending: 0, linked: 0, no_customer: 0, archived: 0 };
-    const map: Record<string, number> = {};
-    stats.byReviewStatus.forEach((r: any) => { map[r.review_status] = r.count; });
-    return { pending: map.pending || 0, linked: map.linked || 0, no_customer: map.no_customer || 0, archived: map.archived || 0 };
-  }, [stats]);
-
-  const copyContent = (text: string) => { navigator.clipboard.writeText(text); setToast('已复制'); };
-
-  return (
-    <div className="page-container" style={{ maxWidth: 960 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>AI 记忆审核</h1>
-          <p style={{ fontSize: 13, color: 'var(--fg-tertiary)', margin: '4px 0 0' }}>
-            审核未关联客户的历史资料记忆，关联到正确客户或归档
-          </p>
-        </div>
-        <button className="btn btn-secondary" onClick={() => loadData(true)} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <RefreshCw size={14} /> 刷新
-        </button>
-      </div>
-
-      {/* Stats Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 16 }}>
-        {[
-          { label: '总记忆', value: stats?.totalActive ?? '-', color: 'var(--accent)' },
-          { label: '已关联', value: reviewCounts.linked, color: 'var(--success)' },
-          { label: '待审核', value: reviewCounts.pending, color: 'var(--warning)' },
-          { label: '无需关联', value: reviewCounts.no_customer, color: 'var(--fg-tertiary)' },
-          { label: '已归档', value: reviewCounts.archived, color: 'var(--fg-tertiary)' },
-        ].map(s => (
-          <div key={s.label} className="card" style={{ padding: '12px 14px', borderLeft: `3px solid ${s.color}` }}>
-            <div style={{ fontSize: 20, fontWeight: 700 }}>{s.value}</div>
-            <div style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filter Bar */}
-      <div className="card" style={{ padding: '10px 14px', marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
-          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--fg-tertiary)' }} />
-          <input
-            type="text" placeholder="搜索关键词..."
-            value={keyword} onChange={e => setKeyword(e.target.value)}
-            style={{ width: '100%', padding: '6px 10px 6px 30px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 13 }}
-          />
-        </div>
-        <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, minWidth: 120 }}>
-          <option value="">全部类型</option>
-          {MEMORY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, minWidth: 110 }}>
-          <option value="">全部状态</option>
-          {REVIEW_STATUSES.map(s => <option key={s} value={s}>{s === 'pending' ? '待审核' : s === 'linked' ? '已关联' : s === 'no_customer' ? '无需关联' : '已归档'}</option>)}
-        </select>
-        <select value={filterSource} onChange={e => setFilterSource(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, minWidth: 110 }}>
-          <option value="">全部来源</option>
-          <option value="markdown">Markdown</option>
-          <option value="xlsx">Excel</option>
-          <option value="database">数据库种子</option>
-        </select>
-        <span style={{ fontSize: 12, color: 'var(--fg-tertiary)', whiteSpace: 'nowrap' }}>共 {total} 条</span>
-      </div>
-
-      {/* Batch Actions */}
-      {selected.size > 0 && (
-        <div className="card" style={{ padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent-bg, rgba(0,153,153,0.06))' }}>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>已选 {selected.size} 条</span>
-          <button className="btn btn-primary" onClick={() => doBatch('link_customer')} style={{ fontSize: 12, padding: '4px 10px' }}>
-            <Link2 size={13} /> 批量关联
-          </button>
-          <button className="btn btn-secondary" onClick={() => doBatch('mark_unlinked_reviewed')} style={{ fontSize: 12, padding: '4px 10px' }}>
-            <CheckSquare size={13} /> 批量标记无需关联
-          </button>
-          <button className="btn btn-secondary" onClick={() => doBatch('archive')} style={{ fontSize: 12, padding: '4px 10px', color: 'var(--danger)' }}>
-            <Archive size={13} /> 批量归档
-          </button>
-          <button className="btn btn-secondary" onClick={() => setSelected(new Set())} style={{ fontSize: 12, padding: '4px 10px' }}>
-            取消选择
-          </button>
-        </div>
-      )}
-
-      {/* Memory List */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 40, color: 'var(--fg-tertiary)' }}><Loader2 size={24} className="spin" /> 加载中...</div>
-      ) : memories.length === 0 ? (
-        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <CheckSquare size={32} style={{ color: 'var(--success)', marginBottom: 8 }} />
-          <div style={{ fontSize: 15, fontWeight: 600 }}>暂无待审核记忆</div>
-          <div style={{ fontSize: 13, color: 'var(--fg-tertiary)', marginTop: 4 }}>所有记忆已审核完毕</div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {/* Select all */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--fg-tertiary)', padding: '0 4px' }}>
-            <input type="checkbox" checked={selected.size === memories.length && memories.length > 0} onChange={selectAll} />
-            <span>全选当前页</span>
-          </div>
-
-          {memories.map(mem => (
-            <div key={mem.id} className="card" style={{ padding: '12px 14px', borderLeft: `3px solid ${selected.has(mem.id) ? 'var(--accent)' : 'var(--border)'}` }}>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <input
-                  type="checkbox"
-                  checked={selected.has(mem.id)}
-                  onChange={() => toggleSelect(mem.id)}
-                  style={{ marginTop: 4, cursor: 'pointer' }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  {/* Header */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>{mem.title}</span>
-                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'var(--bg-secondary)', color: 'var(--fg-secondary)', whiteSpace: 'nowrap' }}>{mem.memoryType}</span>
-                    <span style={{ fontSize: 10, color: 'var(--fg-tertiary)' }}>★{mem.importance}</span>
-                    {mem.customerName && (
-                      <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'var(--success-bg, rgba(39,174,96,0.1))', color: 'var(--success)' }}>{mem.customerName}</span>
-                    )}
-                  </div>
-                  {/* Content preview */}
-                  <div style={{ fontSize: 12, color: 'var(--fg-secondary)', lineHeight: 1.5, maxHeight: 60, overflow: 'hidden', marginBottom: 6 }}>
-                    {mem.content.length > 200 ? mem.content.slice(0, 200) + '...' : mem.content}
-                  </div>
-                  {/* Meta */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: 'var(--fg-tertiary)', flexWrap: 'wrap' }}>
-                    {mem.sourceFile && <span>来源: {mem.sourceFile.length > 30 ? '...' + mem.sourceFile.slice(-30) : mem.sourceFile}</span>}
-                    <span>{mem.createdAt?.slice(0, 10)}</span>
-                    {mem.reviewNote && <span style={{ fontStyle: 'italic' }}>备注: {mem.reviewNote}</span>}
-                  </div>
-                </div>
-                {/* Actions */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
-                  <button className="btn btn-primary" onClick={() => { setLinkModal(mem); setLinkCustomer(''); setLinkNote(''); }} style={{ fontSize: 11, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 3 }} title="关联客户">
-                    <Link2 size={12} /> 关联
-                  </button>
-                  <button className="btn btn-secondary" onClick={() => { setNoteModal({ id: mem.id, action: 'mark' }); setNoteText(''); }} style={{ fontSize: 11, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 3 }} title="标记无需关联">
-                    <CheckSquare size={12} /> 标记
-                  </button>
-                  <button className="btn btn-secondary" onClick={() => { setNoteModal({ id: mem.id, action: 'archive' }); setNoteText(''); }} style={{ fontSize: 11, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 3, color: 'var(--danger)' }} title="归档">
-                    <Archive size={12} /> 归档
-                  </button>
-                  <button className="btn btn-secondary" onClick={() => copyContent(mem.content)} style={{ fontSize: 11, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 3 }} title="复制内容">
-                    <Copy size={12} /> 复制
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Load more */}
-          {offset + LIMIT < total && (
-            <button className="btn btn-secondary" onClick={loadMore} style={{ margin: '8px auto', fontSize: 13 }}>
-              加载更多 ({total - offset - LIMIT} 条剩余)
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 20px', fontSize: 13, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 9999 }}>
-          {toast}
-        </div>
-      )}
-
-      {/* Link Customer Modal */}
-      {linkModal && (
-        <div className="modal-overlay" onClick={() => setLinkModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>
-          <div className="card" onClick={e => e.stopPropagation()} style={{ width: 420, padding: 20 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, marginTop: 0, marginBottom: 12 }}>
-              {selected.size > 1 ? `批量关联客户 (${selected.size} 条)` : '关联客户'}
-            </h3>
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>选择客户</label>
-              <select value={linkCustomer} onChange={e => setLinkCustomer(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 13 }}>
-                <option value="">-- 请选择 --</option>
-                {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>审核备注（可选）</label>
-              <textarea value={linkNote} onChange={e => setLinkNote(e.target.value)} placeholder="说明关联原因..." style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 13, minHeight: 60, resize: 'vertical', boxSizing: 'border-box' }} />
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button className="btn btn-secondary" onClick={() => setLinkModal(null)}>取消</button>
-              <button className="btn btn-primary" onClick={selected.size > 1 ? doBatchLink : doLink} disabled={!linkCustomer}>
-                {selected.size > 1 ? '批量关联' : '关联'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Review Note Modal */}
-      {noteModal && (
-        <div className="modal-overlay" onClick={() => setNoteModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>
-          <div className="card" onClick={e => e.stopPropagation()} style={{ width: 400, padding: 20 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, marginTop: 0, marginBottom: 12 }}>
-              {noteModal.action === 'mark' ? '标记无需关联' : '归档记忆'}
-            </h3>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 12, color: 'var(--fg-tertiary)', display: 'block', marginBottom: 4 }}>审核备注（可选）</label>
-              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder={noteModal.action === 'mark' ? '说明无需关联的原因...' : '说明归档原因...'} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 13, minHeight: 60, resize: 'vertical', boxSizing: 'border-box' }} />
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button className="btn btn-secondary" onClick={() => setNoteModal(null)}>取消</button>
-              <button className="btn btn-primary" onClick={doNote} style={noteModal.action === 'archive' ? { color: 'var(--danger)' } : {}}>
-                {noteModal.action === 'mark' ? '确认标记' : '确认归档'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* ─────────────────────── AIHubPage (V26.06.10) ────────── */
 
@@ -455,6 +130,180 @@ const DOMAIN_ICONS: Record<string, React.ReactNode> = {
   ai: <Brain size={14} />,
 };
 
+// ─── 数据源依据标签组件 ──────────────────────────
+function SourceBadges({ sources, color }: { sources: string[]; color: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+      <button onClick={() => setOpen(!open)} style={{
+        fontSize: 10, color: 'var(--fg-tertiary)', cursor: 'pointer', background: 'none', border: 'none',
+        padding: 0, display: 'flex', alignItems: 'center', gap: 4,
+      }}>
+        <Network size={11} />
+        生成依据（{sources.length}项）{open ? ' ▲' : ' ▼'}
+      </button>
+      {open && (
+        <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {sources.map(s => (
+            <span key={s} style={{
+              fontSize: 10, padding: '2px 8px', borderRadius: 10,
+              background: `${color}15`, color: color, border: `1px solid ${color}30`,
+            }}>{s}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 记忆池域级弹窗组件 ──────────────────────────
+const SOURCE_KIND_LABELS: Record<string, string> = {
+  manual: '手动', business: '业务操作', system_summary: '自动摘要',
+  system_feedback: '反馈', import: '导入', archive: '归档',
+};
+
+function DomainMemoryModal({ domainKey, domainLabel, color, onClose }: {
+  domainKey: string; domainLabel: string; color: string; onClose: () => void;
+}) {
+  const [items, setItems] = useState<MemoryPoolItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  const loadPool = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getMemoryPool(20, domainKey);
+      setItems(res.data);
+      setTotal(res.total);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  }, [domainKey]);
+
+  useEffect(() => { loadPool(); }, [loadPool]);
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('确认删除该条记忆？')) return;
+    try {
+      await deleteMemory(id);
+      setItems(prev => prev.filter(m => m.id !== id));
+      setTotal(prev => prev - 1);
+    } catch (e) { alert('删除失败: ' + (e as Error).message); }
+  };
+
+  const handleBatchDelete = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`确认删除选中的 ${selected.size} 条记忆？`)) return;
+    try {
+      const res = await batchDeleteMemories([...selected]);
+      setItems(prev => prev.filter(m => !selected.has(m.id)));
+      setTotal(prev => prev - res.deleted);
+      setSelected(new Set());
+    } catch (e) { alert('批量删除失败: ' + (e as Error).message); }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }} onClick={onClose}>
+      <div style={{
+        width: '90%', maxWidth: 720, maxHeight: '80vh', borderRadius: 16,
+        background: 'var(--bg-surface)', border: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      }} onClick={e => e.stopPropagation()}>
+        {/* 头部 */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px', borderBottom: '1px solid var(--border)',
+        }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />
+            {domainLabel} · 记忆池
+            <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--fg-tertiary)' }}>共 {total} 条</span>
+          </h3>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {selected.size > 0 && (
+              <button onClick={handleBatchDelete} style={{
+                fontSize: 11, padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
+                border: '1px solid #E74C3C40', background: '#E74C3C15', color: '#E74C3C',
+              }}>删除选中({selected.size})</button>
+            )}
+            <button onClick={loadPool} disabled={loading} style={{
+              fontSize: 11, padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
+              border: '1px solid var(--border)', background: 'var(--bg-elevated)', color: 'var(--fg-secondary)',
+            }}>{loading ? '刷新中...' : '刷新'}</button>
+            <button onClick={onClose} style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)',
+            }}><X size={18} /></button>
+          </div>
+        </div>
+
+        {/* 列表 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
+          {loading && items.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 40, color: 'var(--fg-tertiary)' }}>加载中...</div>
+          ) : items.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 40, color: 'var(--fg-tertiary)' }}>暂无记忆数据</div>
+          ) : (
+            items.map(m => (
+              <div key={m.id} style={{
+                padding: '12px 0', borderBottom: '1px solid var(--border-subtle)',
+                background: selected.has(m.id) ? 'var(--accent-subtle)' : 'transparent',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggleSelect(m.id)} />
+                  <span style={{
+                    fontSize: 10, padding: '1px 8px', borderRadius: 8,
+                    background: `${color}20`, color: color, fontWeight: 600,
+                  }}>{m.memory_type}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, flex: 1 }}>{m.title || '(无标题)'}</span>
+                  <span style={{ fontSize: 10, color: 'var(--fg-tertiary)' }}>{m.customerName || '—'}</span>
+                  <span style={{ fontSize: 10, color: 'var(--fg-tertiary)' }}>{SOURCE_KIND_LABELS[m.source_kind] || m.source_kind}</span>
+                  <button onClick={() => handleDelete(m.id)} style={{
+                    fontSize: 10, padding: '2px 8px', borderRadius: 4, cursor: 'pointer',
+                    border: '1px solid #E74C3C30', background: 'transparent', color: '#E74C3C',
+                  }}>删除</button>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--fg-secondary)', lineHeight: 1.6, paddingLeft: 24 }}>
+                  {m.summary || m.content?.slice(0, 150) || '(无内容)'}
+                </div>
+                {m.occurred_at && (
+                  <div style={{ fontSize: 9, color: 'var(--fg-tertiary)', paddingLeft: 24, marginTop: 2 }}>
+                    {new Date(m.occurred_at).toLocaleString('zh-CN')}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* 底部 */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 20px', borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--fg-tertiary)',
+        }}>
+          <span>显示最新 {items.length} 条 / 总计 {total} 条</span>
+          {items.length > 0 && (
+            <button onClick={() => selected.size === items.length ? setSelected(new Set()) : setSelected(new Set(items.map(m => m.id)))} style={{
+              fontSize: 10, padding: '3px 10px', borderRadius: 4, cursor: 'pointer',
+              border: '1px solid var(--border)', background: 'transparent', color: 'var(--fg-muted)',
+            }}>{selected.size === items.length ? '取消全选' : '全选'}</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AIHubPage() {
   const [pools, setPools] = useState<MemoryPoolSummary | null>(null);
   const [types, setTypes] = useState<MemoryTypeDef[]>([]);
@@ -469,6 +318,7 @@ function AIHubPage() {
   const [providerLabel, setProviderLabel] = useState('DeepSeek');
   const [testResult, setTestResult] = useState<{ success: boolean; latency?: number; model?: string; response?: string; error?: string } | null>(null);
   const [testing, setTesting] = useState(false);
+  const [domainModal, setDomainModal] = useState<{ key: string; label: string; color: string } | null>(null);
   const [saving, setSaving] = useState(false);
 
   // ─── 写入域状态 ──────────────────────────
@@ -768,7 +618,7 @@ function AIHubPage() {
           {[
             { phase: 'Phase 1', label: 'Memory Router', status: '✅ 完成', desc: '智能关键词路由' },
             { phase: 'Phase 2', label: 'Insight Layer', status: '✅ 完成', desc: 'L3+L4 分层框架' },
-            { phase: 'Phase 3', label: 'Customer Coach', status: '🔧 框架预留', desc: 'AI 销售教练' },
+            { phase: 'Phase 3', label: 'Customer Coach', status: '✅ 完成', desc: 'AI 销售教练' },
             { phase: 'Phase 4', label: 'Weekly AI', status: '🔧 框架预留', desc: '周报智能总结' },
             { phase: 'Phase 5', label: 'Strategy Center', status: '🔧 框架预留', desc: '战略规划中心' },
             { phase: 'Phase 6', label: 'AI Provider', status: '🔧 框架预留', desc: '统一 AI 接入' },
@@ -799,11 +649,15 @@ function AIHubPage() {
           {domainList.map(([key, domain]) => {
             const poolInfo = pools?.[key];
             return (
-              <div key={key} style={{
-                padding: 16, borderRadius: 'var(--radius-md)',
+              <div key={key} onClick={() => setDomainModal({ key, label: domain.label, color: DOMAIN_COLORS[key] || '#666' })} style={{
+                padding: 16, borderRadius: 'var(--radius-md)', cursor: 'pointer',
                 background: `linear-gradient(135deg, ${DOMAIN_COLORS[key] || '#666'}15, var(--bg-elevated))`,
                 border: `1px solid ${DOMAIN_COLORS[key] || '#666'}30`,
-              }}>
+                transition: 'transform 0.15s, box-shadow 0.15s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = ''; }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <span style={{ color: DOMAIN_COLORS[key] || '#666' }}>{DOMAIN_ICONS[key]}</span>
                   <span style={{ fontSize: 14, fontWeight: 600 }}>{domain.label}</span>
@@ -820,6 +674,7 @@ function AIHubPage() {
                     {poolInfo?.count ?? '-'}
                   </span>
                   <span style={{ fontSize: 12, color: 'var(--fg-tertiary)' }}>条记忆</span>
+                  <span style={{ fontSize: 10, color: DOMAIN_COLORS[key] || '#666', marginLeft: 'auto' }}>点击查看 ›</span>
                 </div>
                 <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                   {(domain.types || []).map((t: any) => (
@@ -906,6 +761,16 @@ function AIHubPage() {
           · 向量数据库待 100+客户/5000+记忆后接入
         </div>
       </div>
+
+      {/* ── 域记忆池弹窗 ── */}
+      {domainModal && (
+        <DomainMemoryModal
+          domainKey={domainModal.key}
+          domainLabel={domainModal.label}
+          color={domainModal.color}
+          onClose={() => setDomainModal(null)}
+        />
+      )}
     </div>
   );
 }
@@ -991,10 +856,8 @@ export default function App(qoderProps: Record<string, any>) {
             {tab === 'customers' && <CustomersPage customers={custData.customers} custLoading={custData.loading} custError={custData.error} onRetry={custData.reload} onCustClick={setCustModal} onReload={custData.reload} data-qoder-id="qel-customerspage-868e80de" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-customerspage-868e80de&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;customerspage&quot;,&quot;loc&quot;:{&quot;line&quot;:208,&quot;column&quot;:37}}"/>}
             {tab === 'pipeline' && <PipelinePage customers={custData.customers} custLoading={custData.loading} custError={custData.error} onRetry={custData.reload} pipeData={pipeData} onCustClick={setCustModal} data-qoder-id="qel-pipelinepage-66b940b9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-pipelinepage-66b940b9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;pipelinepage&quot;,&quot;loc&quot;:{&quot;line&quot;:209,&quot;column&quot;:36}}"/>}
             {tab === 'competitive' && <CompetitivePage customers={custData.customers} custLoading={custData.loading} custError={custData.error} onRetry={custData.reload} data-qoder-id="qel-competitivepage-f61ccfe0" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-competitivepage-f61ccfe0&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;competitivepage&quot;,&quot;loc&quot;:{&quot;line&quot;:210,&quot;column&quot;:39}}"/>}
-            {tab === 'energy' && <EnergyPage customers={custData.customers} custLoading={custData.loading} custError={custData.error} onRetry={custData.reload} data-qoder-id="qel-energypage-92084237" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-energypage-92084237&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;energypage&quot;,&quot;loc&quot;:{&quot;line&quot;:211,&quot;column&quot;:34}}"/>}
             {tab === 'coach' && <CoachPage />}
             {tab === 'weekly' && <WeeklyPage data-qoder-id="qel-weeklypage-802c936f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-weeklypage-802c936f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;weeklypage&quot;,&quot;loc&quot;:{&quot;line&quot;:213,&quot;column&quot;:34}}"/>}
-            {tab === 'review' && <MemoryReviewPage customers={custData.customers} />}
             {tab === 'aihub' && <AIHubPage />}
           </motion.div>
         </AnimatePresence>
@@ -1016,7 +879,7 @@ export default function App(qoderProps: Record<string, any>) {
           </button>
         ))}
         <button
-          className={cn('bottom-tab-item', ['competitive', 'energy', 'coach', 'weekly', 'review', 'aihub'].includes(tab) && 'active')}
+          className={cn('bottom-tab-item', ['competitive', 'coach', 'weekly', 'aihub'].includes(tab) && 'active')}
           onClick={() => setMobileNav(true)}
          data-qoder-id="qel-button-554e864c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-554e864c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:145,&quot;column&quot;:9}}">
           <Menu size={18}  data-qoder-id="qel-menu-398f9e57" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-menu-398f9e57&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;App&quot;,&quot;elementRole&quot;:&quot;menu&quot;,&quot;loc&quot;:{&quot;line&quot;:149,&quot;column&quot;:11}}"/>
@@ -2314,93 +2177,92 @@ function CompetitivePage({ customers, custLoading, custError, onRetry }: {
   )
 }
 
-/* ═══════════════════════ PAGE 5: ENERGY ═══════════════════════ */
-function EnergyPage({ customers, custLoading, custError, onRetry }: {
-  customers: Customer[]; custLoading: boolean; custError: string | null; onRetry: () => void;
-}) {
-  // Derive energy groups dynamically from customer priority colors
-  const activeCusts = customers.filter(c => !c.isGroup)
-  const redCusts = activeCusts.filter(c => c.color === 'red')
-  const orangeCusts = activeCusts.filter(c => c.color === 'orange')
-  const greenCusts = activeCusts.filter(c => c.color === 'green')
-  const grayCusts = activeCusts.filter(c => c.color === 'gray')
-
-  const total = activeCusts.length || 1
-  const groups = [
-    { label: 'A类 · 重点攻坚', alloc: 40, color: 'var(--pri-red)', count: redCusts.length, items: redCusts.map(c => c.name) },
-    { label: 'B类 · 稳步推进', alloc: 30, color: 'var(--pri-orange)', count: orangeCusts.length, items: orangeCusts.map(c => c.name) },
-    { label: 'C类 · 培育拓展', alloc: 20, color: 'var(--pri-green)', count: greenCusts.length, items: greenCusts.map(c => c.name) },
-    { label: 'D类 · 观察维护', alloc: 10, color: 'var(--pri-gray)', count: grayCusts.length, items: grayCusts.map(c => c.name) },
-  ]
-
-  return (
-    <>
-      <div className="page-header" data-qoder-id="qel-page-header-acb46175" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-header-acb46175&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;page-header&quot;,&quot;loc&quot;:{&quot;line&quot;:829,&quot;column&quot;:7}}">
-        <h1 className="page-title" data-qoder-id="qel-page-title-c1357ba5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-title-c1357ba5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;page-title&quot;,&quot;loc&quot;:{&quot;line&quot;:830,&quot;column&quot;:9}}">精力分配</h1>
-        <p className="page-subtitle" data-qoder-id="qel-page-subtitle-8b726a59" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-subtitle-8b726a59&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;page-subtitle&quot;,&quot;loc&quot;:{&quot;line&quot;:831,&quot;column&quot;:9}}">基于客户优先级的精力投入建议 · {activeCusts.length} 个客户</p>
-      </div>
-      <DataState loading={custLoading} error={custError} onRetry={onRetry} data-qoder-id="qel-datastate-788bb82e" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-datastate-788bb82e&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;datastate&quot;,&quot;loc&quot;:{&quot;line&quot;:833,&quot;column&quot;:7}}">
-      <div className="page-body" data-qoder-id="qel-page-body-d9406098" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-page-body-d9406098&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;page-body&quot;,&quot;loc&quot;:{&quot;line&quot;:834,&quot;column&quot;:7}}">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }} data-qoder-id="qel-div-d6ecc738" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-d6ecc738&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:835,&quot;column&quot;:9}}">
-          {groups.map(g => (
-            <div key={g.label} className="card" style={{ textAlign: 'center' }} data-qoder-id="qel-card-0ea56578" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-card-0ea56578&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;card&quot;,&quot;loc&quot;:{&quot;line&quot;:837,&quot;column&quot;:13}}">
-              <div style={{ fontSize: 32, fontWeight: 700, color: g.color, marginBottom: 4 }} data-qoder-id="qel-div-d4ef02a9" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-d4ef02a9&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:838,&quot;column&quot;:15}}">{g.count}</div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg-secondary)', marginBottom: 4 }} data-qoder-id="qel-div-d3ef0116" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-d3ef0116&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:839,&quot;column&quot;:15}}">{g.label}</div>
-              <div style={{ fontSize: 12, color: 'var(--fg-tertiary)', marginBottom: 16 }} data-qoder-id="qel-div-d2eeff83" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-d2eeff83&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:840,&quot;column&quot;:15}}">建议投入 {g.alloc}%</div>
-              <div className="energy-bar-track" data-qoder-id="qel-energy-bar-track-a0d353bf" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-energy-bar-track-a0d353bf&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;energy-bar-track&quot;,&quot;loc&quot;:{&quot;line&quot;:841,&quot;column&quot;:15}}">
-                <motion.div className="energy-bar-fill" style={{ background: g.color }} initial={{ width: 0 }} animate={{ width: `${g.alloc}%` }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}  data-qoder-id="qel-energy-bar-fill-6e17fdf4" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-energy-bar-fill-6e17fdf4&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;energy-bar-fill&quot;,&quot;loc&quot;:{&quot;line&quot;:842,&quot;column&quot;:17}}"/>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Customer List by Group */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }} data-qoder-id="qel-div-d7ef0762" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-d7ef0762&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:849,&quot;column&quot;:9}}">
-          {groups.map(g => (
-            <div key={g.label} className="card" data-qoder-id="qel-card-9ba271d8" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-card-9ba271d8&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;card&quot;,&quot;loc&quot;:{&quot;line&quot;:851,&quot;column&quot;:13}}">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }} data-qoder-id="qel-div-d5ef043c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-d5ef043c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:852,&quot;column&quot;:15}}">
-                <div className="dot" style={{ background: g.color }}  data-qoder-id="qel-dot-d2838311" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-dot-d2838311&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;dot&quot;,&quot;loc&quot;:{&quot;line&quot;:853,&quot;column&quot;:17}}"/>
-                <span style={{ fontSize: 14, fontWeight: 600 }} data-qoder-id="qel-span-2147de62" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-span-2147de62&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;span&quot;,&quot;loc&quot;:{&quot;line&quot;:854,&quot;column&quot;:17}}">{g.label}</span>
-                <span className="badge badge-teal" style={{ marginLeft: 'auto' }} data-qoder-id="qel-badge-9fbb2c55" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-badge-9fbb2c55&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;badge&quot;,&quot;loc&quot;:{&quot;line&quot;:855,&quot;column&quot;:17}}">{g.count} 个</span>
-              </div>
-              {g.items.length === 0 && <div style={{ fontSize: 13, color: 'var(--fg-tertiary)', padding: '8px 0' }} data-qoder-id="qel-div-e40f6df1" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-e40f6df1&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:857,&quot;column&quot;:40}}">暂无客户</div>}
-              {g.items.map((item, i) => (
-                <div key={i} className="action-row" data-qoder-id="qel-action-row-3adadd52" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-3adadd52&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;action-row&quot;,&quot;loc&quot;:{&quot;line&quot;:859,&quot;column&quot;:17}}">
-                  <span className="action-row-label" data-qoder-id="qel-action-row-label-e4e0eccf" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-label-e4e0eccf&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;EnergyPage&quot;,&quot;elementRole&quot;:&quot;action-row-label&quot;,&quot;loc&quot;:{&quot;line&quot;:860,&quot;column&quot;:19}}">{item}</span>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-      </DataState>
-    </>
-  )
-}
 
 /* ═══════════════════════ PAGE 6: AI COACH ═════════════════════ */
 function CoachPage() {
   // ─── AI 教练状态 ──────────────────────────
-  const [coachData, setCoachData] = useState<Record<string, { title: string; content: any[] }> | null>(null);
+  const [coachData, setCoachData] = useState<Record<string, { title: string; content: any[]; sources?: string[] }> | null>(null);
   const [coaching, setCoaching] = useState(false);
   const [coachError, setCoachError] = useState<string | null>(null);
   const [coachTime, setCoachTime] = useState<string | null>(null);
 
   // ─── 反馈状态 ──────────────────────────
-  const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down' | null>>({});
+  type FeedbackVal = { dir: 'up' | 'down'; note?: string } | 'pending_up' | 'pending_down';
+  const [feedbackState, setFeedbackState] = useState<Record<string, FeedbackVal>>(() => {
+    try {
+      const cached = localStorage.getItem('crm-coach-feedback');
+      return cached ? JSON.parse(cached) : {};
+    } catch { return {}; }
+  });
   const [feedbackText, setFeedbackText] = useState('');
-  const [feedbackTarget, setFeedbackTarget] = useState<string | null>(null);
 
-  const handleFeedback = async (catKey: string, idx: number, rating: number, note?: string) => {
+  // 持久化反馈状态（仅保存已提交的，pending不存）
+  const persistFeedback = (state: Record<string, FeedbackVal>) => {
+    const committed: Record<string, FeedbackVal> = {};
+    Object.entries(state).forEach(([k, v]) => {
+      if (v && typeof v === 'object') committed[k] = v;
+    });
+    localStorage.setItem('crm-coach-feedback', JSON.stringify(committed));
+  };
+
+  // 快捷标签
+  const QUICK_TAGS_UP = ['很实用', '已采纳', '有启发', '精准'];
+  const QUICK_TAGS_DOWN = ['不适用', '已做过', '太笼统', '方向错误'];
+
+  // 点击👍👎：展开原因输入，不提交
+  const handleFeedbackClick = (catKey: string, idx: number, rating: number) => {
     const key = `${catKey}_${idx}`;
-    setFeedbackState(prev => ({ ...prev, [key]: rating >= 4 ? 'up' : 'down' }));
+    setFeedbackState(prev => ({ ...prev, [key]: rating >= 4 ? 'pending_up' : 'pending_down' }));
+    setFeedbackText('');
+  };
+
+  // 提交反馈（含原因）
+  const handleFeedbackSubmit = async (catKey: string, idx: number) => {
+    const key = `${catKey}_${idx}`;
+    const pending = feedbackState[key];
+    const rating = pending === 'pending_up' ? 5 : 2;
+    const dir = rating >= 4 ? 'up' : 'down';
+    const note = feedbackText.trim();
+    const newVal: FeedbackVal = { dir, note: note || undefined };
+    setFeedbackState(prev => {
+      const next = { ...prev, [key]: newVal };
+      persistFeedback(next);
+      return next;
+    });
+    setFeedbackText('');
+    // 传递原始建议内容，用于去重
+    const item = coachData?.[catKey]?.content?.[idx];
+    const itemText = item ? (typeof item === 'string' ? item : JSON.stringify(item)) : '';
     try {
       await submitCoachFeedback({
         category: catKey,
         itemIndex: idx,
         rating,
-        note,
-        coachContext: JSON.stringify(coachData?.[catKey] || {}),
+        note: note || undefined,
+        coachContext: JSON.stringify({ category: catKey, originalItem: itemText }),
+      });
+    } catch (e) { console.error('Feedback error:', e); }
+  };
+
+  // 跳过原因直接提交
+  const handleFeedbackSkip = async (catKey: string, idx: number) => {
+    const key = `${catKey}_${idx}`;
+    const pending = feedbackState[key];
+    const rating = pending === 'pending_up' ? 5 : 2;
+    const dir = rating >= 4 ? 'up' : 'down';
+    const newVal: FeedbackVal = { dir };
+    setFeedbackState(prev => {
+      const next = { ...prev, [key]: newVal };
+      persistFeedback(next);
+      return next;
+    });
+    setFeedbackText('');
+    const item = coachData?.[catKey]?.content?.[idx];
+    const itemText = item ? (typeof item === 'string' ? item : JSON.stringify(item)) : '';
+    try {
+      await submitCoachFeedback({
+        category: catKey, itemIndex: idx, rating, note: undefined,
+        coachContext: JSON.stringify({ category: catKey, originalItem: itemText }),
       });
     } catch (e) { console.error('Feedback error:', e); }
   };
@@ -2425,11 +2287,12 @@ function CoachPage() {
       const now = new Date().toLocaleString('zh-CN');
       localStorage.setItem('crm-coach-time', now);
       setCoachTime(now);
+      // 刷新时清空反馈状态（新一轮建议）
+      setFeedbackState({});
+      localStorage.removeItem('crm-coach-feedback');
     } catch (e: any) {
-      setCoachError(e.message);
-      setCoachData({
-        suggestions: { title: '当前建议', content: [{ action: '请先配置 AI API Key', reason: '在 AI 中枢页面设置' }] },
-      });
+      setCoachError(e.message || '生成失败');
+      setCoachData(null);
     } finally {
       setCoaching(false);
     }
@@ -2506,27 +2369,95 @@ function CoachPage() {
                       {item.reason && <div style={{ fontSize: 11, color: 'var(--fg-tertiary)', marginTop: 2 }}>{item.reason}</div>}
                       {item.strategy && <div>{item.strategy}</div>}
                       {typeof item === 'string' && <div>{item}</div>}
-                      {/* ── 反馈按钮 ── */}
-                      <div style={{ display: 'flex', gap: 6, marginTop: 6, justifyContent: 'flex-end' }}>
-                        {feedbackState[`${cat.key}_${i}`] !== 'up' && feedbackState[`${cat.key}_${i}`] !== 'down' ? (
-                          <>
-                            <button onClick={() => handleFeedback(cat.key, i, 5)} title="有帮助"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }}>
-                              <ThumbsUp size={13} />
-                            </button>
-                            <button onClick={() => handleFeedback(cat.key, i, 2)} title="不适用"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }}>
-                              <ThumbsDown size={13} />
-                            </button>
-                          </>
-                        ) : (
-                          <span style={{ fontSize: 10, color: feedbackState[`${cat.key}_${i}`] === 'up' ? '#27AE60' : '#E74C3C' }}>
-                            {feedbackState[`${cat.key}_${i}`] === 'up' ? '✓ 已采纳' : '✗ 已标记'}
-                          </span>
-                        )}
+                      {/* ── 反馈区域 ── */}
+                      <div style={{ marginTop: 8 }}>
+                        {(() => {
+                          const fKey = `${cat.key}_${i}`;
+                          const st = feedbackState[fKey];
+                          // 已提交：显示结果+原因
+                          if (st && typeof st === 'object') {
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end', fontSize: 10 }}>
+                                <span style={{ color: st.dir === 'up' ? '#27AE60' : '#E74C3C' }}>
+                                  {st.dir === 'up' ? '✓ 已采纳' : '✗ 已标记'}
+                                </span>
+                                {st.note && (
+                                  <span style={{ color: 'var(--fg-tertiary)', fontStyle: 'italic', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    「{st.note}」
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          }
+                          // 待提交：展开原因输入
+                          if (st === 'pending_up' || st === 'pending_down') {
+                            const isUp = st === 'pending_up';
+                            const tags = isUp ? QUICK_TAGS_UP : QUICK_TAGS_DOWN;
+                            return (
+                              <div style={{ borderTop: `1px solid ${cat.color}15`, paddingTop: 8, marginTop: 6 }}>
+                                <div style={{ fontSize: 10, color: 'var(--fg-tertiary)', marginBottom: 4 }}>
+                                  {isUp ? '觉得好在哪？（可选）' : '为什么不适用？（可选）'}
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
+                                  {tags.map(tag => (
+                                    <button key={tag} onClick={() => setFeedbackText(tag)}
+                                      style={{
+                                        fontSize: 10, padding: '2px 8px', borderRadius: 10, cursor: 'pointer',
+                                        border: `1px solid ${feedbackText === tag ? cat.color : 'var(--border)'}`,
+                                        background: feedbackText === tag ? `${cat.color}15` : 'transparent',
+                                        color: feedbackText === tag ? cat.color : 'var(--fg-muted)',
+                                      }}>{tag}</button>
+                                  ))}
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                  <input
+                                    value={feedbackText}
+                                    onChange={e => setFeedbackText(e.target.value)}
+                                    placeholder="或输入具体原因..."
+                                    onKeyDown={e => { if (e.key === 'Enter') handleFeedbackSubmit(cat.key, i); }}
+                                    style={{
+                                      flex: 1, fontSize: 11, padding: '4px 8px', borderRadius: 6,
+                                      border: '1px solid var(--border)', background: 'var(--bg-base)',
+                                      color: 'var(--fg)', outline: 'none', minWidth: 0,
+                                    }}
+                                  />
+                                  <button onClick={() => handleFeedbackSubmit(cat.key, i)}
+                                    style={{
+                                      fontSize: 10, padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
+                                      border: 'none', fontWeight: 600,
+                                      background: isUp ? '#27AE60' : '#E74C3C', color: '#fff',
+                                    }}>提交</button>
+                                  <button onClick={() => handleFeedbackSkip(cat.key, i)}
+                                    style={{
+                                      fontSize: 10, padding: '4px 8px', borderRadius: 6, cursor: 'pointer',
+                                      border: '1px solid var(--border)', background: 'transparent',
+                                      color: 'var(--fg-muted)',
+                                    }}>跳过</button>
+                                </div>
+                              </div>
+                            );
+                          }
+                          // 初始：显示👍👎
+                          return (
+                            <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                              <button onClick={() => handleFeedbackClick(cat.key, i, 5)} title="有帮助"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }}>
+                                <ThumbsUp size={13} />
+                              </button>
+                              <button onClick={() => handleFeedbackClick(cat.key, i, 2)} title="不适用"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }}>
+                                <ThumbsDown size={13} />
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   ))}
+                  {/* ── 数据源依据折叠区 ── */}
+                  {data.sources && data.sources.length > 0 && (
+                    <SourceBadges sources={data.sources} color={cat.color} />
+                  )}
                 </div>
               );
             })}
@@ -2560,6 +2491,31 @@ function WeeklyPage(qoderProps: Record<string, any>) {
   const [aiSummary, setAiSummary] = useState<{ highlights: string[]; completion: string; suggestions: string[] } | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryWeek, setSummaryWeek] = useState<string | null>(null);
+
+  // ─── AI 反思对话状态 ──────────────────────────
+  const [reflectionMessages, setReflectionMessages] = useState<{ role: 'ai' | 'user'; content: string }[]>([]);
+  const [reflectionLoading, setReflectionLoading] = useState(false);
+  const [reflectionInput, setReflectionInput] = useState('');
+  const [reflectionActive, setReflectionActive] = useState(false);
+  const [reflectionConclusion, setReflectionConclusion] = useState<{
+    summary: string;
+    insights: string[];
+    feeling: string;
+    nextWeekSuggestions: string[];
+    salesWritten: { customerName: string; customerId: string | null; title: string; content: string }[];
+    growthWritten: { type: string; title: string; memoryId: number }[];
+  } | null>(null);
+
+  // ─── 未完成行动自动滚动 ──────────────────────────
+  const [carryOverItems, setCarryOverItems] = useState<{ id: number; text: string; selected: boolean }[]>([]);
+  const [carryOverDismissed, setCarryOverDismissed] = useState(false);
+  const [carryOverSelectMode, setCarryOverSelectMode] = useState(false);
+  const [carryOverLoading, setCarryOverLoading] = useState(false);
+
+  // ─── 每日记录智能提取 ──────────────────────────
+  const [extractedSuggestions, setExtractedSuggestions] = useState<Record<string, { focuses: string[]; actions: string[] }>>({});
+  const [extractLoading, setExtractLoading] = useState<Record<string, boolean>>({});
+  const extractTimers = {} as Record<string, ReturnType<typeof setTimeout>>;
 
   const DAYS = [
     { key: 'mon', label: '周一' },
@@ -2600,6 +2556,58 @@ function WeeklyPage(qoderProps: Record<string, any>) {
       setOpenWeek(current?.weekId || reports[0]?.weekId || '')
     }
   }, [reports])
+
+  // 检测上周未完成行动项
+  useEffect(() => {
+    if (reports.length < 2 || carryOverDismissed) return;
+    const current = reports.find(r => r.isCurrent) || reports[0];
+    const prev = reports.find(r => r !== current) || reports[1];
+    if (!current || !prev) return;
+    const uncompleted = prev.actions.filter(a => !a.completed);
+    if (uncompleted.length > 0) {
+      setCarryOverItems(uncompleted.map(a => ({ id: a.id, text: a.text, selected: true })));
+    }
+  }, [reports]);
+
+  // 全部带入本周
+  const handleCarryOverAll = async () => {
+    const current = reports.find(r => r.isCurrent) || reports[0];
+    if (!current) return;
+    setCarryOverLoading(true);
+    try {
+      for (const item of carryOverItems.filter(i => i.selected)) {
+        await api.addWeeklyAction(current.weekId, item.text);
+      }
+      setCarryOverDismissed(true);
+      setCarryOverItems([]);
+      await loadReports();
+    } catch (err) {
+      console.error('Failed to carry over actions:', err);
+    } finally {
+      setCarryOverLoading(false);
+    }
+  };
+
+  // 选择性带入
+  const handleCarryOverSelected = async () => {
+    const current = reports.find(r => r.isCurrent) || reports[0];
+    if (!current) return;
+    const selected = carryOverItems.filter(i => i.selected);
+    if (selected.length === 0) return;
+    setCarryOverLoading(true);
+    try {
+      for (const item of selected) {
+        await api.addWeeklyAction(current.weekId, item.text);
+      }
+      setCarryOverDismissed(true);
+      setCarryOverItems([]);
+      await loadReports();
+    } catch (err) {
+      console.error('Failed to carry over actions:', err);
+    } finally {
+      setCarryOverLoading(false);
+    }
+  };
 
   // Toggle action (local state + API)
   const handleToggleAction = async (weekId: string, actionId: number, completed: boolean) => {
@@ -2685,6 +2693,67 @@ function WeeklyPage(qoderProps: Record<string, any>) {
     } catch {}
   }, []);
 
+  // ─── AI 反思对话处理 ──────────────────────────
+  const handleStartReflection = async () => {
+    const current = reports.find(r => r.isCurrent) || reports[0];
+    if (!current) return;
+    setReflectionActive(true);
+    setReflectionMessages([]);
+    setReflectionConclusion(null);
+    setReflectionLoading(true);
+    try {
+      const res = await generateWeeklyReflection(current.weekId, []);
+      setReflectionMessages([{ role: 'ai', content: res.data.question }]);
+    } catch (e: any) {
+      setReflectionMessages([{ role: 'ai', content: e.message || '反思服务暂时不可用' }]);
+    } finally {
+      setReflectionLoading(false);
+    }
+  };
+
+  const handleSendReflection = async () => {
+    const text = reflectionInput.trim();
+    if (!text || reflectionLoading) return;
+    const current = reports.find(r => r.isCurrent) || reports[0];
+    if (!current) return;
+    setReflectionInput('');
+    const newMessages = [...reflectionMessages, { role: 'user' as const, content: text }];
+    setReflectionMessages(newMessages);
+    setReflectionLoading(true);
+    try {
+      const conversation = newMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }));
+      const res = await generateWeeklyReflection(current.weekId, conversation);
+      setReflectionMessages([...newMessages, { role: 'ai', content: res.data.question }]);
+    } catch (e: any) {
+      setReflectionMessages([...newMessages, { role: 'ai', content: e.message || '服务暂时不可用' }]);
+    } finally {
+      setReflectionLoading(false);
+    }
+  };
+
+  const handleConcludeReflection = async () => {
+    const current = reports.find(r => r.isCurrent) || reports[0];
+    if (!current) return;
+    setReflectionLoading(true);
+    try {
+      const conversation = reflectionMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content }));
+      const res = await concludeWeeklyReflection(current.weekId, conversation);
+      const d = res.data;
+      setReflectionConclusion({
+        summary: d.summary,
+        insights: d.insights,
+        feeling: d.feeling,
+        nextWeekSuggestions: d.nextWeekSuggestions,
+        salesWritten: d.salesWritten,
+        growthWritten: d.growthWritten,
+      });
+    } catch (e: any) {
+      setReflectionMessages(prev => [...prev, { role: 'ai', content: e.message || '保存失败' }]);
+    } finally {
+      setReflectionLoading(false);
+    }
+  };
+
   // Daily note change (debounced save)
   const noteTimers = {} as Record<string, ReturnType<typeof setTimeout>>
   const handleDailyNoteChange = (weekId: string, dayKey: string, value: string) => {
@@ -2698,7 +2767,58 @@ function WeeklyPage(qoderProps: Record<string, any>) {
         console.error('Failed to save daily note:', err)
       }
     }, 800)
+    // 智能提取：在保存后 2.5 秒触发 AI 提取
+    if (extractTimers[timerKey]) clearTimeout(extractTimers[timerKey])
+    if (value.trim().length >= 5) {
+      extractTimers[timerKey] = setTimeout(async () => {
+        setExtractLoading(prev => ({ ...prev, [timerKey]: true }));
+        try {
+          const res = await extractWeeklySuggestions(weekId, dayKey, value);
+          if (res.data && (res.data.focuses.length > 0 || res.data.actions.length > 0)) {
+            setExtractedSuggestions(prev => ({ ...prev, [timerKey]: res.data }));
+          }
+        } catch (err) {
+          // 静默失败，不影响用户操作
+        } finally {
+          setExtractLoading(prev => ({ ...prev, [timerKey]: false }));
+        }
+      }, 2500);
+    }
   }
+
+  // 从智能提取添加重点
+  const handleAddExtractedFocus = async (weekId: string, dayKey: string, text: string) => {
+    const report = reports.find(r => r.weekId === weekId);
+    if (!report) return;
+    try {
+      const focuses = [...report.focuses.map(f => f.text), text];
+      await api.updateWeeklyFocuses(weekId, focuses);
+      // 移除已添加的建议
+      const key = `${weekId}_${dayKey}`;
+      setExtractedSuggestions(prev => ({
+        ...prev,
+        [key]: { ...prev[key], focuses: prev[key].focuses.filter(f => f !== text) }
+      }));
+      await loadReports();
+    } catch (err) {
+      console.error('Failed to add focus:', err);
+    }
+  };
+
+  // 从智能提取添加行动项
+  const handleAddExtractedAction = async (weekId: string, dayKey: string, text: string) => {
+    try {
+      await api.addWeeklyAction(weekId, text);
+      const key = `${weekId}_${dayKey}`;
+      setExtractedSuggestions(prev => ({
+        ...prev,
+        [key]: { ...prev[key], actions: prev[key].actions.filter(a => a !== text) }
+      }));
+      await loadReports();
+    } catch (err) {
+      console.error('Failed to add action:', err);
+    }
+  };
 
   if (loading) {
     return (
@@ -2716,15 +2836,165 @@ function WeeklyPage(qoderProps: Record<string, any>) {
             <h1 className="page-title">周报</h1>
             <p className="page-subtitle">工作记录与回顾</p>
           </div>
-          <Button variant="outline" size="sm" onClick={handleGenerateSummary} disabled={summaryLoading || reports.length === 0}>
-            {summaryLoading ? <Loader2 size={14} className="animate-spin" /> : <Brain size={14} />}
-            {summaryLoading ? 'AI 分析中...' : 'AI 智能总结'}
+          <Button variant="outline" size="sm" onClick={handleStartReflection} disabled={reflectionLoading || reports.length === 0}>
+            {reflectionLoading ? <Loader2 size={14} className="animate-spin" /> : <Brain size={14} />}
+            {reflectionLoading ? 'AI 思考中...' : 'AI 反思对话'}
           </Button>
         </div>
       </div>
       <div className="page-body">
-        {/* ── AI 总结卡片 ── */}
-        {aiSummary && (
+        {/* ── AI 反思对话面板 ── */}
+        {reflectionActive && (
+          <>
+          <div className="card" style={{ marginBottom: 16, padding: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <Brain size={16} style={{ color: 'var(--accent)' }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>AI 反思对话</span>
+              <span style={{ fontSize: 11, color: 'var(--fg-tertiary)' }}>
+                {(() => { const c = reports.find(r => r.isCurrent) || reports[0]; return c?.label; })()}
+              </span>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+                {reflectionMessages.length >= 2 && !reflectionConclusion && (
+                  <button onClick={handleConcludeReflection} disabled={reflectionLoading} style={{ padding: '3px 10px', fontSize: 11, cursor: 'pointer', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)' }}>
+                    {reflectionLoading ? '生成中...' : '结束反思'}
+                  </button>
+                )}
+                <button onClick={() => setReflectionActive(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 11 }}>关闭</button>
+              </div>
+            </div>
+            {/* 对话消息列表 */}
+            <div style={{ maxHeight: 320, overflowY: 'auto', marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {reflectionMessages.map((msg, i) => (
+                <div key={i} style={{
+                  display: 'flex',
+                  gap: 8,
+                  flexDirection: msg.role === 'ai' ? 'row' : 'row-reverse',
+                  alignItems: 'flex-start',
+                }}>
+                  {msg.role === 'ai' && (
+                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,153,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Brain size={12} style={{ color: 'var(--accent)' }} />
+                    </div>
+                  )}
+                  <div style={{
+                    maxWidth: '80%',
+                    padding: '8px 12px',
+                    fontSize: 13,
+                    lineHeight: 1.6,
+                    borderRadius: msg.role === 'ai' ? '2px 12px 12px 12px' : '12px 2px 12px 12px',
+                    background: msg.role === 'ai' ? 'var(--bg-surface-secondary, rgba(0,153,153,0.05))' : 'var(--accent)',
+                    color: msg.role === 'ai' ? 'var(--fg)' : '#fff',
+                    border: msg.role === 'ai' ? '1px solid var(--border)' : 'none',
+                  }}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {reflectionLoading && (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,153,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Brain size={12} style={{ color: 'var(--accent)' }} />
+                  </div>
+                  <div style={{ padding: '8px 12px', fontSize: 13, color: 'var(--fg-muted)', background: 'var(--bg-surface-secondary, rgba(0,153,153,0.05))', borderRadius: '2px 12px 12px 12px', border: '1px solid var(--border)' }}>
+                    <Loader2 size={12} className="animate-spin" /> 思考中...
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* 输入框 */}
+            {!reflectionConclusion ? (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  type="text"
+                  value={reflectionInput}
+                  onChange={e => setReflectionInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendReflection(); } }}
+                  placeholder="写下你的思考..."
+                  disabled={reflectionLoading}
+                  style={{ flex: 1, padding: '8px 12px', fontSize: 13, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', outline: 'none' }}
+                />
+                <button
+                  onClick={handleSendReflection}
+                  disabled={reflectionLoading || !reflectionInput.trim()}
+                  style={{ padding: '6px 14px', fontSize: 12, cursor: 'pointer', background: reflectionInput.trim() ? 'var(--accent)' : 'var(--bg-surface)', color: reflectionInput.trim() ? '#fff' : 'var(--fg-muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}
+                >
+                  发送
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0,153,153,0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 12, color: 'var(--fg-secondary)' }}>
+                  反思已保存，下方查看完整交付报告
+                </span>
+                <button onClick={() => { setReflectionActive(false); }} style={{ padding: '4px 12px', fontSize: 11, cursor: 'pointer', background: 'var(--bg-surface)', color: 'var(--fg-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
+                  完成
+                </button>
+              </div>
+            )}
+          </div>
+          {/* 反思交付报告 */}
+          {reflectionConclusion && (
+            <div style={{ marginTop: 16, padding: 18, background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Brain size={15} /> 反思交付报告
+              </div>
+
+              {/* 本周总结 */}
+              {reflectionConclusion.summary && (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg)', marginBottom: 4 }}>本周总结</div>
+                  <div style={{ fontSize: 13, color: 'var(--fg-secondary)', lineHeight: 1.6 }}>{reflectionConclusion.summary}</div>
+                </div>
+              )}
+
+              {/* 下周建议 */}
+              {reflectionConclusion.nextWeekSuggestions.length > 0 && (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg)', marginBottom: 4 }}>下周建议</div>
+                  {reflectionConclusion.nextWeekSuggestions.map((s, i) => (
+                    <div key={i} style={{ fontSize: 13, color: 'var(--fg-secondary)', paddingLeft: 12, position: 'relative', lineHeight: 1.6 }}>
+                      <span style={{ position: 'absolute', left: 0, color: 'var(--accent)' }}>▸</span>{s}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 写入销售域 */}
+              {reflectionConclusion.salesWritten.length > 0 && (
+                <div style={{ marginBottom: 14, padding: 10, background: 'rgba(0,120,200,0.06)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(0,120,200,0.15)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#0078c8', marginBottom: 6 }}>写入销售域（{reflectionConclusion.salesWritten.length} 条）</div>
+                  {reflectionConclusion.salesWritten.map((s, i) => (
+                    <div key={i} style={{ fontSize: 12, color: 'var(--fg-secondary)', marginBottom: 4 }}>
+                      <span style={{ fontWeight: 600, color: 'var(--fg)' }}>{s.customerName}</span>
+                      <span style={{ color: 'var(--fg-muted)', margin: '0 4px' }}>→</span>
+                      {s.content}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 写入成长域 */}
+              {reflectionConclusion.growthWritten.length > 0 && (
+                <div style={{ padding: 10, background: 'rgba(153,0,153,0.06)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(153,0,153,0.15)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#990099', marginBottom: 6 }}>写入成长域</div>
+                  {reflectionConclusion.insights.map((ins, i) => (
+                    <div key={i} style={{ fontSize: 12, color: 'var(--fg-secondary)', marginBottom: 2 }}>
+                      <span style={{ color: '#990099', marginRight: 4 }}>●</span>{ins}
+                    </div>
+                  ))}
+                  {reflectionConclusion.feeling && (
+                    <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 4, fontStyle: 'italic' }}>
+                      核心感受：{reflectionConclusion.feeling}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          </>
+        )}
+        {/* 保留旧版 AI 总结卡片（仅当有缓存时显示） */}
+        {aiSummary && !reflectionActive && (
           <div className="card" style={{ marginBottom: 16, padding: 18 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <Brain size={16} style={{ color: 'var(--accent)' }} />
@@ -2766,6 +3036,46 @@ function WeeklyPage(qoderProps: Record<string, any>) {
                 </div>
                 {isOpen && (
                   <div className="week-panel-body" data-qoder-id="qel-week-panel-body-2fcf71e5" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-week-panel-body-2fcf71e5&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;week-panel-body&quot;,&quot;loc&quot;:{&quot;line&quot;:1786,&quot;column&quot;:19}}">
+                    {/* 未完成行动自动滚动提示 */}
+                    {r.isCurrent && carryOverItems.length > 0 && !carryOverDismissed && (
+                      <div style={{ marginBottom: 16, padding: '12px 16px', background: 'var(--bg-surface-secondary, rgba(0,153,153,0.06))', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--accent)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: carryOverSelectMode ? 8 : 0 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-secondary)' }}>
+                            上周有 {carryOverItems.length} 项计划可带入本周
+                          </span>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            {!carryOverSelectMode ? (
+                              <>
+                                <button onClick={handleCarryOverAll} disabled={carryOverLoading} style={{ padding: '4px 10px', fontSize: 11, cursor: 'pointer', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)' }}>
+                                  {carryOverLoading ? '处理中...' : '全部带入本周'}
+                                </button>
+                                <button onClick={() => setCarryOverSelectMode(true)} style={{ padding: '4px 10px', fontSize: 11, cursor: 'pointer', background: 'var(--bg-surface)', color: 'var(--fg-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>选择性带入</button>
+                                <button onClick={() => setCarryOverDismissed(true)} style={{ padding: '4px 10px', fontSize: 11, cursor: 'pointer', background: 'none', color: 'var(--fg-muted)', border: 'none' }}>忽略</button>
+                              </>
+                            ) : (
+                              <>
+                                <button onClick={handleCarryOverSelected} disabled={carryOverLoading || carryOverItems.filter(i => i.selected).length === 0} style={{ padding: '4px 10px', fontSize: 11, cursor: 'pointer', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-sm)' }}>
+                                  {carryOverLoading ? '处理中...' : `带入 ${carryOverItems.filter(i => i.selected).length} 项`}
+                                </button>
+                                <button onClick={() => setCarryOverSelectMode(false)} style={{ padding: '4px 10px', fontSize: 11, cursor: 'pointer', background: 'none', color: 'var(--fg-muted)', border: 'none' }}>取消</button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {carryOverSelectMode && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {carryOverItems.map((item, idx) => (
+                              <label key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--fg-secondary)', cursor: 'pointer' }}>
+                                <input type="checkbox" checked={item.selected} onChange={() => {
+                                  setCarryOverItems(prev => prev.map((ci, i) => i === idx ? { ...ci, selected: !ci.selected } : ci));
+                                }} style={{ accentColor: 'var(--accent)' }} />
+                                {item.text}
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {/* Focus Items */}
                     <div style={{ marginBottom: 20 }} data-qoder-id="qel-div-1e05995f" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-1e05995f&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1788,&quot;column&quot;:21}}">
                       <div className="detail-section-title" data-qoder-id="qel-detail-section-title-6a583061" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-section-title-6a583061&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;detail-section-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1789,&quot;column&quot;:23}}">本周重点</div>
@@ -2792,21 +3102,12 @@ function WeeklyPage(qoderProps: Record<string, any>) {
                     </div>
                     {/* Action Items */}
                     <div style={{ marginBottom: 20 }} data-qoder-id="qel-div-a308a955" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a308a955&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1812,&quot;column&quot;:21}}">
-                      <div className="detail-section-title" data-qoder-id="qel-detail-section-title-e3551d45" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-section-title-e3551d45&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;detail-section-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1813,&quot;column&quot;:23}}">行动清单</div>
+                      <div className="detail-section-title" data-qoder-id="qel-detail-section-title-e3551d45" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-detail-section-title-e3551d45&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;detail-section-title&quot;,&quot;loc&quot;:{&quot;line&quot;:1813,&quot;column&quot;:23}}">下周计划</div>
                       {r.actions.map(a => {
-                        const isChecked = !!localChecked[a.id]
                         return (
-                          <div key={a.id} className="action-row" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }} data-qoder-id="qel-action-row-9e724167" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-9e724167&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;action-row&quot;,&quot;loc&quot;:{&quot;line&quot;:1817,&quot;column&quot;:27}}">
-                            <div onClick={() => handleToggleAction(r.weekId, a.id, !!a.completed)} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }} data-qoder-id="qel-div-a008a49c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-a008a49c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1818,&quot;column&quot;:29}}">
-                              {isChecked
-                                ? <CheckSquare size={14} style={{ color: 'var(--status-success)', flexShrink: 0 }}  data-qoder-id="qel-checksquare-7d1bad7d" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-checksquare-7d1bad7d&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;checksquare&quot;,&quot;loc&quot;:{&quot;line&quot;:1820,&quot;column&quot;:35}}"/>
-                                : <Square size={14} style={{ color: 'var(--fg-muted)', flexShrink: 0 }}  data-qoder-id="qel-square-f134ee8c" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-square-f134ee8c&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;square&quot;,&quot;loc&quot;:{&quot;line&quot;:1821,&quot;column&quot;:35}}"/>
-                              }
-                              <span className="action-row-label" style={{
-                                textDecoration: isChecked ? 'line-through' : 'none',
-                                color: isChecked ? 'var(--fg-muted)' : 'var(--fg)',
-                              }} data-qoder-id="qel-action-row-label-292601df" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-label-292601df&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;action-row-label&quot;,&quot;loc&quot;:{&quot;line&quot;:1823,&quot;column&quot;:31}}">{a.text}</span>
-                            </div>
+                          <div key={a.id} className="action-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }} data-qoder-id="qel-action-row-9e724167" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-9e724167&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;action-row&quot;,&quot;loc&quot;:{&quot;line&quot;:1817,&quot;column&quot;:27}}">
+                            <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--fg-muted)', flexShrink: 0 }} />
+                            <span className="action-row-label" style={{ flex: 1, color: 'var(--fg)' }} data-qoder-id="qel-action-row-label-292601df" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-action-row-label-292601df&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;action-row-label&quot;,&quot;loc&quot;:{&quot;line&quot;:1823,&quot;column&quot;:31}}">{a.text}</span>
                             <button onClick={() => handleDeleteAction(r.weekId, a.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--fg-muted)', opacity: 0.5 }} title="删除" data-qoder-id="qel-button-771ef168" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-button-771ef168&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;button&quot;,&quot;loc&quot;:{&quot;line&quot;:1828,&quot;column&quot;:29}}">
                               <Trash2 size={12}  data-qoder-id="qel-trash2-f85cf1bd" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-trash2-f85cf1bd&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;trash2&quot;,&quot;loc&quot;:{&quot;line&quot;:1829,&quot;column&quot;:31}}"/>
                             </button>
@@ -2816,7 +3117,7 @@ function WeeklyPage(qoderProps: Record<string, any>) {
                       <div style={{ display: 'flex', gap: 6, marginTop: 8 }} data-qoder-id="qel-div-aa08b45a" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-div-aa08b45a&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;div&quot;,&quot;loc&quot;:{&quot;line&quot;:1834,&quot;column&quot;:23}}">
                         <input
                           type="text"
-                          placeholder="添加行动项..."
+                          placeholder="添加下周计划..."
                           value={newActionWeek === r.weekId ? newActionText : ''}
                           onFocus={() => setNewActionWeek(r.weekId)}
                           onChange={e => { setNewActionWeek(r.weekId); setNewActionText(e.target.value) }}
@@ -2840,6 +3141,30 @@ function WeeklyPage(qoderProps: Record<string, any>) {
                             value={dailyNotes[`${r.weekId}_${d.key}`] || ''}
                             onChange={e => handleDailyNoteChange(r.weekId, d.key, e.target.value)}
                            data-qoder-id="qel-textarea-f9d5f6eb" data-qoder-source="{&quot;qoderId&quot;:&quot;qel-textarea-f9d5f6eb&quot;,&quot;filePath&quot;:&quot;react-vite/src/App.tsx&quot;,&quot;componentName&quot;:&quot;WeeklyPage&quot;,&quot;elementRole&quot;:&quot;textarea&quot;,&quot;loc&quot;:{&quot;line&quot;:1855,&quot;column&quot;:27}}"/>
+                          {/* 智能提取建议 */}
+                          {(() => {
+                            const key = `${r.weekId}_${d.key}`;
+                            const sug = extractedSuggestions[key];
+                            const isLoading = extractLoading[key];
+                            if (isLoading) return <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Loader2 size={10} className="animate-spin" /> 智能分析中...</div>;
+                            if (!sug || (sug.focuses.length === 0 && sug.actions.length === 0)) return null;
+                            return (
+                              <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                {sug.focuses.map((f, i) => (
+                                  <span key={`f-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', fontSize: 11, background: 'rgba(142,68,173,0.08)', color: '#8E44AD', borderRadius: 12, border: '1px solid rgba(142,68,173,0.15)' }}>
+                                    <span style={{ fontSize: 9, fontWeight: 600, opacity: 0.7 }}>重点</span>{f}
+                                    <button onClick={() => handleAddExtractedFocus(r.weekId, d.key, f)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#8E44AD', fontSize: 14, lineHeight: 1 }} title="添加到本周重点"><Plus size={10} /></button>
+                                  </span>
+                                ))}
+                                {sug.actions.map((a, i) => (
+                                  <span key={`a-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', fontSize: 11, background: 'rgba(0,153,153,0.06)', color: 'var(--accent)', borderRadius: 12, border: '1px solid rgba(0,153,153,0.15)' }}>
+                                    <span style={{ fontSize: 9, fontWeight: 600, opacity: 0.7 }}>计划</span>{a}
+                                    <button onClick={() => handleAddExtractedAction(r.weekId, d.key, a)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--accent)', fontSize: 14, lineHeight: 1 }} title="添加到下周计划"><Plus size={10} /></button>
+                                  </span>
+                                ))}
+                              </div>
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>

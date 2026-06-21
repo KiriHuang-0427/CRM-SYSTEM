@@ -32,6 +32,47 @@ function getWeekLabel(weekId) {
   return `W${week}（${fmt(monday)} - ${fmt(friday)}）`;
 }
 
+// Helper: get next week's ID from current weekId
+function getNextWeekId(weekId) {
+  const [yearStr, wStr] = weekId.split('-W');
+  const year = parseInt(yearStr);
+  const week = parseInt(wStr);
+  // Calculate Monday of current ISO week, then add 7 days
+  const jan4 = new Date(year, 0, 4);
+  const mondayOffset = -((jan4.getDay() + 6) % 7);
+  const monday = new Date(year, 0, 4 + mondayOffset + (week - 1) * 7);
+  const nextMonday = new Date(monday);
+  nextMonday.setDate(monday.getDate() + 7);
+  return getISOWeekId(nextMonday);
+}
+
+// Helper: ensure next week's report exists, return its weekId
+function ensureNextWeek(weekId) {
+  const nextId = getNextWeekId(weekId);
+  const exists = db.prepare('SELECT id FROM weekly_reports WHERE week_id = ?').get(nextId);
+  if (!exists) {
+    const label = getWeekLabel(nextId);
+    try {
+      db.prepare('INSERT INTO weekly_reports (week_id, label, is_current) VALUES (?, ?, 0)').run(nextId, label);
+    } catch (e) {
+      // Ignore UNIQUE constraint error (already exists)
+    }
+  }
+  return nextId;
+}
+
+// Helper: sync current week's actions → next week's focuses
+function syncActionsToNextWeekFocuses(weekId) {
+  const nextId = ensureNextWeek(weekId);
+  const actions = db.prepare('SELECT text FROM weekly_actions WHERE week_id = ? ORDER BY sort_order ASC').all(weekId);
+  const txn = db.transaction(() => {
+    db.prepare('DELETE FROM weekly_focuses WHERE week_id = ?').run(nextId);
+    const insert = db.prepare('INSERT INTO weekly_focuses (week_id, text, sort_order) VALUES (?, ?, ?)');
+    actions.forEach((a, i) => insert.run(nextId, a.text, i));
+  });
+  txn();
+}
+
 // ─── GET /api/weekly — list all weekly reports (newest first) ─────
 
 router.get('/', (req, res) => {
@@ -154,6 +195,8 @@ router.post('/:weekId/actions', validate({ text: { required: true, maxLength: 50
     const action = db.prepare(
       'SELECT id, text, completed, sort_order as sortOrder FROM weekly_actions WHERE id = ?'
     ).get(result.lastInsertRowid);
+    // Sync to next week's focuses
+    syncActionsToNextWeekFocuses(weekId);
     res.status(201).json({ data: action });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -178,6 +221,9 @@ router.put('/:weekId/actions/:id', (req, res) => {
     if (!action) {
       return res.status(404).json({ error: 'Action not found' });
     }
+    // Sync to next week's focuses
+    const { weekId } = req.params;
+    syncActionsToNextWeekFocuses(weekId);
     res.json({ data: action });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -193,6 +239,9 @@ router.delete('/:weekId/actions/:id', (req, res) => {
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Action not found' });
     }
+    // Sync to next week's focuses
+    const { weekId } = req.params;
+    syncActionsToNextWeekFocuses(weekId);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -229,6 +278,8 @@ function ensureCurrentWeek() {
     db.prepare('UPDATE weekly_reports SET is_current = 0').run();
     db.prepare('UPDATE weekly_reports SET is_current = 1 WHERE week_id = ?').run(weekId);
   }
+  // Auto-create next week's report (for 下周计划 sync)
+  ensureNextWeek(weekId);
 }
 
 module.exports = router;

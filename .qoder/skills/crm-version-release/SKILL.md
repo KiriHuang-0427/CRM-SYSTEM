@@ -78,11 +78,36 @@ Copy-Item "C:\Users\tt\Desktop\react-vite\ARCHITECTURE.md" "D:\知识库创建\0
 
 ### 10. 更新决策日志
 
-在 `D:\知识库创建\00_会话决策日志\决策日志.md` 的 `---` 分割线后、最新日期条目之前插入：
+目标文件：`D:\知识库创建\00_会话决策日志\决策日志.md`（D盘，工作区外，SearchReplace不可用）
+
+**⚠ 编码安全规范（严禁违反）：**
+
+该文件为 UTF-8 with BOM 编码。写入D盘文件时 **严禁** 使用以下方式：
+- ❌ PowerShell 字符串拼接（`$content = Get-Content ... ; $newContent | Set-Content`）—— 会破坏UTF-8编码导致"锟斤拷"乱码
+- ❌ `[System.IO.File]::WriteAllText()` 默认编码
+- ❌ 任何未显式指定 UTF-8 编码的写入操作
+
+**正确方式：使用 Node.js 脚本（.cjs）操作文件**
+
+```javascript
+// fix_log.cjs — 插入决策日志条目
+const fs = require('fs');
+const filePath = 'D:\\知识库创建\\00_会话决策日志\\决策日志.md';
+const content = fs.readFileSync(filePath, 'utf8');
+const lines = content.split(/\r?\n/);
+
+// 找到插入位置（在最新日期条目之前）
+const newEntry = `### {版本描述}（V{版本}）\n\n**背景：** ...\n\n---\n`;
+
+// 写入时保持 UTF-8 编码
+fs.writeFileSync(filePath, newContent, 'utf8');
+```
+
+执行：`node fix_log.cjs`，完成后删除临时脚本。
+
+**决策日志条目模板：**
 
 ```markdown
-## {日期} {星期}
-
 ### {版本描述}（V{版本}）
 
 **背景：** {为什么做这个版本}
