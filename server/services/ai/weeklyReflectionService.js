@@ -15,6 +15,22 @@ function getWeekContext(weekId) {
   const actions = db.prepare('SELECT text, completed FROM weekly_actions WHERE week_id = ? ORDER BY sort_order').all(weekId);
   const dailyNotes = db.prepare('SELECT day_key, content FROM weekly_daily_notes WHERE week_id = ?').all(weekId);
 
+  // 上周重点（用于对比本周执行情况）
+  const lastWeekReport = db.prepare(`
+    SELECT week_id FROM weekly_reports WHERE week_id < ? ORDER BY week_id DESC LIMIT 1
+  `).get(weekId);
+  let lastWeekFocuses = [];
+  if (lastWeekReport) {
+    lastWeekFocuses = db.prepare('SELECT text FROM weekly_focuses WHERE week_id = ? ORDER BY sort_order').all(lastWeekReport.week_id).map(f => f.text);
+  }
+
+  // 近7天完成的待办
+  const recentTodos = db.prepare(`
+    SELECT title, completed_at FROM todos
+    WHERE completed_at IS NOT NULL AND completed_at >= date('now', '-7 days')
+    ORDER BY completed_at DESC LIMIT 8
+  `).all();
+
   // CRM 上下文
   const pipelineChanges = db.prepare(`
     SELECT p.name, p.stage, p.pipe_stage, p.amount, c.name as customerName
@@ -29,6 +45,14 @@ function getWeekContext(weekId) {
     ORDER BY n.created_at DESC LIMIT 8
   `).all();
 
+  // 近7天写入的记忆洞察（来自反思对话、业务操作等）
+  const recentMemories = db.prepare(`
+    SELECT memory_type, title, content FROM ai_memories
+    WHERE is_archived = 0 AND created_at >= datetime('now', '-7 days')
+      AND memory_type IN ('insight', 'meeting', 'weekly', 'coach')
+    ORDER BY created_at DESC LIMIT 6
+  `).all();
+
   const dayNames = { mon: '周一', tue: '周二', wed: '周三', thu: '周四', fri: '周五' };
 
   return {
@@ -38,8 +62,11 @@ function getWeekContext(weekId) {
     completedCount: actions.filter(a => a.completed).length,
     totalActions: actions.length,
     dailyNotes: dailyNotes.map(d => `${dayNames[d.day_key] || d.day_key}: ${d.content || '无记录'}`),
+    lastWeekFocuses,
+    recentTodos: recentTodos.map(t => t.title),
     pipeline: pipelineChanges.map(p => `${p.customerName}: ${p.name} (阶段${p.pipe_stage}${p.amount ? '，' + p.amount + 'K' : ''})`),
     recentNotes: recentNotes.map(n => `${n.customerName || ''}: ${n.content?.slice(0, 80)}`),
+    recentMemories: recentMemories.map(m => `[${m.memory_type}] ${m.title}: ${m.content?.slice(0, 60)}`),
   };
 }
 
@@ -63,40 +90,47 @@ async function generateReflection(weekId, conversation) {
 
   const isFirstRound = !conversation || conversation.length === 0;
   const userTurns = conversation ? conversation.filter(m => m.role === 'user').length : 0;
-  const shouldConverge = userTurns >= 3; // 第 3 轮用户回答后开始收敛
+  const shouldConverge = userTurns >= 2; // 第 2 轮用户回答后开始收敛
 
   // 构建数据摘要
   const dataSummary = `
 周报：${ctx.label}
 本周重点：${ctx.focuses.join('；') || '未填写'}
-下周计划：${ctx.actions.map(a => `${a.text}`).join('；') || '无'}（共${ctx.totalActions}条）
+下周计划：${ctx.actions.map(a => `${a.text}${a.done ? '（已完成）' : ''}`).join('；') || '无'}（共${ctx.totalActions}条，完成${ctx.completedCount}条）
 每日记录：
 ${ctx.dailyNotes.join('\n') || '未填写'}
+上周重点：${ctx.lastWeekFocuses.join('；') || '无'}
+近7天完成的待办：${ctx.recentTodos.join('；') || '无'}
 活跃Pipeline：${ctx.pipeline.join('；') || '无'}
-最近笔记：${ctx.recentNotes.join('；') || '无'}`;
+最近笔记：${ctx.recentNotes.join('；') || '无'}
+近期记忆洞察：${ctx.recentMemories.join('；') || '无'}`;
 
   let prompt;
 
   if (isFirstRound) {
-    prompt = `基于以下本周工作数据，作为引导反思的导师，提出一个开放式问题来帮助用户回顾本周。
+    prompt = `基于以下本周工作数据，作为引导反思的导师，提出2-3个不同维度的反思问题来帮助用户回顾本周。
 
 ${dataSummary}
 
 要求：
-- 不要总结或评价，而是提出一个能引发深度思考的问题
-- 问题要具体，关联到数据中的真实客户/项目/事件
+- 每个问题必须对应数据中的真实客户/项目/事件，不要泛泛而问
+- 问题要覆盖不同维度，例如：
+  • 客户工作维度：本周跟某个客户的推进中，有什么意外或惊喜？
+  • 执行力维度：本周重点和实际完成之间的差距，背后是什么在起作用？
+  • 判断力维度：Pipeline中某个商机的推进，你的判断依据是什么？
+- 不要总结或评价，只提问
 - 关注用户的感受、判断和决策过程，而非单纯的结果
-- 问题应该帮助用户发现自己的模式或盲点
-- 控制在80字以内，语气自然亲切
+- 每个问题简短有力，60字以内
+- 用“1. 2. 3.”编号，语气自然亲切
 
-只返回问题本身，不要任何前缀或解释。`;
+只返回问题，不要任何前缀或解释。`;
   } else {
     // 构建对话历史文本
     const historyText = conversation.map(m =>
       m.role === 'user' ? `用户：${m.content}` : `AI：${m.content}`
     ).join('\n');
 
-    prompt = `你是用户的周报复思导师。基于以下数据和对话历史，继续引导用户深入反思。
+    prompt = `你是用户的周报复思导师。基于以下数据和对话历史，继续引导用户反思。
 
 ${dataSummary}
 
@@ -104,18 +138,17 @@ ${dataSummary}
 ${historyText}
 
 要求：
-- 基于用户刚才的回答，提出一个追问或新角度的思考
-- 不要重复之前问过的问题
-- 关注用户的感受变化、判断逻辑、行动模式
-- 如果用户提到了困难，探索背后的原因而非直接给建议
-- 如果用户分享了成果，探索他从中获得了什么认知
+- 先简短回应用户刚才的分享（1-2句，不要重复用户的话）
+- 然后换一个全新的角度提问，不要在上一个话题上继续深挖
+- 还没讨论过的维度可以问：其他客户的工作、Pipeline进展、执行力、判断逻辑、下周准备等
+- 问题要关联数据中的具体客户/项目/事件
 - 控制在80字以内，保持自然对话感
 ${shouldConverge ? '- 对话已经进行了' + userTurns + '轮，请开始自然收敛。先对用户的分享做一个简短回应（2句话），然后提出最后一个反思性问题作为收尾' : ''}
 
 只返回你的回复，不要任何前缀或解释。`;
   }
 
-  const systemPrompt = '你是销售周报反思导师。你的角色是通过提问帮助用户自我觉察和成长，而不是给出评价或建议。'
+  const systemPrompt = '你是销售周报反思导师。你的角色是通过多角度提问帮助用户自我觉察，而非给出评价或建议。你的提问风格是广度发散、快速切换角度，而不是在一个话题上深挖。每轮对话应该覆盖不同的维度（客户工作、项目推进、执行力、判断力、下周准备等）。'
     + (philosophy ? '\n\n【核心原则】\n' + philosophy : '');
 
   const res = await provider.generate(prompt, systemPrompt);
