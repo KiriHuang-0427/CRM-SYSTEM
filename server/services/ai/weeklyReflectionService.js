@@ -26,7 +26,7 @@ function getWeekContext(weekId) {
 
   // 近7天完成的待办
   const recentTodos = db.prepare(`
-    SELECT title, completed_at FROM todos
+    SELECT text, completed_at FROM todos
     WHERE completed_at IS NOT NULL AND completed_at >= date('now', '-7 days')
     ORDER BY completed_at DESC LIMIT 8
   `).all();
@@ -63,7 +63,7 @@ function getWeekContext(weekId) {
     totalActions: actions.length,
     dailyNotes: dailyNotes.map(d => `${dayNames[d.day_key] || d.day_key}: ${d.content || '无记录'}`),
     lastWeekFocuses,
-    recentTodos: recentTodos.map(t => t.title),
+    recentTodos: recentTodos.map(t => t.text),
     pipeline: pipelineChanges.map(p => `${p.customerName}: ${p.name} (阶段${p.pipe_stage}${p.amount ? '，' + p.amount + 'K' : ''})`),
     recentNotes: recentNotes.map(n => `${n.customerName || ''}: ${n.content?.slice(0, 80)}`),
     recentMemories: recentMemories.map(m => `[${m.memory_type}] ${m.title}: ${m.content?.slice(0, 60)}`),
