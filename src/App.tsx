@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, GitBranch, Swords, Bot, FileText,
@@ -2506,6 +2506,27 @@ function WeeklyPage(qoderProps: Record<string, any>) {
     growthWritten: { type: string; title: string; memoryId: number }[];
   } | null>(null);
 
+  // ─── 反思对话 localStorage 持久化 ──────────────────────
+  const reflectionWeekIdRef = useRef<string | null>(null);
+  const saveReflectionToLS = useCallback((weekId: string | null, msgs: typeof reflectionMessages, conc: typeof reflectionConclusion) => {
+    if (!weekId) return;
+    localStorage.setItem(`crm-reflect-${weekId}`, JSON.stringify({ messages: msgs, conclusion: conc, savedAt: Date.now() }));
+  }, []);
+  const loadReflectionFromLS = useCallback((weekId: string) => {
+    try {
+      const raw = localStorage.getItem(`crm-reflect-${weekId}`);
+      if (raw) return JSON.parse(raw) as { messages: typeof reflectionMessages; conclusion: typeof reflectionConclusion; savedAt: number };
+    } catch {}
+    return null;
+  }, []);
+  // 自动保存到 localStorage
+  useEffect(() => {
+    const weekId = reflectionWeekIdRef.current;
+    if (weekId && reflectionMessages.length > 0) {
+      saveReflectionToLS(weekId, reflectionMessages, reflectionConclusion);
+    }
+  }, [reflectionMessages, reflectionConclusion, saveReflectionToLS]);
+
   // ─── 未完成行动自动滚动 ──────────────────────────
   const [carryOverItems, setCarryOverItems] = useState<{ id: number; text: string; selected: boolean }[]>([]);
   const [carryOverDismissed, setCarryOverDismissed] = useState(false);
@@ -2697,6 +2718,16 @@ function WeeklyPage(qoderProps: Record<string, any>) {
   const handleStartReflection = async () => {
     const current = reports.find(r => r.isCurrent) || reports[0];
     if (!current) return;
+    // 检查 localStorage 是否有已保存的对话
+    const cached = loadReflectionFromLS(current.weekId);
+    if (cached && cached.messages.length > 0) {
+      reflectionWeekIdRef.current = current.weekId;
+      setReflectionMessages(cached.messages);
+      setReflectionConclusion(cached.conclusion || null);
+      setReflectionActive(true);
+      return;
+    }
+    reflectionWeekIdRef.current = current.weekId;
     setReflectionActive(true);
     setReflectionMessages([]);
     setReflectionConclusion(null);
@@ -2859,6 +2890,17 @@ function WeeklyPage(qoderProps: Record<string, any>) {
                     {reflectionLoading ? '生成中...' : '结束反思'}
                   </button>
                 )}
+                {reflectionMessages.length > 0 && (
+                  <button onClick={() => {
+                    if (!confirm('确认清除本次反思对话？')) return;
+                    const weekId = reflectionWeekIdRef.current;
+                    if (weekId) localStorage.removeItem(`crm-reflect-${weekId}`);
+                    reflectionWeekIdRef.current = null;
+                    setReflectionMessages([]);
+                    setReflectionConclusion(null);
+                    setReflectionActive(false);
+                  }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 11 }}>清除对话</button>
+                )}
                 <button onClick={() => setReflectionActive(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 11 }}>关闭</button>
               </div>
             </div>
@@ -2901,36 +2943,25 @@ function WeeklyPage(qoderProps: Record<string, any>) {
                 </div>
               )}
             </div>
-            {/* 输入框 */}
-            {!reflectionConclusion ? (
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  type="text"
-                  value={reflectionInput}
-                  onChange={e => setReflectionInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendReflection(); } }}
-                  placeholder="写下你的思考..."
-                  disabled={reflectionLoading}
-                  style={{ flex: 1, padding: '8px 12px', fontSize: 13, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', outline: 'none' }}
-                />
-                <button
-                  onClick={handleSendReflection}
-                  disabled={reflectionLoading || !reflectionInput.trim()}
-                  style={{ padding: '6px 14px', fontSize: 12, cursor: 'pointer', background: reflectionInput.trim() ? 'var(--accent)' : 'var(--bg-surface)', color: reflectionInput.trim() ? '#fff' : 'var(--fg-muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}
-                >
-                  发送
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0,153,153,0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 12, color: 'var(--fg-secondary)' }}>
-                  反思已保存，下方查看完整交付报告
-                </span>
-                <button onClick={() => { setReflectionActive(false); }} style={{ padding: '4px 12px', fontSize: 11, cursor: 'pointer', background: 'var(--bg-surface)', color: 'var(--fg-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
-                  完成
-                </button>
-              </div>
-            )}
+            {/* 输入框 - 始终可用 */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                type="text"
+                value={reflectionInput}
+                onChange={e => setReflectionInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendReflection(); } }}
+                placeholder={reflectionConclusion ? '继续追问...' : '写下你的思考...'}
+                disabled={reflectionLoading}
+                style={{ flex: 1, padding: '8px 12px', fontSize: 13, fontFamily: 'var(--font-sans)', color: 'var(--fg)', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', outline: 'none' }}
+              />
+              <button
+                onClick={handleSendReflection}
+                disabled={reflectionLoading || !reflectionInput.trim()}
+                style={{ padding: '6px 14px', fontSize: 12, cursor: 'pointer', background: reflectionInput.trim() ? 'var(--accent)' : 'var(--bg-surface)', color: reflectionInput.trim() ? '#fff' : 'var(--fg-muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}
+              >
+                发送
+              </button>
+            </div>
           </div>
           {/* 反思交付报告 */}
           {reflectionConclusion && (
